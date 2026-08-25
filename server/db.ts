@@ -1,11 +1,11 @@
 import { and, asc, count, desc, eq, gte, like, lte, type SQL } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, patientRecords, registryAuditLogs, users } from "../drizzle/schema";
-import type { CohortClinicalData, LaboratoryInvestigation, NeurologicalInvestigation, PatientFollowUp, RadiologicalInvestigation, ResearchFile } from "../drizzle/schema";
+import type { CohortClinicalData, LaboratoryInvestigation, NeurologicalInvestigation, PatientFollowUp, ProtocolInvestigation, RadiologicalInvestigation, ResearchFile } from "../drizzle/schema";
 import { storageGetSignedUrl, storagePut } from "./storage";
 import { ENV } from "./_core/env";
 import type { z } from "zod";
-import { getPatientUpdateAuditSummary } from "./registry";
+import { getInvestigationCoverage, getPatientUpdateAuditSummary } from "./registry";
 import type { patientInputSchema, registryFiltersSchema } from "./registry";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -62,6 +62,12 @@ export async function listUsersForAdmin() {
   return db.select({ id: users.id, name: users.name, email: users.email, role: users.role, accessStatus: users.accessStatus, lastSignedIn: users.lastSignedIn, updatedAt: users.updatedAt }).from(users).orderBy(asc(users.name));
 }
 
+export async function listAssignableUsers() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({ id: users.id, name: users.name, role: users.role }).from(users).where(eq(users.accessStatus, "approved")).orderBy(asc(users.name));
+}
+
 export async function setUserAccessStatus(userId: number, accessStatus: "pending" | "approved" | "suspended") {
   const db = await getDb();
   if (!db) throw new Error("Database is unavailable");
@@ -78,7 +84,7 @@ function requireDb(db: Awaited<ReturnType<typeof getDb>>) {
 
 export async function createPatientRecord(input: PatientInput, actorUserId: number) {
   const db = requireDb(await getDb());
-  await db.insert(patientRecords).values({ ...input, ageAtOnset: input.ageAtOnset ?? null, clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], laboratoryInvestigations: input.laboratoryInvestigations as LaboratoryInvestigation[], neurologicalInvestigations: input.neurologicalInvestigations as NeurologicalInvestigation[], followUpVisits: input.followUpVisits as PatientFollowUp[], researchFiles: [], createdByUserId: actorUserId, lastModifiedByUserId: actorUserId });
+  await db.insert(patientRecords).values({ ...input, ageAtOnset: input.ageAtOnset ?? null, completionOwnerUserId: input.completionOwnerUserId ?? null, clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], laboratoryInvestigations: input.laboratoryInvestigations as LaboratoryInvestigation[], neurologicalInvestigations: input.neurologicalInvestigations as NeurologicalInvestigation[], protocolInvestigations: input.protocolInvestigations as ProtocolInvestigation[], followUpVisits: input.followUpVisits as PatientFollowUp[], researchFiles: [], createdByUserId: actorUserId, lastModifiedByUserId: actorUserId });
   const result = await db.select().from(patientRecords).where(eq(patientRecords.researchId, input.researchId)).limit(1);
   const created = result[0];
   if (!created) throw new Error("The patient record could not be created");
@@ -91,7 +97,7 @@ export async function updatePatientRecord(id: number, input: PatientInput, actor
 export async function updatePatientRecordWithDb(db: any, id: number, input: PatientInput, actorUserId: number) {
   const existing = await db.select({ id: patientRecords.id }).from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
   if (!existing[0]) throw new Error("Patient record not found");
-  await db.update(patientRecords).set({ ...input, ageAtOnset: input.ageAtOnset ?? null, clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], laboratoryInvestigations: input.laboratoryInvestigations as LaboratoryInvestigation[], neurologicalInvestigations: input.neurologicalInvestigations as NeurologicalInvestigation[], followUpVisits: input.followUpVisits as PatientFollowUp[], lastModifiedByUserId: actorUserId }).where(eq(patientRecords.id, id));
+  await db.update(patientRecords).set({ ...input, ageAtOnset: input.ageAtOnset ?? null, completionOwnerUserId: input.completionOwnerUserId ?? null, clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], laboratoryInvestigations: input.laboratoryInvestigations as LaboratoryInvestigation[], neurologicalInvestigations: input.neurologicalInvestigations as NeurologicalInvestigation[], protocolInvestigations: input.protocolInvestigations as ProtocolInvestigation[], followUpVisits: input.followUpVisits as PatientFollowUp[], lastModifiedByUserId: actorUserId }).where(eq(patientRecords.id, id));
   await db.insert(registryAuditLogs).values({ patientRecordId: id, actorUserId, action: "updated", fieldSummary: getPatientUpdateAuditSummary(input) });
   const result = await db.select().from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
   return result[0];
@@ -111,10 +117,12 @@ export async function listPatientRecords(filters?: RegistryFilters) {
   if (filters?.enrollmentStatus) conditions.push(eq(patientRecords.enrollmentStatus, filters.enrollmentStatus));
   if (filters?.clinicalStatus) conditions.push(eq(patientRecords.clinicalStatus, filters.clinicalStatus));
   if (filters?.dataQualityStatus) conditions.push(eq(patientRecords.dataQualityStatus, filters.dataQualityStatus));
+  if (filters?.completenessStatus) conditions.push(eq(patientRecords.completenessStatus, filters.completenessStatus));
+  if (filters?.completionOwnerUserId) conditions.push(eq(patientRecords.completionOwnerUserId, filters.completionOwnerUserId));
   if (filters?.search) conditions.push(like(patientRecords.researchId, `%${filters.search.toUpperCase()}%`));
   if (filters?.ageMin !== undefined) conditions.push(gte(patientRecords.ageAtEnrollment, filters.ageMin));
   if (filters?.ageMax !== undefined) conditions.push(lte(patientRecords.ageAtEnrollment, filters.ageMax));
-  const query = db.select({ id: patientRecords.id, researchId: patientRecords.researchId, cohort: patientRecords.cohort, sex: patientRecords.sex, ageAtEnrollment: patientRecords.ageAtEnrollment, consentStatus: patientRecords.consentStatus, enrollmentStatus: patientRecords.enrollmentStatus, clinicalStatus: patientRecords.clinicalStatus, primaryDiagnosis: patientRecords.primaryDiagnosis, dataQualityStatus: patientRecords.dataQualityStatus, updatedAt: patientRecords.updatedAt }).from(patientRecords);
+  const query = db.select({ id: patientRecords.id, researchId: patientRecords.researchId, cohort: patientRecords.cohort, sex: patientRecords.sex, ageAtEnrollment: patientRecords.ageAtEnrollment, consentStatus: patientRecords.consentStatus, enrollmentStatus: patientRecords.enrollmentStatus, clinicalStatus: patientRecords.clinicalStatus, primaryDiagnosis: patientRecords.primaryDiagnosis, dataQualityStatus: patientRecords.dataQualityStatus, completenessStatus: patientRecords.completenessStatus, missingItems: patientRecords.missingItems, completionOwnerUserId: patientRecords.completionOwnerUserId, updatedAt: patientRecords.updatedAt }).from(patientRecords);
   return conditions.length ? query.where(and(...conditions)).orderBy(desc(patientRecords.updatedAt)) : query.orderBy(desc(patientRecords.updatedAt));
 }
 
@@ -123,7 +131,9 @@ export async function getRegistryOverview() {
   const [total] = await db.select({ total: count() }).from(patientRecords);
   const byCohort = await db.select({ cohort: patientRecords.cohort, total: count() }).from(patientRecords).groupBy(patientRecords.cohort);
   const byEnrollment = await db.select({ status: patientRecords.enrollmentStatus, total: count() }).from(patientRecords).groupBy(patientRecords.enrollmentStatus);
-  return { total: total?.total ?? 0, byCohort, byEnrollment };
+  const byCompleteness = await db.select({ status: patientRecords.completenessStatus, total: count() }).from(patientRecords).groupBy(patientRecords.completenessStatus);
+  const investigationRows = await db.select({ radiologicalInvestigations: patientRecords.radiologicalInvestigations, laboratoryInvestigations: patientRecords.laboratoryInvestigations, neurologicalInvestigations: patientRecords.neurologicalInvestigations, protocolInvestigations: patientRecords.protocolInvestigations }).from(patientRecords);
+  return { total: total?.total ?? 0, byCohort, byEnrollment, byCompleteness, investigationCoverage: getInvestigationCoverage(investigationRows) };
 }
 
 export async function getPatientAuditTrail(patientRecordId: number) {

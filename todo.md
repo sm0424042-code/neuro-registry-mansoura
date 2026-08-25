@@ -63,3 +63,24 @@
 - [x] Save a new checkpoint after the latest export, audit, upload, and follow-up changes.
 - [x] Add an isolated database-adapter integration test that exercises a follow-up update and asserts an audit-log insert payload.
 - [x] Add router-level upload rejection tests for unsupported MIME type and oversized payload, not only schema-level tests.
+
+- [x] Rename the platform and all English export/administration labels from Egypt Neuro Registry to Mansoura University Neurology Research Registry.
+- [x] Add CIDP as a cohort with its dedicated clinical fields and protocol investigation recommendations.
+- [x] Remove the intersex option from patient sex fields and validation.
+- [x] Add Stroke laboratory prompts for HbA1c, uric acid, and lipid profile.
+- [x] Replace Stroke vascular territory options with ACA, MCA complete, MCA incomplete, PCA, and vertebrobasilar.
+- [x] Add MS disease-modifying therapy examples and the MS Functional Composite (MSFC) disability scale.
+- [x] Add protocol investigation prompts appropriate to every cohort.
+- [x] Add record-completeness status, missing-items indicators, and a responsible user assignment for follow-up completion.
+- [x] Display Abdelrahman Ibrahim Rashad as the registry access approver while preserving owner-based administrator authorization.
+- [x] Redesign the overview to surface neurology-specific cohort, investigation, and record-completion indicators.
+- [x] Update tests and run visual QA for the Mansoura University update.
+- [ ] Save a checkpoint for the Mansoura University update.
+
+- [x] Add overview investigation-coverage metrics for protocol checklists and radiological, laboratory, and neurological investigation completion.
+- [x] Add tests for the overview investigation-coverage data contract.
+- [x] Run visual QA of the updated overview.
+
+- [x] Perform authenticated visual QA of the Mansoura University overview, registry, record editor, and access pages.
+- [x] Verify investigation-coverage panels render clearly on the authenticated overview at desktop and mobile widths.
+- [ ] Save the final checkpoint only after authenticated visual QA is complete.

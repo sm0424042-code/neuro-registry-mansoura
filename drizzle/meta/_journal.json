@@ -36,6 +36,13 @@
       "when": 1787697455487,
       "tag": "0004_concerned_sumo",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1787700538707,
+      "tag": "0005_public_energizer",
+      "breakpoints": true
     }
   ]
 }

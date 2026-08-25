@@ -36,6 +36,7 @@ export const appRouter = router({
     list: approvedProcedure.input(registryFiltersSchema).query(({ input }) => db.listPatientRecords(input)),
     get: approvedProcedure.input(z.object({ id: z.number().int().positive() })).query(({ input }) => db.getPatientRecord(input.id)),
     auditTrail: approvedProcedure.input(z.object({ id: z.number().int().positive() })).query(({ input }) => db.getPatientAuditTrail(input.id)),
+    assignableUsers: approvedProcedure.query(() => db.listAssignableUsers()),
     create: approvedProcedure.input(patientInputSchema).mutation(({ input, ctx }) => db.createPatientRecord(input, ctx.user.id)),
     update: approvedProcedure.input(patientUpdateSchema).mutation(({ input, ctx }) => {
       const { id, ...record } = input;
