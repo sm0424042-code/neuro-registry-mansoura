@@ -1,33 +1,30 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { Streamdown } from 'streamdown';
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/lib/trpc";
+import { ArrowRight, ClipboardPlus, Database, FileCheck2, ShieldCheck, Users } from "lucide-react";
+import { useLocation } from "wouter";
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Workflow, Frontend Best Practices, Design Guide and Common Pitfalls
- */
+const cohortInfo = [
+  { key: "stroke", label: "Stroke", color: "bg-[#2a7f8d]" },
+  { key: "myasthenia_gravis", label: "Myasthenia Gravis", color: "bg-[#6d7498]" },
+  { key: "guillain_barre", label: "Guillain–Barré", color: "bg-[#bf7754]" },
+  { key: "myopathy", label: "Myopathy", color: "bg-[#758d63]" },
+] as const;
+
 export default function Home() {
-  // The useAuth hook provides authentication state.
-  // To implement login/logout, call logout(), or start login from an event
-  // handler: onClick={() => startLogin()} (imported from "@/const"). Never call
-  // startLogin() during render (no href={startLogin()}) — it mints a one-time
-  // nonce cookie and must run only at the moment of navigation.
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
+  const [, setLocation] = useLocation();
+  const { data, isLoading, error } = trpc.registry.overview.useQuery();
+  const cohortTotal = (key: string) => data?.byCohort.find(item => item.cohort === key)?.total ?? 0;
+  const enrolled = data?.byEnrollment.find(item => item.status === "enrolled")?.total ?? 0;
 
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
-    </div>
-  );
+  return <div className="mx-auto max-w-7xl space-y-6 fade-rise"><section className="relative overflow-hidden rounded-[1.5rem] bg-[#0b1d2a] px-6 py-8 text-white shadow-[0_18px_48px_rgba(11,29,42,0.18)] md:px-9 md:py-10"><div className="absolute -right-16 -top-20 h-64 w-64 rounded-full border border-[#94d9ca]/20" /><div className="absolute right-12 top-10 h-36 w-36 rounded-full bg-[#1d6270]/35 blur-3xl" /><div className="relative max-w-2xl"><div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-[#bfe5dd]"><ShieldCheck className="h-3.5 w-3.5" />Protected research workspace</div><h1 className="mt-5 font-display text-3xl leading-tight md:text-4xl">Neurological research data, structured for scientific use.</h1><p className="mt-4 max-w-xl text-sm leading-6 text-slate-300">Register pseudonymised patient records, monitor cohort coverage, and prepare de-identified data exports for approved research workflows.</p><div className="mt-7 flex flex-wrap gap-3"><Button onClick={() => setLocation("/records/new")} className="bg-[#a5ddd0] text-[#0b2831] hover:bg-[#c0eee4]"><ClipboardPlus className="mr-2 h-4 w-4" />Add patient record</Button><Button variant="outline" onClick={() => setLocation("/registry")} className="border-white/25 bg-white/5 text-white hover:bg-white/10 hover:text-white">Open registry<ArrowRight className="ml-2 h-4 w-4" /></Button></div></div></section>
+    {error ? <ErrorPanel message={error.message} /> : <><section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><Metric icon={Database} label="Registered records" value={data?.total} loading={isLoading} tone="teal" /><Metric icon={Users} label="Actively enrolled" value={enrolled} loading={isLoading} tone="blue" /><Metric icon={FileCheck2} label="Complete records" value={data?.byEnrollment.find(item => item.status === "completed")?.total ?? 0} loading={isLoading} tone="amber" /><Metric icon={ShieldCheck} label="Direct identifiers" value="Not collected" loading={false} tone="green" /></section><section className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]"><Card className="border-[#e1e9e5] shadow-sm"><CardContent className="p-6"><div className="flex items-start justify-between"><div><p className="text-sm font-semibold text-[#172b38]">Cohort composition</p><p className="mt-1 text-xs text-slate-500">Records by neurological research cohort</p></div><span className="rounded-full bg-[#eef7f4] px-2.5 py-1 text-xs font-medium text-[#286069]">Live registry</span></div><div className="mt-7 space-y-5">{cohortInfo.map(info => { const count = cohortTotal(info.key); const share = data?.total ? Math.round((count / data.total) * 100) : 0; return <div key={info.key}><div className="flex items-center justify-between text-sm"><span className="font-medium text-[#30434c]">{info.label}</span><span className="text-slate-500">{count} <span className="text-slate-400">({share}%)</span></span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-[#e9efec]"><div className={`h-full rounded-full ${info.color} transition-all`} style={{ width: `${share}%` }} /></div></div>; })}</div></CardContent></Card><Card className="border-[#dbe9e5] bg-[#f0f8f6] shadow-sm"><CardContent className="p-6"><p className="text-xs font-bold tracking-[0.14em] text-[#3c7874]">RESEARCH SAFEGUARD</p><h3 className="mt-3 font-display text-2xl text-[#183740]">Data minimisation by design.</h3><p className="mt-3 text-sm leading-6 text-[#4c6668]">The registry uses a study Research ID and intentionally has no fields for patient name, contact details, national ID, address, or exact dates.</p><div className="mt-6 rounded-xl border border-[#cde3de] bg-white/70 p-4"><p className="text-sm font-medium text-[#1e5057]">Before exporting</p><p className="mt-1 text-xs leading-5 text-[#5b7274]">Only administrators can generate de-identified CSV files. The export contains age bands rather than exact ages and excludes operational metadata.</p></div></CardContent></Card></section></>}</div>;
 }
+
+function Metric({ icon: Icon, label, value, loading, tone }: { icon: typeof Database; label: string; value: string | number | undefined; loading: boolean; tone: "teal" | "blue" | "amber" | "green" }) {
+  const colors = { teal: "bg-[#e9f7f3] text-[#257161]", blue: "bg-[#eef3fa] text-[#3f668f]", amber: "bg-[#fff4e8] text-[#a96735]", green: "bg-[#eef7eb] text-[#597c50]" };
+  return <Card className="border-[#e1e9e5] shadow-sm"><CardContent className="p-5"><div className="flex items-start justify-between"><div><p className="text-xs font-medium text-slate-500">{label}</p>{loading ? <Skeleton className="mt-3 h-8 w-20" /> : <p className="mt-2 text-2xl font-semibold tracking-tight text-[#1d333f]">{value ?? 0}</p>}</div><span className={`grid h-10 w-10 place-items-center rounded-xl ${colors[tone]}`}><Icon className="h-5 w-5" /></span></div></CardContent></Card>;
+}
+
+function ErrorPanel({ message }: { message: string }) { return <div className="rounded-xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-800">The registry overview could not be loaded. {message}</div>; }

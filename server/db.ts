@@ -1,11 +1,12 @@
-import { eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, like, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
-import { ENV } from './_core/env';
+import { InsertUser, patientRecords, registryAuditLogs, users } from "../drizzle/schema";
+import { ENV } from "./_core/env";
+import type { z } from "zod";
+import type { patientInputSchema, registryFiltersSchema } from "./registry";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -19,74 +20,124 @@ export async function getDb() {
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
-  if (!user.openId) {
-    throw new Error("User openId is required for upsert");
-  }
-
+  if (!user.openId) throw new Error("User openId is required for upsert");
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
-    return;
+  if (!db) return;
+
+  const isOwner = user.openId === ENV.ownerOpenId;
+  const values: InsertUser = {
+    openId: user.openId,
+    name: user.name ?? null,
+    email: user.email ?? null,
+    loginMethod: user.loginMethod ?? null,
+    lastSignedIn: user.lastSignedIn ?? new Date(),
+    ...(isOwner ? { role: "admin", accessStatus: "approved" } : {}),
+  };
+  const updateSet: Record<string, unknown> = {
+    name: values.name,
+    email: values.email,
+    loginMethod: values.loginMethod,
+    lastSignedIn: values.lastSignedIn,
+  };
+  if (isOwner) {
+    updateSet.role = "admin";
+    updateSet.accessStatus = "approved";
   }
-
-  try {
-    const values: InsertUser = {
-      openId: user.openId,
-    };
-    const updateSet: Record<string, unknown> = {};
-
-    const textFields = ["name", "email", "loginMethod"] as const;
-    type TextField = (typeof textFields)[number];
-
-    const assignNullable = (field: TextField) => {
-      const value = user[field];
-      if (value === undefined) return;
-      const normalized = value ?? null;
-      values[field] = normalized;
-      updateSet[field] = normalized;
-    };
-
-    textFields.forEach(assignNullable);
-
-    if (user.lastSignedIn !== undefined) {
-      values.lastSignedIn = user.lastSignedIn;
-      updateSet.lastSignedIn = user.lastSignedIn;
-    }
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
-    }
-
-    if (!values.lastSignedIn) {
-      values.lastSignedIn = new Date();
-    }
-
-    if (Object.keys(updateSet).length === 0) {
-      updateSet.lastSignedIn = new Date();
-    }
-
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
-  } catch (error) {
-    console.error("[Database] Failed to upsert user:", error);
-    throw error;
-  }
+  await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
 }
 
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
-    return undefined;
-  }
-
+  if (!db) return undefined;
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
-  return result.length > 0 ? result[0] : undefined;
+  return result[0];
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function listUsersForAdmin() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({ id: users.id, name: users.name, email: users.email, role: users.role, accessStatus: users.accessStatus, lastSignedIn: users.lastSignedIn, updatedAt: users.updatedAt }).from(users).orderBy(asc(users.name));
+}
+
+export async function setUserAccessStatus(userId: number, accessStatus: "pending" | "approved" | "suspended") {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable");
+  await db.update(users).set({ accessStatus }).where(eq(users.id, userId));
+}
+
+type PatientInput = z.infer<typeof patientInputSchema>;
+type RegistryFilters = z.infer<typeof registryFiltersSchema>;
+
+function requireDb(db: Awaited<ReturnType<typeof getDb>>) {
+  if (!db) throw new Error("Database is unavailable");
+  return db;
+}
+
+export async function createPatientRecord(input: PatientInput, actorUserId: number) {
+  const db = requireDb(await getDb());
+  await db.insert(patientRecords).values({ ...input, ageAtOnset: input.ageAtOnset ?? null, clinicalData: input.clinicalData, createdByUserId: actorUserId, lastModifiedByUserId: actorUserId });
+  const result = await db.select().from(patientRecords).where(eq(patientRecords.researchId, input.researchId)).limit(1);
+  const created = result[0];
+  if (!created) throw new Error("The patient record could not be created");
+  await db.insert(registryAuditLogs).values({ patientRecordId: created.id, actorUserId, action: "created", fieldSummary: "Research record created" });
+  return created;
+}
+
+export async function updatePatientRecord(id: number, input: PatientInput, actorUserId: number) {
+  const db = requireDb(await getDb());
+  const existing = await db.select({ id: patientRecords.id }).from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
+  if (!existing[0]) throw new Error("Patient record not found");
+  await db.update(patientRecords).set({ ...input, ageAtOnset: input.ageAtOnset ?? null, clinicalData: input.clinicalData, lastModifiedByUserId: actorUserId }).where(eq(patientRecords.id, id));
+  await db.insert(registryAuditLogs).values({ patientRecordId: id, actorUserId, action: "updated", fieldSummary: "Core record and cohort-specific clinical data updated" });
+  const result = await db.select().from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
+  return result[0];
+}
+
+export async function getPatientRecord(id: number) {
+  const db = requireDb(await getDb());
+  const result = await db.select().from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
+  return result[0];
+}
+
+export async function listPatientRecords(filters?: RegistryFilters) {
+  const db = requireDb(await getDb());
+  const conditions = [];
+  if (filters?.cohort) conditions.push(eq(patientRecords.cohort, filters.cohort));
+  if (filters?.consentStatus) conditions.push(eq(patientRecords.consentStatus, filters.consentStatus));
+  if (filters?.enrollmentStatus) conditions.push(eq(patientRecords.enrollmentStatus, filters.enrollmentStatus));
+  if (filters?.clinicalStatus) conditions.push(eq(patientRecords.clinicalStatus, filters.clinicalStatus));
+  if (filters?.dataQualityStatus) conditions.push(eq(patientRecords.dataQualityStatus, filters.dataQualityStatus));
+  if (filters?.search) conditions.push(like(patientRecords.researchId, `%${filters.search.toUpperCase()}%`));
+  if (filters?.ageMin !== undefined) conditions.push(gte(patientRecords.ageAtEnrollment, filters.ageMin));
+  if (filters?.ageMax !== undefined) conditions.push(lte(patientRecords.ageAtEnrollment, filters.ageMax));
+  const query = db.select({ id: patientRecords.id, researchId: patientRecords.researchId, cohort: patientRecords.cohort, sex: patientRecords.sex, ageAtEnrollment: patientRecords.ageAtEnrollment, consentStatus: patientRecords.consentStatus, enrollmentStatus: patientRecords.enrollmentStatus, clinicalStatus: patientRecords.clinicalStatus, primaryDiagnosis: patientRecords.primaryDiagnosis, dataQualityStatus: patientRecords.dataQualityStatus, updatedAt: patientRecords.updatedAt }).from(patientRecords);
+  return conditions.length ? query.where(and(...conditions)).orderBy(desc(patientRecords.updatedAt)) : query.orderBy(desc(patientRecords.updatedAt));
+}
+
+export async function getRegistryOverview() {
+  const db = requireDb(await getDb());
+  const [total] = await db.select({ total: count() }).from(patientRecords);
+  const byCohort = await db.select({ cohort: patientRecords.cohort, total: count() }).from(patientRecords).groupBy(patientRecords.cohort);
+  const byEnrollment = await db.select({ status: patientRecords.enrollmentStatus, total: count() }).from(patientRecords).groupBy(patientRecords.enrollmentStatus);
+  return { total: total?.total ?? 0, byCohort, byEnrollment };
+}
+
+export async function getPatientAuditTrail(patientRecordId: number) {
+  const db = requireDb(await getDb());
+  return db.select({ id: registryAuditLogs.id, action: registryAuditLogs.action, fieldSummary: registryAuditLogs.fieldSummary, occurredAt: registryAuditLogs.occurredAt, actorName: users.name }).from(registryAuditLogs).leftJoin(users, eq(registryAuditLogs.actorUserId, users.id)).where(eq(registryAuditLogs.patientRecordId, patientRecordId)).orderBy(desc(registryAuditLogs.occurredAt));
+}
+
+export async function getResearchExportRecords() {
+  const db = requireDb(await getDb());
+  return db.select().from(patientRecords).orderBy(asc(patientRecords.researchId));
+}
+
+export async function logResearchExport(actorUserId: number, recordCount: number) {
+  const db = requireDb(await getDb());
+  await db.insert(registryAuditLogs).values({ actorUserId, action: "exported", fieldSummary: `De-identified CSV export generated for ${recordCount} records` });
+}
+
+export async function logAccessChange(actorUserId: number, targetUserId: number, accessStatus: string) {
+  const db = requireDb(await getDb());
+  await db.insert(registryAuditLogs).values({ actorUserId, action: "access_changed", fieldSummary: `Access status for user ${targetUserId} changed to ${accessStatus}` });
+}

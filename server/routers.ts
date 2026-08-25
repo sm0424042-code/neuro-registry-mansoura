@@ -1,28 +1,64 @@
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import * as db from "./db";
+import { patientInputSchema, patientUpdateSchema, registryFiltersSchema, toDeidentifiedExportRow } from "./registry";
+
+const approvedProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.user.accessStatus !== "approved") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Your registry access has not been approved." });
+  }
+  return next({ ctx });
+});
+
+const adminProcedure = approvedProcedure.use(({ ctx, next }) => {
+  if (ctx.user.role !== "admin") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Administrator access is required." });
+  }
+  return next({ ctx });
+});
 
 export const appRouter = router({
-    // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return {
-        success: true,
-      } as const;
+      return { success: true } as const;
     }),
   }),
-
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  registry: router({
+    overview: approvedProcedure.query(() => db.getRegistryOverview()),
+    list: approvedProcedure.input(registryFiltersSchema).query(({ input }) => db.listPatientRecords(input)),
+    get: approvedProcedure.input(z.object({ id: z.number().int().positive() })).query(({ input }) => db.getPatientRecord(input.id)),
+    auditTrail: approvedProcedure.input(z.object({ id: z.number().int().positive() })).query(({ input }) => db.getPatientAuditTrail(input.id)),
+    create: approvedProcedure.input(patientInputSchema).mutation(({ input, ctx }) => db.createPatientRecord(input, ctx.user.id)),
+    update: approvedProcedure.input(patientUpdateSchema).mutation(({ input, ctx }) => {
+      const { id, ...record } = input;
+      return db.updatePatientRecord(id, record, ctx.user.id);
+    }),
+  }),
+  administration: router({
+    users: adminProcedure.query(() => db.listUsersForAdmin()),
+    setAccess: adminProcedure.input(z.object({ userId: z.number().int().positive(), accessStatus: z.enum(["pending", "approved", "suspended"]) })).mutation(async ({ input, ctx }) => {
+      if (input.userId === ctx.user.id && input.accessStatus !== "approved") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Administrators cannot remove their own access." });
+      }
+      await db.setUserAccessStatus(input.userId, input.accessStatus);
+      await db.logAccessChange(ctx.user.id, input.userId, input.accessStatus);
+      return { success: true } as const;
+    }),
+    exportDeidentified: adminProcedure.mutation(async ({ ctx }) => {
+      const records = await db.getResearchExportRecords();
+      const rows = records.map(toDeidentifiedExportRow);
+      await db.logResearchExport(ctx.user.id, rows.length);
+      return rows;
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
