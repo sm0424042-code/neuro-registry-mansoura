@@ -1,0 +1,1 @@
+ALTER TABLE `patient_records` ADD `researchFiles` json NOT NULL;

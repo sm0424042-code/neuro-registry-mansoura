@@ -25,5 +25,41 @@
 - [x] Add a dedicated Research ID details surface showing linked non-identifying registry metadata and privacy policy.
 - [x] Add explicit validation tests for all six requested cohort values and direct Research ID privacy-format tests.
 - [x] Perform authenticated visual QA for the updated dashboard, registry, and record editor pages.
-- [ ] Save a new checkpoint after the cohort and radiology update is verified.
+- [x] Save a new checkpoint after the cohort and radiology update is verified.
 - [x] Verify that the owner administrator can approve pending new users manually, while automatic approval remains disabled. Covered by the explicit admin procedure test and the users.accessStatus pending default.
+
+- [x] Add structured Laboratory Investigations for thyroid function, uric acid, and other research-relevant laboratory panels.
+- [x] Add structured Additional Neurological Investigations for EMG/NCS, CSF analysis, fundus examination, and other tests.
+- [x] Add lower-motor-neuron applicability and investigation status without forcing it into the cohort taxonomy.
+- [x] Preserve the seven approved neurological cohorts while keeping the registry free of patient names and phone numbers.
+- [x] Redesign the English interface around the Neurology research workflow and investigation sections.
+- [x] Update de-identified export and add laboratory/neurological investigation tests.
+- [x] Re-run tests, visual QA, and save a new checkpoint.
+
+- [x] Replace the current cohort taxonomy with Stroke, Multiple Sclerosis (MS), Abnormal Movements, Guillain–Barré Syndrome (GBS), Myasthenia Gravis (MG), Myelopathy, and Neuro-ophthalmology.
+- [x] Add cohort-specific clinical fields and English labels for MS, Myelopathy, and Neuro-ophthalmology while preserving existing research safeguards.
+- [x] Update cohort filters, dashboard composition, export mapping, and validation tests for the seven requested cohorts.
+- [x] Re-run tests, visual QA, and save a new checkpoint after the taxonomy update.
+
+- [x] Add a structured Patient Follow-up section linked to Research ID, including visit type, follow-up status, outcome, assessment summary, and next follow-up plan.
+- [x] Include follow-up information in validation, audit history, and de-identified export without direct identifiers.
+- [x] Add tests and visual QA for the Patient Follow-up section before the next checkpoint.
+
+- [x] Add secure Research ID-linked upload records for radiology images, reports, and other approved research files.
+- [x] Store file bytes through the project storage service and keep only metadata and storage references in the database.
+- [x] Add protected upload/list/download procedures with file-type, size, and filename privacy validation.
+- [x] Add the upload interface to the Neurology patient record workflow without exposing files in CSV exports.
+- [x] Add tests for upload authorization, allowed file types, privacy-safe filenames, and metadata export exclusion.
+- [x] Re-run tests, visual QA, and save a new checkpoint.
+
+- [x] Add explicit CSV export tests for laboratory investigations, neurological investigations, and follow-up visits, documenting intended inclusion of research-safe summaries.
+- [x] Add an export test proving researchFiles and file metadata are excluded from de-identified CSV rows.
+- [x] Add audit-log coverage for follow-up changes and verify follow-up edits produce an audit event.
+- [x] Add router tests for upload authorization, allowed and rejected MIME types, file-size limits, and protected list/download access.
+
+- [x] Add an integration-style test proving a follow-up update writes an audit-log event.
+- [x] Add router tests for rejected upload MIME types and oversized files.
+- [x] Add protected file-list and file-download access coverage, or implement a protected download procedure where direct public URLs are not appropriate.
+- [x] Save a new checkpoint after the latest export, audit, upload, and follow-up changes.
+- [x] Add an isolated database-adapter integration test that exercises a follow-up update and asserts an audit-log insert payload.
+- [x] Add router-level upload rejection tests for unsupported MIME type and oversized payload, not only schema-level tests.

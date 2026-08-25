@@ -5,7 +5,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
-import { patientInputSchema, patientUpdateSchema, registryFiltersSchema, toDeidentifiedExportRow } from "./registry";
+import { patientInputSchema, patientUpdateSchema, registryFiltersSchema, researchFileInputSchema, toDeidentifiedExportRow } from "./registry";
 
 const approvedProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.accessStatus !== "approved") {
@@ -40,6 +40,13 @@ export const appRouter = router({
     update: approvedProcedure.input(patientUpdateSchema).mutation(({ input, ctx }) => {
       const { id, ...record } = input;
       return db.updatePatientRecord(id, record, ctx.user.id);
+    }),
+    files: approvedProcedure.input(z.object({ patientRecordId: z.number().int().positive() })).query(({ input }) => db.listResearchFiles(input.patientRecordId)),
+    downloadFile: approvedProcedure.input(z.object({ patientRecordId: z.number().int().positive(), storageKey: z.string().trim().min(1).max(300) })).query(({ input }) => db.getResearchFileUrl(input.patientRecordId, input.storageKey)),
+    uploadFile: approvedProcedure.input(researchFileInputSchema).mutation(async ({ input, ctx }) => {
+      const content = Buffer.from(input.contentBase64, "base64");
+      if (content.byteLength !== input.sizeBytes) throw new TRPCError({ code: "BAD_REQUEST", message: "The uploaded file size could not be verified." });
+      return db.appendResearchFile(input.patientRecordId, ctx.user.id, { fileName: input.fileName, mimeType: input.mimeType, sizeBytes: input.sizeBytes, category: input.category, content });
     }),
   }),
   administration: router({

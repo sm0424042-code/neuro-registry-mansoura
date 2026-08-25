@@ -1,9 +1,11 @@
 import { and, asc, count, desc, eq, gte, like, lte, type SQL } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, patientRecords, registryAuditLogs, users } from "../drizzle/schema";
-import type { CohortClinicalData, RadiologicalInvestigation } from "../drizzle/schema";
+import type { CohortClinicalData, LaboratoryInvestigation, NeurologicalInvestigation, PatientFollowUp, RadiologicalInvestigation, ResearchFile } from "../drizzle/schema";
+import { storageGetSignedUrl, storagePut } from "./storage";
 import { ENV } from "./_core/env";
 import type { z } from "zod";
+import { getPatientUpdateAuditSummary } from "./registry";
 import type { patientInputSchema, registryFiltersSchema } from "./registry";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -76,7 +78,7 @@ function requireDb(db: Awaited<ReturnType<typeof getDb>>) {
 
 export async function createPatientRecord(input: PatientInput, actorUserId: number) {
   const db = requireDb(await getDb());
-  await db.insert(patientRecords).values({ ...input, ageAtOnset: input.ageAtOnset ?? null, clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], createdByUserId: actorUserId, lastModifiedByUserId: actorUserId });
+  await db.insert(patientRecords).values({ ...input, ageAtOnset: input.ageAtOnset ?? null, clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], laboratoryInvestigations: input.laboratoryInvestigations as LaboratoryInvestigation[], neurologicalInvestigations: input.neurologicalInvestigations as NeurologicalInvestigation[], followUpVisits: input.followUpVisits as PatientFollowUp[], researchFiles: [], createdByUserId: actorUserId, lastModifiedByUserId: actorUserId });
   const result = await db.select().from(patientRecords).where(eq(patientRecords.researchId, input.researchId)).limit(1);
   const created = result[0];
   if (!created) throw new Error("The patient record could not be created");
@@ -84,12 +86,13 @@ export async function createPatientRecord(input: PatientInput, actorUserId: numb
   return created;
 }
 
-export async function updatePatientRecord(id: number, input: PatientInput, actorUserId: number) {
-  const db = requireDb(await getDb());
+export async function updatePatientRecord(id: number, input: PatientInput, actorUserId: number) { return updatePatientRecordWithDb(requireDb(await getDb()), id, input, actorUserId); }
+
+export async function updatePatientRecordWithDb(db: any, id: number, input: PatientInput, actorUserId: number) {
   const existing = await db.select({ id: patientRecords.id }).from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
   if (!existing[0]) throw new Error("Patient record not found");
-  await db.update(patientRecords).set({ ...input, ageAtOnset: input.ageAtOnset ?? null, clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], lastModifiedByUserId: actorUserId }).where(eq(patientRecords.id, id));
-  await db.insert(registryAuditLogs).values({ patientRecordId: id, actorUserId, action: "updated", fieldSummary: "Core record and cohort-specific clinical data updated" });
+  await db.update(patientRecords).set({ ...input, ageAtOnset: input.ageAtOnset ?? null, clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], laboratoryInvestigations: input.laboratoryInvestigations as LaboratoryInvestigation[], neurologicalInvestigations: input.neurologicalInvestigations as NeurologicalInvestigation[], followUpVisits: input.followUpVisits as PatientFollowUp[], lastModifiedByUserId: actorUserId }).where(eq(patientRecords.id, id));
+  await db.insert(registryAuditLogs).values({ patientRecordId: id, actorUserId, action: "updated", fieldSummary: getPatientUpdateAuditSummary(input) });
   const result = await db.select().from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
   return result[0];
 }
@@ -136,6 +139,26 @@ export async function getResearchExportRecords() {
 export async function logResearchExport(actorUserId: number, recordCount: number) {
   const db = requireDb(await getDb());
   await db.insert(registryAuditLogs).values({ actorUserId, action: "exported", fieldSummary: `De-identified CSV export generated for ${recordCount} records` });
+}
+
+export async function appendResearchFile(patientRecordId: number, actorUserId: number, upload: { fileName: string; mimeType: string; sizeBytes: number; category: ResearchFile["category"]; content: Buffer }) {
+  const db = requireDb(await getDb());
+  const existing = await db.select({ researchId: patientRecords.researchId, researchFiles: patientRecords.researchFiles }).from(patientRecords).where(eq(patientRecords.id, patientRecordId)).limit(1);
+  if (!existing[0]) throw new Error("Patient record not found");
+  const storage = await storagePut(`research-files/${existing[0].researchId}/${upload.fileName}`, upload.content, upload.mimeType);
+  const file: ResearchFile = { fileName: upload.fileName, storageKey: storage.key, url: storage.url, mimeType: upload.mimeType, sizeBytes: upload.sizeBytes, category: upload.category, uploadedAt: new Date().toISOString(), uploadedByUserId: actorUserId };
+  const files = [...((existing[0].researchFiles as ResearchFile[] | null | undefined) ?? []), file];
+  await db.update(patientRecords).set({ researchFiles: files, lastModifiedByUserId: actorUserId }).where(eq(patientRecords.id, patientRecordId));
+  await db.insert(registryAuditLogs).values({ patientRecordId, actorUserId, action: "updated", fieldSummary: `Research file uploaded: ${upload.category}` });
+  return file;
+}
+
+export async function getResearchFileUrl(patientRecordId: number, storageKey: string) { const db = requireDb(await getDb()); const result = await db.select({ researchFiles: patientRecords.researchFiles }).from(patientRecords).where(eq(patientRecords.id, patientRecordId)).limit(1); const file = ((result[0]?.researchFiles as ResearchFile[] | null | undefined) ?? []).find(item => item.storageKey === storageKey); if (!file) throw new Error("Research file not found for this record"); return { fileName: file.fileName, url: await storageGetSignedUrl(file.storageKey) }; }
+
+export async function listResearchFiles(patientRecordId: number) {
+  const db = requireDb(await getDb());
+  const result = await db.select({ researchFiles: patientRecords.researchFiles }).from(patientRecords).where(eq(patientRecords.id, patientRecordId)).limit(1);
+  return (result[0]?.researchFiles as ResearchFile[] | null | undefined) ?? [];
 }
 
 export async function logAccessChange(actorUserId: number, targetUserId: number, accessStatus: string) {

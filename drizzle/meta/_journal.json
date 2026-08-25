@@ -22,6 +22,20 @@
       "when": 1787695408131,
       "tag": "0002_flat_power_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1787696871714,
+      "tag": "0003_panoramic_lilith",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1787697455487,
+      "tag": "0004_concerned_sumo",
+      "breakpoints": true
     }
   ]
 }
