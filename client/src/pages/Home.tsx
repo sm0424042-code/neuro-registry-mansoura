@@ -7,9 +7,11 @@ import { useLocation } from "wouter";
 
 const cohortInfo = [
   { key: "stroke", label: "Stroke", color: "bg-[#2a7f8d]" },
-  { key: "myasthenia_gravis", label: "Myasthenia Gravis", color: "bg-[#6d7498]" },
-  { key: "guillain_barre", label: "Guillain–Barré", color: "bg-[#bf7754]" },
-  { key: "myopathy", label: "Myopathy", color: "bg-[#758d63]" },
+  { key: "neurovascular_compression_syndrome", label: "Neurovascular Compression", color: "bg-[#6d7498]" },
+  { key: "vessel_disease", label: "Vessel Disease", color: "bg-[#bf7754]" },
+  { key: "epilepsy", label: "Epilepsy", color: "bg-[#758d63]" },
+  { key: "neurodegenerative", label: "Neurodegenerative", color: "bg-[#836f9f]" },
+  { key: "abnormal_movement", label: "Abnormal Movement", color: "bg-[#a1754d]" },
 ] as const;
 
 export default function Home() {

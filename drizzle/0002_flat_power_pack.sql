@@ -1,0 +1,2 @@
+ALTER TABLE `patient_records` MODIFY COLUMN `cohort` enum('stroke','neurovascular_compression_syndrome','vessel_disease','epilepsy','neurodegenerative','abnormal_movement') NOT NULL;--> statement-breakpoint
+ALTER TABLE `patient_records` ADD `radiologicalInvestigations` json NOT NULL;

@@ -1,85 +1,23 @@
-import { boolean, int, json, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, json, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
-export type StrokeClinicalData = {
-  cohort: "stroke";
-  strokeType: "ischemic" | "hemorrhagic" | "tia" | "other" | "unknown";
-  vascularTerritory: "anterior" | "posterior" | "multiple" | "unknown";
-  nihssAtPresentation?: number | null;
-  mRsAtDischarge?: number | null;
-  reperfusionTherapy: "none" | "iv_thrombolysis" | "mechanical_thrombectomy" | "both" | "unknown";
-  toastEtiology: "large_artery" | "cardioembolic" | "small_vessel" | "other_determined" | "undetermined" | "unknown";
-};
-
-export type MyastheniaClinicalData = {
-  cohort: "myasthenia_gravis";
-  mgfaClass: "I" | "II" | "III" | "IV" | "V" | "unknown";
-  antibodyStatus: "achr" | "musk" | "lrp4" | "seronegative" | "unknown";
-  thymomaStatus: "present" | "absent" | "not_assessed" | "unknown";
-  myasthenicCrisis: "never" | "past" | "current" | "unknown";
-  treatmentClass: "symptomatic" | "immunosuppression" | "biologic" | "thymectomy" | "none" | "unknown";
-};
-
-export type GbsClinicalData = {
-  cohort: "guillain_barre";
-  gbsVariant: "classical_aidp" | "aman" | "amsan" | "miller_fisher" | "other" | "unknown";
-  hughesDisabilityScore?: number | null;
-  ventilatorySupport: "none" | "non_invasive" | "invasive" | "unknown";
-  antecedentInfection: "yes" | "no" | "unknown";
-  treatment: "ivig" | "plasmapheresis" | "both" | "supportive" | "unknown";
-};
-
-export type MyopathyClinicalData = {
-  cohort: "myopathy";
-  myopathySubtype: "inflammatory" | "genetic" | "metabolic" | "muscular_dystrophy" | "mitochondrial" | "endocrine_toxic" | "other" | "unknown";
-  geneticConfirmation: "confirmed" | "not_confirmed" | "not_tested" | "unknown";
-  ckLevel?: number | null;
-  muscleBiopsy: "yes" | "no" | "not_done" | "unknown";
-  cardiacInvolvement: "yes" | "no" | "unknown";
-};
-
-export type CohortClinicalData = StrokeClinicalData | MyastheniaClinicalData | GbsClinicalData | MyopathyClinicalData;
+export type StrokeClinicalData = { cohort: "stroke"; strokeType: "ischemic" | "hemorrhagic" | "tia" | "other" | "unknown"; vascularTerritory: "anterior" | "posterior" | "multiple" | "unknown"; nihssAtPresentation?: number | null; mRsAtDischarge?: number | null; reperfusionTherapy: "none" | "iv_thrombolysis" | "mechanical_thrombectomy" | "both" | "unknown"; toastEtiology: "large_artery" | "cardioembolic" | "small_vessel" | "other_determined" | "undetermined" | "unknown" };
+export type NeurovascularCompressionClinicalData = { cohort: "neurovascular_compression_syndrome"; compressionSite: "trigeminal_nerve" | "facial_nerve" | "vestibulocochlear_nerve" | "other" | "unknown"; symptomPattern: "paroxysmal" | "continuous" | "mixed" | "unknown"; imagingConfirmed: "yes" | "no" | "not_done" | "unknown"; surgicalIntervention: "none" | "microvascular_decompression" | "other" | "unknown" };
+export type VesselDiseaseClinicalData = { cohort: "vessel_disease"; diseaseType: "atherosclerotic" | "vasculitis" | "dissection" | "aneurysm" | "other" | "unknown"; vascularBed: "intracranial" | "extracranial" | "systemic" | "unknown"; diagnosticMethod: "angiography" | "mri" | "ct" | "ultrasound" | "clinical" | "unknown"; intervention: "none" | "medical" | "endovascular" | "surgical" | "unknown" };
+export type EpilepsyClinicalData = { cohort: "epilepsy"; epilepsyType: "focal" | "generalized" | "combined" | "unknown"; seizureFrequency: "none" | "monthly_or_less" | "weekly" | "daily" | "unknown"; seizureControl: "controlled" | "partially_controlled" | "uncontrolled" | "unknown"; eegAbnormality: "yes" | "no" | "not_done" | "unknown"; treatmentResponse: "responsive" | "partially_responsive" | "drug_resistant" | "unknown" };
+export type NeurodegenerativeClinicalData = { cohort: "neurodegenerative"; diseaseSubtype: "parkinson_disease" | "alzheimers_disease" | "motor_neuron_disease" | "multiple_system_atrophy" | "other" | "unknown"; diseaseStage: "early" | "moderate" | "advanced" | "unknown"; cognitiveInvolvement: "yes" | "no" | "unknown"; geneticTesting: "positive" | "negative" | "not_done" | "unknown"; progressionPattern: "slow" | "moderate" | "rapid" | "unknown" };
+export type AbnormalMovementClinicalData = { cohort: "abnormal_movement"; movementPhenotype: "tremor" | "dystonia" | "chorea" | "ataxia" | "tics" | "other" | "unknown"; distribution: "focal" | "segmental" | "generalized" | "unknown"; severity: "mild" | "moderate" | "severe" | "unknown"; functionalImpact: "none" | "mild" | "moderate" | "severe" | "unknown"; treatmentResponse: "responsive" | "partially_responsive" | "refractory" | "unknown" };
+export type CohortClinicalData = StrokeClinicalData | NeurovascularCompressionClinicalData | VesselDiseaseClinicalData | EpilepsyClinicalData | NeurodegenerativeClinicalData | AbnormalMovementClinicalData;
+export type RadiologicalInvestigation = { modality: "mri" | "ct" | "cta" | "mra" | "dsa" | "doppler" | "pet" | "spect" | "xray" | "other"; bodyRegion: "brain" | "spine" | "cranial_nerves" | "cerebral_vessels" | "other"; keyFinding: string; lesionStatus: "present" | "absent" | "indeterminate" | "not_applicable"; reportReference?: string | null };
 
 export const users = mysqlTable("users", {
-  id: int("id").autoincrement().primaryKey(),
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
-  name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  accessStatus: mysqlEnum("accessStatus", ["pending", "approved", "suspended"]).default("pending").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  id: int("id").autoincrement().primaryKey(), openId: varchar("openId", { length: 64 }).notNull().unique(), name: text("name"), email: varchar("email", { length: 320 }), loginMethod: varchar("loginMethod", { length: 64 }), role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(), accessStatus: mysqlEnum("accessStatus", ["pending", "approved", "suspended"]).default("pending").notNull(), createdAt: timestamp("createdAt").defaultNow().notNull(), updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(), lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
 export const patientRecords = mysqlTable("patient_records", {
-  id: int("id").autoincrement().primaryKey(),
-  researchId: varchar("researchId", { length: 24 }).notNull().unique(),
-  cohort: mysqlEnum("cohort", ["stroke", "myasthenia_gravis", "guillain_barre", "myopathy"]).notNull(),
-  sex: mysqlEnum("sex", ["female", "male", "intersex", "not_recorded"]).notNull(),
-  ageAtEnrollment: int("ageAtEnrollment").notNull(),
-  ageAtOnset: int("ageAtOnset"),
-  consentStatus: mysqlEnum("consentStatus", ["consented", "pending", "declined", "withdrawn"]).notNull(),
-  enrollmentStatus: mysqlEnum("enrollmentStatus", ["screened", "enrolled", "completed", "withdrawn", "ineligible"]).notNull(),
-  clinicalStatus: mysqlEnum("clinicalStatus", ["active", "follow_up", "completed", "deceased", "unknown"]).notNull(),
-  primaryDiagnosis: varchar("primaryDiagnosis", { length: 160 }).notNull(),
-  dataQualityStatus: mysqlEnum("dataQualityStatus", ["draft", "complete", "query"]).default("draft").notNull(),
-  clinicalData: json("clinicalData").$type<CohortClinicalData>().notNull(),
-  createdByUserId: int("createdByUserId").notNull(),
-  lastModifiedByUserId: int("lastModifiedByUserId").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  id: int("id").autoincrement().primaryKey(), researchId: varchar("researchId", { length: 24 }).notNull().unique(), cohort: mysqlEnum("cohort", ["stroke", "neurovascular_compression_syndrome", "vessel_disease", "epilepsy", "neurodegenerative", "abnormal_movement"]).notNull(), sex: mysqlEnum("sex", ["female", "male", "intersex", "not_recorded"]).notNull(), ageAtEnrollment: int("ageAtEnrollment").notNull(), ageAtOnset: int("ageAtOnset"), consentStatus: mysqlEnum("consentStatus", ["consented", "pending", "declined", "withdrawn"]).notNull(), enrollmentStatus: mysqlEnum("enrollmentStatus", ["screened", "enrolled", "completed", "withdrawn", "ineligible"]).notNull(), clinicalStatus: mysqlEnum("clinicalStatus", ["active", "follow_up", "completed", "deceased", "unknown"]).notNull(), primaryDiagnosis: varchar("primaryDiagnosis", { length: 160 }).notNull(), dataQualityStatus: mysqlEnum("dataQualityStatus", ["draft", "complete", "query"]).default("draft").notNull(), clinicalData: json("clinicalData").$type<CohortClinicalData>().notNull(), radiologicalInvestigations: json("radiologicalInvestigations").$type<RadiologicalInvestigation[]>().notNull(), createdByUserId: int("createdByUserId").notNull(), lastModifiedByUserId: int("lastModifiedByUserId").notNull(), createdAt: timestamp("createdAt").defaultNow().notNull(), updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
-export const registryAuditLogs = mysqlTable("registry_audit_logs", {
-  id: int("id").autoincrement().primaryKey(),
-  patientRecordId: int("patientRecordId"),
-  actorUserId: int("actorUserId").notNull(),
-  action: mysqlEnum("action", ["created", "updated", "exported", "access_changed"]).notNull(),
-  fieldSummary: varchar("fieldSummary", { length: 500 }).notNull(),
-  occurredAt: timestamp("occurredAt").defaultNow().notNull(),
-});
-
+export const registryAuditLogs = mysqlTable("registry_audit_logs", { id: int("id").autoincrement().primaryKey(), patientRecordId: int("patientRecordId"), actorUserId: int("actorUserId").notNull(), action: mysqlEnum("action", ["created", "updated", "exported", "access_changed"]).notNull(), fieldSummary: varchar("fieldSummary", { length: 500 }).notNull(), occurredAt: timestamp("occurredAt").defaultNow().notNull() });
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type PatientRecord = typeof patientRecords.$inferSelect;

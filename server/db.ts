@@ -1,6 +1,7 @@
-import { and, asc, count, desc, eq, gte, like, lte } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, like, lte, type SQL } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, patientRecords, registryAuditLogs, users } from "../drizzle/schema";
+import type { CohortClinicalData, RadiologicalInvestigation } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import type { z } from "zod";
 import type { patientInputSchema, registryFiltersSchema } from "./registry";
@@ -75,7 +76,7 @@ function requireDb(db: Awaited<ReturnType<typeof getDb>>) {
 
 export async function createPatientRecord(input: PatientInput, actorUserId: number) {
   const db = requireDb(await getDb());
-  await db.insert(patientRecords).values({ ...input, ageAtOnset: input.ageAtOnset ?? null, clinicalData: input.clinicalData, createdByUserId: actorUserId, lastModifiedByUserId: actorUserId });
+  await db.insert(patientRecords).values({ ...input, ageAtOnset: input.ageAtOnset ?? null, clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], createdByUserId: actorUserId, lastModifiedByUserId: actorUserId });
   const result = await db.select().from(patientRecords).where(eq(patientRecords.researchId, input.researchId)).limit(1);
   const created = result[0];
   if (!created) throw new Error("The patient record could not be created");
@@ -87,7 +88,7 @@ export async function updatePatientRecord(id: number, input: PatientInput, actor
   const db = requireDb(await getDb());
   const existing = await db.select({ id: patientRecords.id }).from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
   if (!existing[0]) throw new Error("Patient record not found");
-  await db.update(patientRecords).set({ ...input, ageAtOnset: input.ageAtOnset ?? null, clinicalData: input.clinicalData, lastModifiedByUserId: actorUserId }).where(eq(patientRecords.id, id));
+  await db.update(patientRecords).set({ ...input, ageAtOnset: input.ageAtOnset ?? null, clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], lastModifiedByUserId: actorUserId }).where(eq(patientRecords.id, id));
   await db.insert(registryAuditLogs).values({ patientRecordId: id, actorUserId, action: "updated", fieldSummary: "Core record and cohort-specific clinical data updated" });
   const result = await db.select().from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
   return result[0];
@@ -101,7 +102,7 @@ export async function getPatientRecord(id: number) {
 
 export async function listPatientRecords(filters?: RegistryFilters) {
   const db = requireDb(await getDb());
-  const conditions = [];
+  const conditions: SQL[] = [];
   if (filters?.cohort) conditions.push(eq(patientRecords.cohort, filters.cohort));
   if (filters?.consentStatus) conditions.push(eq(patientRecords.consentStatus, filters.consentStatus));
   if (filters?.enrollmentStatus) conditions.push(eq(patientRecords.enrollmentStatus, filters.enrollmentStatus));
