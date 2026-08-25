@@ -75,7 +75,7 @@
 - [x] Display Abdelrahman Ibrahim Rashad as the registry access approver while preserving owner-based administrator authorization.
 - [x] Redesign the overview to surface neurology-specific cohort, investigation, and record-completion indicators.
 - [x] Update tests and run visual QA for the Mansoura University update.
-- [ ] Save a checkpoint for the Mansoura University update.
+- [x] Save a checkpoint for the Mansoura University update.
 
 - [x] Add overview investigation-coverage metrics for protocol checklists and radiological, laboratory, and neurological investigation completion.
 - [x] Add tests for the overview investigation-coverage data contract.
@@ -83,4 +83,14 @@
 
 - [x] Perform authenticated visual QA of the Mansoura University overview, registry, record editor, and access pages.
 - [x] Verify investigation-coverage panels render clearly on the authenticated overview at desktop and mobile widths.
-- [ ] Save the final checkpoint only after authenticated visual QA is complete.
+- [x] Save the final checkpoint only after authenticated visual QA is complete.
+
+- [ ] Complete browser-session authenticated QA of the overview, registry, record editor, and access management screens.
+- [ ] Capture authenticated desktop and mobile visual evidence for the investigation-coverage panel and protected workflows.
+- [ ] Save a post-QA checkpoint after independently evidenced authenticated verification.
+
+- [x] Make the Mansoura University neurology identity and eight cohorts unmistakable on the overview.
+- [x] Add an at-a-glance clinical workflow panel showing Stroke, MS, CIDP, investigations, follow-up, and record-completion actions.
+- [x] Make cohort-specific clinical protocol fields more prominent and easier to scan in the new-record flow.
+- [x] Refresh the visible desktop and mobile preview and verify the user-facing redesign in the production build.
+- [ ] Save a user-facing redesign checkpoint.
