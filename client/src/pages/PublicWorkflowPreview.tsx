@@ -15,7 +15,7 @@ import {
   UsersRound,
 } from "lucide-react";
 
-const brainVisual = "/manus-storage/mansoura-brain-imaging-overview_f9f978a6.png";
+const brainVisual = "/manus-storage/478fad80-a175-11f1-995e-03d05cd60a9d_e14e1e86.png";
 
 const workflows = [
   { icon: HeartPulse, title: "Stroke", tone: "bg-[#e8f6f3] text-[#28736a]", fields: ["NIHSS severity score and mRS outcome", "TOAST aetiology and dysphagia screen", "Stroke complication and functional outcome", "Discharge treatment"] },
@@ -32,14 +32,19 @@ export default function PublicWorkflowPreview() {
   return (
     <main className="min-h-screen bg-[#f6faf8] text-[#203943]">
       <section className="relative overflow-hidden bg-[#091d30] px-5 py-8 text-white md:px-10 md:py-12">
-        <img src={brainVisual} alt="Abstract non-patient-specific brain MRI visual" className="pointer-events-none absolute right-0 top-0 hidden h-full w-[35%] object-cover opacity-50 mix-blend-screen lg:block" />
-        <div className="relative mx-auto max-w-6xl">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-[#c6f1e6]"><ShieldCheck className="h-3.5 w-3.5" />PUBLIC, NON-PATIENT DEMONSTRATION</div>
-            <a href="/records/new" className="text-sm text-[#c6f1e6] underline-offset-4 hover:underline">Return to secure access</a>
+        <div className="relative mx-auto grid max-w-6xl items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="relative z-10">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-[#c6f1e6]"><ShieldCheck className="h-3.5 w-3.5" />PUBLIC, NON-PATIENT DEMONSTRATION</div>
+              <a href="/records/new" className="text-sm text-[#c6f1e6] underline-offset-4 hover:underline">Return to secure access</a>
+            </div>
+            <h1 className="mt-7 max-w-3xl font-display text-3xl leading-tight md:text-5xl">Mansoura University Neurology Research Registry</h1>
+            <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">A view of the new clinical workflow structure. This page contains no patient records, sample cases, identities, contact details, or live registry data.</p>
           </div>
-          <h1 className="mt-7 max-w-3xl font-display text-3xl leading-tight md:text-5xl">Mansoura University Neurology Research Registry</h1>
-          <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">A view of the new clinical workflow structure. This page contains no patient records, sample cases, identities, contact details, or live registry data.</p>
+          <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-[#061323] shadow-2xl shadow-black/30">
+            <img src={brainVisual} alt="Mansoura University Neurology Center brain and neural-network artwork" className="h-full min-h-[210px] w-full object-cover" />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#061323] via-[#061323]/70 to-transparent px-5 pb-4 pt-12"><p className="text-[10px] font-bold tracking-[0.16em] text-[#bcefe3]">MANSOURA UNIVERSITY · NEUROLOGY CENTER</p><p className="mt-1 text-xs text-slate-200">Brand artwork supplied for this non-patient preview</p></div>
+          </div>
         </div>
       </section>
 

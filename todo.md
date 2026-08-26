@@ -135,3 +135,29 @@
 - [x] Add explicit tests that reject opening a direct-message thread with an unapproved recipient.
 - [x] Extend message validation to reject additional direct identifiers in English and Arabic, including addresses, dates of birth, medical-record numbers, and Arabic identifier phrases.
 - [ ] Resume real approved-session messaging interaction QA only if the user later requests it; explicitly deferred at the user's request.
+- [x] Add the supplied Mansoura University Neurology Center artwork to the public workflow preview and verify responsive rendering.
+- [x] Re-run validation and save a checkpoint for the preview artwork update.
+
+---
+
+## Deferred by user request
+
+- [ ] Resume real approved-session messaging interaction QA only if the user later requests it; no sign-in or credentials should be used automatically.
+
+---
+
+## Notes
+
+- The supplied artwork is a user-provided, non-patient-specific visual for preview branding. It must be referenced through project asset storage, not committed as a local project media file.
+
+---
+
+## End of current worklist
+
+- [ ] Reconcile historical duplicate QA entries only when real approved OAuth evidence becomes available.
+
+---
+
+## Current request
+
+- [x] Use the supplied Mansoura University Neurology Center image in the public preview.

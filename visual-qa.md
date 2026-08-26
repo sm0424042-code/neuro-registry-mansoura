@@ -57,3 +57,7 @@ The latest messaging validation passed TypeScript, all **16** Vitest tests, and 
 ## Deferred verification
 
 The sandbox browser does not hold an approved OAuth session, and the user explicitly asked to bypass the sign-in step and live interaction check for now. A later approved browser-session review remains required for interactive checks of all cohort selectors and messaging flows. The renderer captures and contract tests evidence implementation and layout only; they do not constitute authenticated browser verification.
+
+## Supplied preview artwork
+
+The user-supplied Mansoura University Neurology Center artwork is now hosted through the project asset storage URL and replaces the former small abstract preview hero image on `/workflow-preview`. Desktop capture shows the complete artwork in a bordered right-side hero panel beside the non-patient preview title and notice. Mobile capture shows the artwork below the title in a responsive card with its full institutional mark and a clear caption identifying it as preview branding. The public page continues to state that it contains no patient records, sample cases, identities, contact details, or live registry data. TypeScript, 16 Vitest tests, and the production build passed after integration.
