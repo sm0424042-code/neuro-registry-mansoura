@@ -3,6 +3,7 @@ import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import * as notifications from "./_core/notification";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { patientInputSchema, patientUpdateSchema, registryFiltersSchema, researchFileInputSchema, toDeidentifiedExportRow } from "./registry";
@@ -27,6 +28,11 @@ const directMessageInputSchema = z.object({
   recipientUserId: z.number().int().positive(),
   body: z.string().trim().min(1).max(1000).refine(value => !directIdentifierPattern.test(value), "Messages must not include Research IDs, patient information, contact details, national or medical-record numbers, addresses, dates of birth, or email addresses."),
 });
+
+const HOMEPAGE_IMAGE_REPORT_COOLDOWN_MS = 5 * 60 * 1000;
+const homepageImageReportTimes = new Map<number, number>();
+const HOMEPAGE_IMAGE_REPORT_TITLE = "Broken homepage image reported";
+const HOMEPAGE_IMAGE_REPORT_CONTENT = "A registered user reported that the static abstract homepage hero image could not be loaded. No patient, record, user, or clinical data was included.";
 
 export const appRouter = router({
   system: systemRouter,
@@ -68,6 +74,19 @@ export const appRouter = router({
       if (input.recipientUserId === ctx.user.id) throw new TRPCError({ code: "BAD_REQUEST", message: "You cannot send a message to yourself." });
       if (!await db.isApprovedMessageRecipient(input.recipientUserId)) throw new TRPCError({ code: "FORBIDDEN", message: "Messages are available only with approved registry users." });
       return db.sendDirectMessage(ctx.user.id, input.recipientUserId, input.body);
+    }),
+  }),
+  mediaReports: router({
+    reportBrokenHomepageHeroImage: approvedProcedure.mutation(async ({ ctx }) => {
+      const now = Date.now();
+      const lastReportedAt = homepageImageReportTimes.get(ctx.user.id);
+      if (lastReportedAt && now - lastReportedAt < HOMEPAGE_IMAGE_REPORT_COOLDOWN_MS) {
+        return { success: true, alreadyReported: true } as const;
+      }
+
+      const delivered = await notifications.notifyOwner({ title: HOMEPAGE_IMAGE_REPORT_TITLE, content: HOMEPAGE_IMAGE_REPORT_CONTENT });
+      if (delivered) homepageImageReportTimes.set(ctx.user.id, now);
+      return { success: delivered, alreadyReported: false } as const;
     }),
   }),
   administration: router({

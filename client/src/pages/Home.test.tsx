@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { canRetryHomeHeroImage, COPY_IMAGE_LINK_SUCCESS_DURATION_MS, COPY_IMAGE_LINK_TEXT, getCopyableHomeHeroMediaUrl, getCopyImageLinkButtonClass, getHomeHeroMediaSource, HomeHeroMedia, HOME_HERO_RETRY_FAILURE_LIMIT, HOME_HERO_UNAVAILABLE_TEXT, RETRY_LOADING_TEXT, RETRY_TOOLTIP_TEXT } from "./Home";
+import { BROKEN_IMAGE_REPORT_TEXT, canRetryHomeHeroImage, COPY_IMAGE_LINK_SUCCESS_DURATION_MS, COPY_IMAGE_LINK_TEXT, getCopyableHomeHeroMediaUrl, getCopyImageLinkButtonClass, getHomeHeroMediaSource, HomeHeroMedia, HOME_HERO_RETRY_FAILURE_LIMIT, HOME_HERO_UNAVAILABLE_TEXT, RETRY_LOADING_TEXT, RETRY_TOOLTIP_TEXT } from "./Home";
 
 describe("HomeHeroMedia", () => {
   it("defers the heavy homepage visual while reserving its styled visual surface", () => {
@@ -72,5 +72,15 @@ describe("HomeHeroMedia", () => {
     expect(loadingMarkup).toContain("animate-spin");
     expect(loadingMarkup).toContain("motion-reduce:animate-none");
     expect(loadingMarkup).toContain("Retrying the original image. Please wait.");
+  });
+
+  it("shows an accessible static-media report action only at the terminal fallback state", () => {
+    const idleMarkup = renderToStaticMarkup(<HomeHeroMedia initialMode="fallback" initialFailedRetryAttempts={HOME_HERO_RETRY_FAILURE_LIMIT} />);
+    const reportedMarkup = renderToStaticMarkup(<HomeHeroMedia initialMode="fallback" initialFailedRetryAttempts={HOME_HERO_RETRY_FAILURE_LIMIT} reportState="reported" />);
+
+    expect(idleMarkup).toContain(BROKEN_IMAGE_REPORT_TEXT);
+    expect(idleMarkup).toContain("Report the static homepage image problem to administration");
+    expect(reportedMarkup).toContain("Reported");
+    expect(reportedMarkup).toContain("The static image problem was reported to administration.");
   });
 });

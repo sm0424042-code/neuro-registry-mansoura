@@ -216,3 +216,5 @@
 - [x] Test timed success styling, copy feedback, and reduced-motion behavior, then save a checkpoint.
 - [x] Add an accessible loading spinner and busy state while the fallback Retry reload is in progress.
 - [x] Test spinner visibility, duplicate-click prevention, recovery, and reduced-motion behavior, then save a checkpoint.
+- [x] Add an authenticated, privacy-safe Broken image report control beside the image-link copy action.
+- [x] Verify report authorization, minimal static-media payload, user feedback, and no registry-data exposure, then save a checkpoint.

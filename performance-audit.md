@@ -104,6 +104,10 @@ After a successful copy, the Copy image link button now adopts a clear green bac
 
 When an approved user selects Retry, the control now changes to **Retrying…**, displays the template Spinner, and becomes disabled with `aria-busy="true"` until the original media either loads or fails. This prevents duplicate image requests from rapid repeat clicks. A successful load restores the original visual and resets the retry-failure count; a failed request returns to the fallback state and permits the next bounded retry when available. The Spinner animation is suppressed for reduced-motion preferences, while the text status remains. The feature is local media state only and does not interact with registry data.
 
+## Broken-image report follow-up
+
+The terminal unavailable-image overlay now offers **Report broken image** alongside Copy image link. The control is available only to an approved registry user because the page itself is protected and the dedicated `mediaReports.reportBrokenHomepageHeroImage` procedure uses the approved-user gate. It sends a fixed owner notification stating only that the static abstract homepage hero image could not be loaded; it takes no client input and includes no URL, patient, record, user, or clinical data. A per-user five-minute cooldown avoids duplicate alerts, while the UI indicates Reporting, Reported, or Report unavailable based on delivery status.
+
 ## Findings and safe next steps
 
 The feature’s direct runtime impact is low because it uses local React state and conditional markup. No code optimization was applied during this audit: changing the 220 ms interval would trade away the requested visible feedback, and the measured local interaction remains responsive.

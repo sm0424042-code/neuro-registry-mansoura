@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { trpc } from "@/lib/trpc";
-import { Activity, ArrowRight, BrainCircuit, Check, ClipboardCheck, ClipboardPlus, Copy, Eye, FileWarning, HeartPulse, Image as ImageIcon, Microscope, RotateCw, ScanLine, ShieldCheck } from "lucide-react";
+import { Activity, ArrowRight, BrainCircuit, Check, ClipboardCheck, ClipboardPlus, Copy, Eye, FileWarning, Flag, HeartPulse, Image as ImageIcon, Microscope, RotateCw, ScanLine, ShieldCheck } from "lucide-react";
 import { useLocation } from "wouter";
 
 const cohorts = [
@@ -24,8 +24,20 @@ const fallbackBrainVisual = `data:image/svg+xml;charset=UTF-8,${encodeURICompone
 export default function Home() {
   const [, navigate] = useLocation();
   const { data, isLoading, error } = trpc.registry.overview.useQuery();
+  const brokenImageReport = trpc.mediaReports.reportBrokenHomepageHeroImage.useMutation();
+  const [brokenImageReportState, setBrokenImageReportState] = React.useState<HomeHeroReportState>("idle");
   const number = (kind: "complete" | "incomplete" | "needs_review") => data?.byCompleteness.find(row => row.status === kind)?.total ?? 0;
   const coverage = data?.investigationCoverage;
+  const reportBrokenImage = async () => {
+    if (brokenImageReportState === "reporting" || brokenImageReportState === "reported") return;
+    setBrokenImageReportState("reporting");
+    try {
+      const result = await brokenImageReport.mutateAsync();
+      setBrokenImageReportState(result.success ? "reported" : "unavailable");
+    } catch {
+      setBrokenImageReportState("unavailable");
+    }
+  };
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 fade-rise">
@@ -41,7 +53,7 @@ export default function Home() {
             <p className="mt-6 flex items-center gap-2 text-xs text-[#a9c7c1]"><ShieldCheck className="h-3.5 w-3.5" />Pseudonymised research data only · no direct identifiers</p>
           </div>
           <div className="relative min-h-[250px] border-t border-[#2d383a] bg-[#020303] lg:min-h-0 lg:border-l lg:border-t-0">
-            <HomeHeroMedia />
+            <HomeHeroMedia onReportBrokenImage={reportBrokenImage} reportState={brokenImageReportState} />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,6,7,0.88)_0%,rgba(5,6,7,0.16)_52%,rgba(5,6,7,0.5)_100%)]" />
             <NeuralNetworkOverlay />
             <div className="absolute inset-x-5 bottom-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#536366] bg-[#080b0c]/85 px-4 py-3 shadow-2xl backdrop-blur-sm"><div className="flex items-center gap-3"><span className="grid h-8 w-8 place-items-center rounded-lg bg-[#b8eee2]/10 text-[#b8eee2]"><ImageIcon className="h-4 w-4" /></span><div><p className="text-[10px] font-bold tracking-[0.14em] text-[#b8eee2]">NEURAL NETWORK CONTEXT</p><p className="mt-0.5 text-xs text-[#d2dddb]">Abstract visual — no patient image</p></div></div><span className="rounded-full border border-[#536366] bg-[#111719] px-2.5 py-1 text-[10px] font-medium text-[#e4efed]">NEUROLOGY</span></div>
@@ -60,12 +72,14 @@ export default function Home() {
 
 function Metric({ icon: Icon, label, value, loading, tone }: { icon: typeof Activity; label: string; value: number; loading: boolean; tone: "teal" | "blue" | "amber" | "green" }) { const colors = { teal: "bg-[#e9f7f3] text-[#257161]", blue: "bg-[#eef3fa] text-[#3f668f]", amber: "bg-[#fff4e8] text-[#a96735]", green: "bg-[#eef7eb] text-[#597c50]" }; return <Card className="border-[#e1e9e5] shadow-sm"><CardContent className="p-5"><div className="flex items-start justify-between"><div><p className="text-xs font-medium text-slate-500">{label}</p>{loading ? <Skeleton className="mt-3 h-8 w-20" /> : <p className="mt-2 text-2xl font-semibold tracking-tight text-[#1d333f]">{value}</p>}</div><span className={`grid h-10 w-10 place-items-center rounded-xl ${colors[tone]}`}><Icon className="h-5 w-5" /></span></div></CardContent></Card>; }
 export type HomeHeroMediaMode = "original" | "fallback";
+export type HomeHeroReportState = "idle" | "reporting" | "reported" | "unavailable";
 export const HOME_HERO_RETRY_FAILURE_LIMIT = 3;
 export const RETRY_TOOLTIP_TEXT = "Try loading the original image again";
 export const HOME_HERO_UNAVAILABLE_TEXT = "Image unavailable. The fallback visual remains available.";
 export const COPY_IMAGE_LINK_TEXT = "Copy image link";
 export const COPY_IMAGE_LINK_SUCCESS_DURATION_MS = 2200;
 export const RETRY_LOADING_TEXT = "Retrying…";
+export const BROKEN_IMAGE_REPORT_TEXT = "Report broken image";
 export function getHomeHeroMediaSource(mode: HomeHeroMediaMode, retryAttempt = 0) {
   if (mode === "fallback") return fallbackBrainVisual;
   return retryAttempt > 0 ? `${brainVisual}?retry=${retryAttempt}` : brainVisual;
@@ -80,7 +94,7 @@ export function getCopyImageLinkButtonClass(hasCopied: boolean) {
   return `pointer-events-auto mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold text-[#e4fbf5] transition-[background-color,border-color,box-shadow] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8eee2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061923] active:scale-[0.97] motion-reduce:transition-none ${hasCopied ? "border-[#b7f3cc] bg-[#237a49] shadow-[0_0_0_3px_rgba(114,220,152,0.18)]" : "border-[#9be4d5]/65 bg-[#123c44]/90 hover:bg-[#1b5860]"}`;
 }
 
-export function HomeHeroMedia({ initialMode = "original", initialFailedRetryAttempts = 0, initialIsRetryLoading = false }: { initialMode?: HomeHeroMediaMode; initialFailedRetryAttempts?: number; initialIsRetryLoading?: boolean }) {
+export function HomeHeroMedia({ initialMode = "original", initialFailedRetryAttempts = 0, initialIsRetryLoading = false, onReportBrokenImage = () => undefined, reportState = "idle" }: { initialMode?: HomeHeroMediaMode; initialFailedRetryAttempts?: number; initialIsRetryLoading?: boolean; onReportBrokenImage?: () => void; reportState?: HomeHeroReportState }) {
   const [mode, setMode] = React.useState<HomeHeroMediaMode>(initialMode);
   const [retryAttempt, setRetryAttempt] = React.useState(0);
   const [failedRetryAttempts, setFailedRetryAttempts] = React.useState(initialFailedRetryAttempts);
@@ -168,11 +182,17 @@ export function HomeHeroMedia({ initialMode = "original", initialFailedRetryAtte
             <div className="unavailable-overlay-enter pointer-events-none absolute inset-0 z-20 grid place-items-center bg-[#020c0e]/65 px-6 text-center backdrop-blur-sm" role="status" aria-live="polite">
               <div className="max-w-sm rounded-xl border border-[#d0ece5]/45 bg-[#061923]/75 px-4 py-3 text-sm font-medium leading-6 text-[#e4fbf5] shadow-xl">
                 <p>{HOME_HERO_UNAVAILABLE_TEXT}</p>
-                <button type="button" onClick={copyFailedImageLink} aria-label="Copy the original image link to open in a new tab" className={getCopyImageLinkButtonClass(hasCopiedImageLink)}>
-                  {hasCopiedImageLink ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {hasCopiedImageLink ? "Link copied" : COPY_IMAGE_LINK_TEXT}
-                </button>
-                <span className="sr-only" aria-live="polite">{hasCopiedImageLink ? "Original image link copied. You can open it in a new tab." : "Copy the original image link to try opening it in a new tab."}</span>
+                <div className="mt-3 flex flex-wrap justify-center gap-2">
+                  <button type="button" onClick={copyFailedImageLink} aria-label="Copy the original image link to open in a new tab" className={getCopyImageLinkButtonClass(hasCopiedImageLink)}>
+                    {hasCopiedImageLink ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {hasCopiedImageLink ? "Link copied" : COPY_IMAGE_LINK_TEXT}
+                  </button>
+                  <button type="button" onClick={onReportBrokenImage} disabled={reportState === "reporting" || reportState === "reported"} aria-busy={reportState === "reporting"} aria-label="Report the static homepage image problem to administration" className="pointer-events-auto mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-amber-200/65 bg-amber-950/65 px-3 text-xs font-semibold text-amber-50 transition-colors hover:bg-amber-900/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-100 focus-visible:ring-offset-2 focus-visible:ring-offset-[#061923] disabled:cursor-wait disabled:opacity-90 motion-reduce:transition-none">
+                    {reportState === "reporting" ? <Spinner className="h-3.5 w-3.5 text-amber-100 motion-reduce:animate-none" aria-hidden="true" /> : <Flag className="h-3.5 w-3.5" />}
+                    {reportState === "reporting" ? "Reporting…" : reportState === "reported" ? "Reported" : reportState === "unavailable" ? "Report unavailable" : BROKEN_IMAGE_REPORT_TEXT}
+                  </button>
+                </div>
+                <span className="sr-only" aria-live="polite">{hasCopiedImageLink ? "Original image link copied. You can open it in a new tab." : "Copy the original image link to try opening it in a new tab."} {reportState === "reporting" ? "Reporting the static image problem to administration." : reportState === "reported" ? "The static image problem was reported to administration." : reportState === "unavailable" ? "The report could not be delivered. You may try again." : ""}</span>
               </div>
             </div>
           )}

@@ -163,3 +163,7 @@ After a successful copy, the Overlay’s copy-link button uses a green confirmat
 ## Retry loading indicator
 
 Selecting Retry now puts the control into a busy state: a small Spinner replaces the reload icon, the label becomes **Retrying…**, the button is disabled, and an accessible status announces **Retrying the original image. Please wait.** The spinner is motion-reduced when that preference is set. The image retry exits this state on both load and error, retaining the existing fallback and three-failure limit. Static coverage verifies the busy text, disabled state, `aria-busy`, spinner class, reduced-motion suppression, and status message.
+
+## Broken-image report control
+
+At the terminal fallback state, the Overlay now presents **Report broken image** beside Copy image link. The report button uses a separate amber treatment, exposes a descriptive accessible name, and reports Reporting, Reported, or Report unavailable without accepting user-entered text. Its protected server action requires an approved user and sends a fixed notification to the project owner: it identifies only the static abstract homepage media issue. Router coverage verifies pending users are blocked, approved users trigger the fixed notification, and a second report within the five-minute cooldown does not create a duplicate notification. No patient, record, user, or clinical content is transmitted.
