@@ -100,6 +100,10 @@ At the terminal unavailable-image state, the overlay now includes a compact **Co
 
 After a successful copy, the Copy image link button now adopts a clear green background, border, and subtle confirmation ring for **2.2 seconds** before returning to its standard teal state. Repeated successful copies reset the timer, and the timer is cleared if the component unmounts or a new media error occurs. The confirmation retains the text-and-icon change to **Link copied**, while nonessential colour transitions are disabled for reduced-motion users. This is entirely local UI state and does not change the copied URL or data boundary.
 
+## Retry loading indicator follow-up
+
+When an approved user selects Retry, the control now changes to **Retrying…**, displays the template Spinner, and becomes disabled with `aria-busy="true"` until the original media either loads or fails. This prevents duplicate image requests from rapid repeat clicks. A successful load restores the original visual and resets the retry-failure count; a failed request returns to the fallback state and permits the next bounded retry when available. The Spinner animation is suppressed for reduced-motion preferences, while the text status remains. The feature is local media state only and does not interact with registry data.
+
 ## Findings and safe next steps
 
 The feature’s direct runtime impact is low because it uses local React state and conditional markup. No code optimization was applied during this audit: changing the 220 ms interval would trade away the requested visible feedback, and the measured local interaction remains responsive.

@@ -214,3 +214,5 @@
 - [x] Test copy-link feedback, overlay accessibility, and privacy-safe URL handling, then save a checkpoint.
 - [x] Add a brief green success confirmation state to the overlay Copy image link button after copying.
 - [x] Test timed success styling, copy feedback, and reduced-motion behavior, then save a checkpoint.
+- [x] Add an accessible loading spinner and busy state while the fallback Retry reload is in progress.
+- [x] Test spinner visibility, duplicate-click prevention, recovery, and reduced-motion behavior, then save a checkpoint.

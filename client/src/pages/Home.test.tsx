@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { canRetryHomeHeroImage, COPY_IMAGE_LINK_SUCCESS_DURATION_MS, COPY_IMAGE_LINK_TEXT, getCopyableHomeHeroMediaUrl, getCopyImageLinkButtonClass, getHomeHeroMediaSource, HomeHeroMedia, HOME_HERO_RETRY_FAILURE_LIMIT, HOME_HERO_UNAVAILABLE_TEXT, RETRY_TOOLTIP_TEXT } from "./Home";
+import { canRetryHomeHeroImage, COPY_IMAGE_LINK_SUCCESS_DURATION_MS, COPY_IMAGE_LINK_TEXT, getCopyableHomeHeroMediaUrl, getCopyImageLinkButtonClass, getHomeHeroMediaSource, HomeHeroMedia, HOME_HERO_RETRY_FAILURE_LIMIT, HOME_HERO_UNAVAILABLE_TEXT, RETRY_LOADING_TEXT, RETRY_TOOLTIP_TEXT } from "./Home";
 
 describe("HomeHeroMedia", () => {
   it("defers the heavy homepage visual while reserving its styled visual surface", () => {
@@ -60,5 +60,17 @@ describe("HomeHeroMedia", () => {
     expect(getCopyImageLinkButtonClass(true)).toContain("bg-[#237a49]");
     expect(getCopyImageLinkButtonClass(true)).toContain("border-[#b7f3cc]");
     expect(getCopyImageLinkButtonClass(true)).toContain("motion-reduce:transition-none");
+  });
+
+  it("shows a busy retry spinner and prevents duplicate clicks while the original image reloads", () => {
+    const loadingMarkup = renderToStaticMarkup(<HomeHeroMedia initialMode="fallback" initialIsRetryLoading />);
+
+    expect(RETRY_LOADING_TEXT).toBe("Retrying…");
+    expect(loadingMarkup).toContain("Retrying…");
+    expect(loadingMarkup).toContain('disabled=""');
+    expect(loadingMarkup).toContain('aria-busy="true"');
+    expect(loadingMarkup).toContain("animate-spin");
+    expect(loadingMarkup).toContain("motion-reduce:animate-none");
+    expect(loadingMarkup).toContain("Retrying the original image. Please wait.");
   });
 });

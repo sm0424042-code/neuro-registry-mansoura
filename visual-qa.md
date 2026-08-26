@@ -159,3 +159,7 @@ At the Retry limit, the terminal Overlay now exposes a small **Copy image link**
 ## Copied-link green confirmation
 
 After a successful copy, the Overlay’s copy-link button uses a green confirmation background and border for 2.2 seconds before returning to its default teal appearance. Repeated copies reset the interval, and the component cleans up the timer on unmount or a subsequent image error. Static coverage verifies the default and green class sets, duration, and reduced-motion transition suppression; only the non-patient static image URL is involved.
+
+## Retry loading indicator
+
+Selecting Retry now puts the control into a busy state: a small Spinner replaces the reload icon, the label becomes **Retrying…**, the button is disabled, and an accessible status announces **Retrying the original image. Please wait.** The spinner is motion-reduced when that preference is set. The image retry exits this state on both load and error, retaining the existing fallback and three-failure limit. Static coverage verifies the busy text, disabled state, `aria-busy`, spinner class, reduced-motion suppression, and status message.
