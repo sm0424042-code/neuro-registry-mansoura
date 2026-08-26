@@ -161,3 +161,7 @@
 ## Current request
 
 - [x] Use the supplied Mansoura University Neurology Center image in the public preview.
+- [x] Improve the mobile public-preview artwork card with accessible smooth transitions and touch-friendly interaction.
+- [x] Re-run validation, verify mobile and desktop preview behavior, and save a checkpoint for the interaction update.
+- [x] Improve the mobile public-preview artwork card with smooth, reduced-motion-safe transitions and touch-friendly behavior.
+- [x] Re-run validation, verify the mobile and desktop preview, and save a checkpoint for the interaction update.

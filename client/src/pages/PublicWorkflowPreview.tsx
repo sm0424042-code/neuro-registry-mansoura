@@ -41,9 +41,9 @@ export default function PublicWorkflowPreview() {
             <h1 className="mt-7 max-w-3xl font-display text-3xl leading-tight md:text-5xl">Mansoura University Neurology Research Registry</h1>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">A view of the new clinical workflow structure. This page contains no patient records, sample cases, identities, contact details, or live registry data.</p>
           </div>
-          <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-[#061323] shadow-2xl shadow-black/30">
-            <img src={brainVisual} alt="Mansoura University Neurology Center brain and neural-network artwork" className="h-full min-h-[210px] w-full object-cover" />
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#061323] via-[#061323]/70 to-transparent px-5 pb-4 pt-12"><p className="text-[10px] font-bold tracking-[0.16em] text-[#bcefe3]">MANSOURA UNIVERSITY · NEUROLOGY CENTER</p><p className="mt-1 text-xs text-slate-200">Brand artwork supplied for this non-patient preview</p></div>
+          <div className="group relative touch-pan-y select-none overflow-hidden rounded-2xl border border-white/15 bg-[#061323] shadow-2xl shadow-black/30 transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_22px_50px_rgba(3,13,28,0.42)] active:translate-y-0 active:scale-[0.99] motion-reduce:transition-none">
+            <img alt="Mansoura University Neurology Center brain and neural-network artwork" src={brainVisual} className="h-full min-h-[210px] w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] motion-reduce:transition-none" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#061323] via-[#061323]/70 to-transparent px-5 pb-4 pt-12"><p className="text-[10px] font-bold tracking-[0.16em] text-[#bcefe3]">MANSOURA UNIVERSITY · NEUROLOGY CENTER</p><p className="mt-1 text-xs text-slate-200">Brand artwork supplied for this non-patient preview · touch to explore</p></div>
           </div>
         </div>
       </section>
