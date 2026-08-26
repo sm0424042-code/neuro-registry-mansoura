@@ -40,7 +40,7 @@ The restarted CIDP-selected editor preview at `/records/new?cohort=cidp` visibly
 
 The restarted Access Management view visibly renders the named manual approver, the manual approve/suspend table action, and the three-stage secure sign-in, applicant-details, and manual-decision flow. The governance reminder explicitly excludes passwords, national ID numbers, patient identifiers, and contact details from approval notes.
 
-The protected `/messages` route was captured through the project renderer, but the capture settled on the authenticated dashboard loading shell rather than reliably proving the final Messages workspace. A normal browser session shows the authorised-access gate because it has no approved OAuth session. No artificial colleague or message was created merely for visual proof. Therefore recipient selection, sending, polling, final empty-recipient rendering, and final-screen layout remain unverified in a real approved-user session.
+The normal sandbox browser shows the authorised-access gate at `/messages` because it has no approved OAuth session. The project renderer now visibly captures the protected Messages workspace layout: the approved-colleagues column gives an explicit **Checking approved colleagues…** loading status instead of unexplained placeholders; the empty conversation panel, disabled composer, and identifier-exclusion warning are visible. This is renderer-level layout evidence only. No artificial colleague or message was created, and recipient selection, sending, polling, and final empty-recipient rendering remain unverified in a real approved-user session.
 
 The public `/workflow-preview` page was opened in the live browser after the messaging update. It visibly presents a **Direct work conversations, separate from records** panel and a **How the protected chat works** panel without displaying any user, message, record, or identifier. The rendered text confirms that recipients must be approved users; messages have no patient, Research ID, file, or clinical-record link; and the application blocks MUNR IDs plus patient-name, phone-number, and national-ID references. The page also presents the complete manual warning that report text and clinical record details must remain out of messages.
 
@@ -49,6 +49,8 @@ The browser was scrolled to the full messaging panels. The two panels remain leg
 The project preview renderer captured desktop layouts for `/records/new` and `/`, visibly showing the active **Stroke** pathway, the history / examination / discharge-treatment card, the brain-imaging overview visual, and the clinical workflow board. These renderer captures are useful layout evidence but are not treated as a replacement for a real browser-session authentication check.
 
 The code-level update was validated with TypeScript, Vitest, and a production build. The unprotected server startup and the protected access gate both loaded after the latest clinical workflow changes.
+
+The latest messaging validation passed TypeScript, all **15** Vitest tests, and the production build. The test suite now explicitly proves that an approved user cannot read a direct-message thread for a recipient who is no longer approved, and that the database thread reader is not invoked for that rejected request.
 
 ## Deferred verification
 

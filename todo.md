@@ -126,8 +126,10 @@
 - [x] Add approved-user direct messaging with database-backed conversations, strict participant authorization, and a patient-data exclusion notice.
 - [ ] Add message authorization and privacy-boundary tests, visible messaging QA, and a release checkpoint.
 - [x] Add explicit message tests for unapproved-recipient rejection and blocked patient-name, phone-number, and national-ID references.
-- [ ] Capture and document final `/messages` workspace layout evidence, distinguishing renderer-only evidence from unauthenticated browser results.
+- [x] Capture and document final `/messages` workspace layout evidence, distinguishing renderer-only evidence from unauthenticated browser results.
 - [ ] Verify recipient selection, message send/polling, and final empty-recipient state in a real approved browser session without using patient data.
 - [x] Save a checkpoint after the messaging feature passes all checks and tests.
 - [x] Add a public, non-patient messaging workflow demonstration so the messaging safeguards are visibly inspectable without sign-in.
 - [x] Save an updated checkpoint containing the public messaging workflow demonstration and completed validation.
+- [x] Improve the Messages recipient loading and error states so no approved user or message needs to be fabricated for interface verification.
+- [x] Add explicit tests that reject opening a direct-message thread with an unapproved recipient.
