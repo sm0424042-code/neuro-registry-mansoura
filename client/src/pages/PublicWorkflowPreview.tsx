@@ -45,7 +45,7 @@ export default function PublicWorkflowPreview() {
         <section className="grid gap-4 md:grid-cols-[1.15fr_0.85fr]">
           <Card className="border-[#d5e8e3] bg-[#eff9f6]"><CardContent className="p-6">
             <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-[#d8f0e9] text-[#26736a]"><ClipboardCheck className="h-5 w-5" /></span><div><p className="text-[10px] font-bold tracking-[0.14em] text-[#3a7a72]">WHAT WAS ADDED</p><h2 className="font-display text-2xl text-[#1e444c]">Cohort-specific clinical capture</h2></div></div>
-            <p className="mt-5 text-sm leading-6 text-[#4b6b6e]">Generic evaluation fields have been replaced with pathways that expose only the relevant clinical, investigation, treatment, and follow-up fields for the selected neurology cohort.</p>
+            <p className="mt-5 text-sm leading-6 text-[#4b6b6e]">There is no standard evaluation checklist shared across diseases. Each pathway exposes only its own relevant clinical, investigation, treatment, and follow-up fields for the selected neurology cohort.</p>
             <div className="mt-5 flex flex-wrap gap-2"><Badge className="bg-white text-[#28736a] hover:bg-white">8 neurology cohorts</Badge><Badge className="bg-white text-[#28736a] hover:bg-white">No direct identifiers</Badge><Badge className="bg-white text-[#28736a] hover:bg-white">Protected records</Badge></div>
           </CardContent></Card>
           <Card className="border-[#dce8e4]"><CardContent className="p-6">

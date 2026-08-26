@@ -30,6 +30,10 @@ The public workflow demonstration was updated and verified at desktop and mobile
 
 The project preview renderer for `/records/new` visibly rendered the Stroke-specific **Stroke evaluation items** card underneath the standard Stroke fields. It contains five separately labelled controls—NIHSS, mRS, TOAST aetiology, dysphagia screen, and functional outcome—each with a status selector and optional research-safe recorded-value field. This renderer capture is layout evidence; interactive browser-session verification remains deferred.
 
+After the disease-exclusive refinement, the Stroke editor renderer was recaptured. The card now uses exclusively prefixed Stroke items—Stroke NIHSS, Stroke modified Rankin Scale, Stroke TOAST aetiology, Stroke dysphagia screen, and Stroke functional outcome—so no generic scale labels appear as a shared cross-cohort checklist.
+
+The public workflow desktop view now explicitly states: **“There is no standard evaluation checklist shared across diseases.”** The message is fully visible next to the research-safe record flow and reinforces that the displayed eight-cohort pathways are disease-specific.
+
 The project preview renderer captured desktop layouts for `/records/new` and `/`, visibly showing the active **Stroke** pathway, the history / examination / discharge-treatment card, the brain-imaging overview visual, and the clinical workflow board. These renderer captures are useful layout evidence but are not treated as a replacement for a real browser-session authentication check.
 
 The code-level update was validated with TypeScript, Vitest, and a production build. The unprotected server startup and the protected access gate both loaded after the latest clinical workflow changes.
