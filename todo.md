@@ -113,3 +113,4 @@
 - [ ] Perform protected-screen visual verification after the user later chooses to sign in; explicitly deferred for this release.
 - [ ] After a future approved OAuth sign-in, verify Stroke, MS, CIDP, and Neuro-ophthalmology cohort controls interactively in `/records/new`, then correct the visual QA record.
 - [x] Add a non-sensitive public summary of the latest clinical workflow additions to the protected access gate.
+- [x] Add a static public workflow demonstration that shows no patient data and does not require sign-in.
