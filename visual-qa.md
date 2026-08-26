@@ -127,3 +127,7 @@ The protected overview hero now marks its abstract brain visual for native lazy 
 ## Homepage hero fallback image
 
 If the protected overview’s original abstract brain image fails, the media component replaces it once with an embedded neural-network SVG fallback. It stays within the same hero frame and uses the accessible text **Abstract neural-network fallback visual — no patient image**. The unit test verifies both source replacement and the guard that prevents a repeated fallback error loop. The fallback is a static abstract illustration and contains no patient, user, record, or clinical content.
+
+## Homepage hero fallback retry
+
+When fallback state is active, the hero now exposes a small **Retry** button above the visual. It has the accessible label **Retry loading the original neural-network image** and a polite status message that explains the fallback state. Selecting Retry restores a fresh original-image URL with a retry marker; a repeated media error returns to the abstract fallback. Static tests prove the normal state has no Retry control while fallback state exposes the control and non-patient fallback description.

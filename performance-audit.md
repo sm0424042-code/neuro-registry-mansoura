@@ -66,6 +66,12 @@ If the original overview visual fails to load, its error handler now replaces it
 
 The Home route chunk increased from **5.85 KB gzip** to **6.67 KB gzip** after including the fallback illustration, a bounded **0.82 KB gzip** resilience cost that removes any fallback-network dependency. Unit coverage verifies the first failure replaces the source with the embedded SVG, retains the fallback after a repeated error call, and changes the alt text to the non-patient fallback description.
 
+## Fallback retry follow-up
+
+When the fallback is visible, a compact **Retry** button is positioned over the hero media. It is a semantic button with a descriptive accessible name and polite status text explaining that the original image is unavailable. Selecting it restores the original media source with an incremented `retry` query value, allowing the browser to make a fresh request instead of reusing a failed URL. A further failure returns to the embedded fallback; no protected record or API data is part of this cycle.
+
+The Home route chunk is now **7.11 KB gzip**. The incremental retry control remains route-local and is not downloaded by the public workflow preview. Unit tests cover fallback-source selection, fresh retry URL selection, the absence of the Retry control during a normal image load, and its accessible presence when fallback state is active.
+
 ## Findings and safe next steps
 
 The feature’s direct runtime impact is low because it uses local React state and conditional markup. No code optimization was applied during this audit: changing the 220 ms interval would trade away the requested visible feedback, and the measured local interaction remains responsive.

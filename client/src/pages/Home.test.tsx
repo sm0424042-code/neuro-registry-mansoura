@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { applyHomeHeroFallback, HomeHeroMedia } from "./Home";
+import { getHomeHeroMediaSource, HomeHeroMedia } from "./Home";
 
 describe("HomeHeroMedia", () => {
   it("defers the heavy homepage visual while reserving its styled visual surface", () => {
@@ -12,15 +12,19 @@ describe("HomeHeroMedia", () => {
     expect(markup).toContain("absolute inset-0 h-full w-full object-cover");
   });
 
-  it("replaces a failed original image with the embedded privacy-safe fallback once", () => {
-    const image = { src: "https://example.invalid/original.png", alt: "Original visual", dataset: {} } as Pick<HTMLImageElement, "src" | "alt" | "dataset">;
-    applyHomeHeroFallback(image);
-    const fallbackSrc = image.src;
-    applyHomeHeroFallback(image);
+  it("uses the embedded fallback and makes retry request a fresh original-image URL", () => {
+    expect(getHomeHeroMediaSource("fallback")).toMatch(/^data:image\/svg\+xml/);
+    expect(getHomeHeroMediaSource("original", 0)).toContain("mansoura-brain-imaging-overview");
+    expect(getHomeHeroMediaSource("original", 2)).toContain("?retry=2");
+  });
 
-    expect(image.dataset.fallbackApplied).toBe("true");
-    expect(fallbackSrc).toMatch(/^data:image\/svg\+xml/);
-    expect(image.src).toBe(fallbackSrc);
-    expect(image.alt).toBe("Abstract neural-network fallback visual — no patient image");
+  it("shows an accessible retry control only in the fallback state", () => {
+    const originalMarkup = renderToStaticMarkup(<HomeHeroMedia />);
+    const fallbackMarkup = renderToStaticMarkup(<HomeHeroMedia initialMode="fallback" />);
+
+    expect(originalMarkup).not.toContain("Retry loading the original neural-network image");
+    expect(fallbackMarkup).toContain("Retry loading the original neural-network image");
+    expect(fallbackMarkup).toContain("Original image unavailable. A fallback visual is shown.");
+    expect(fallbackMarkup).toContain("Abstract neural-network fallback visual — no patient image");
   });
 });

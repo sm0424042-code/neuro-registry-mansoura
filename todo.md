@@ -198,3 +198,5 @@
 - [x] Measure deferred-media behavior and verify responsive homepage rendering, then save a checkpoint.
 - [x] Add a privacy-safe automatic fallback visual for failed homepage media loads.
 - [x] Test fallback rendering, accessibility, and protected data boundaries, then save a checkpoint.
+- [x] Add an accessible Retry control over the homepage fallback image to reload the original media.
+- [x] Test retry, repeated failure fallback, and protected data boundaries, then save a checkpoint.
