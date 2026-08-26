@@ -1,6 +1,7 @@
 import { and, asc, count, desc, eq, gte, like, lte, type SQL } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, patientRecords, registryAuditLogs, users } from "../drizzle/schema";
+import { and as sqlAnd, or as sqlOr } from "drizzle-orm";
+import { InsertUser, patientRecords, registryAuditLogs, userMessages, users } from "../drizzle/schema";
 import type { CohortClinicalData, ImmuneTherapy, LaboratoryInvestigation, MultipleSclerosisDoseAdherence, NeurologicalInvestigation, PatientFollowUp, ProtocolInvestigation, RadiologicalInvestigation, ResearchFile } from "../drizzle/schema";
 import { storageGetSignedUrl, storagePut } from "./storage";
 import { ENV } from "./_core/env";
@@ -174,4 +175,35 @@ export async function listResearchFiles(patientRecordId: number) {
 export async function logAccessChange(actorUserId: number, targetUserId: number, accessStatus: string) {
   const db = requireDb(await getDb());
   await db.insert(registryAuditLogs).values({ actorUserId, action: "access_changed", fieldSummary: `Access status for user ${targetUserId} changed to ${accessStatus}` });
+}
+
+async function requireApprovedMessageRecipient(db: any, recipientUserId: number) {
+  const recipient = await db.select({ id: users.id, accessStatus: users.accessStatus }).from(users).where(eq(users.id, recipientUserId)).limit(1);
+  if (!recipient[0] || recipient[0].accessStatus !== "approved") throw new Error("Messages can be sent only to approved registry users.");
+}
+
+export async function isApprovedMessageRecipient(recipientUserId: number) {
+  const db = requireDb(await getDb());
+  const recipient = await db.select({ id: users.id, accessStatus: users.accessStatus }).from(users).where(eq(users.id, recipientUserId)).limit(1);
+  return Boolean(recipient[0] && recipient[0].accessStatus === "approved");
+}
+
+export async function listApprovedMessageRecipients(actorUserId: number) {
+  const db = requireDb(await getDb());
+  const recipients = await db.select({ id: users.id, name: users.name, email: users.email, role: users.role }).from(users).where(eq(users.accessStatus, "approved")).orderBy(users.name);
+  return recipients.filter(recipient => recipient.id !== actorUserId);
+}
+
+export async function listDirectMessages(actorUserId: number, recipientUserId: number) {
+  const db = requireDb(await getDb());
+  await requireApprovedMessageRecipient(db, recipientUserId);
+  return db.select({ id: userMessages.id, senderUserId: userMessages.senderUserId, recipientUserId: userMessages.recipientUserId, body: userMessages.body, createdAt: userMessages.createdAt, senderName: users.name }).from(userMessages).leftJoin(users, eq(userMessages.senderUserId, users.id)).where(sqlOr(sqlAnd(eq(userMessages.senderUserId, actorUserId), eq(userMessages.recipientUserId, recipientUserId)), sqlAnd(eq(userMessages.senderUserId, recipientUserId), eq(userMessages.recipientUserId, actorUserId)))).orderBy(userMessages.createdAt);
+}
+
+export async function sendDirectMessage(senderUserId: number, recipientUserId: number, body: string) {
+  const db = requireDb(await getDb());
+  await requireApprovedMessageRecipient(db, recipientUserId);
+  await db.insert(userMessages).values({ senderUserId, recipientUserId, body });
+  const created = await db.select().from(userMessages).where(sqlAnd(eq(userMessages.senderUserId, senderUserId), eq(userMessages.recipientUserId, recipientUserId), eq(userMessages.body, body))).orderBy(desc(userMessages.createdAt)).limit(1);
+  return created[0];
 }

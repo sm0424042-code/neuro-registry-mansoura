@@ -1,4 +1,4 @@
-import { int, json, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { index, int, json, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 export type ImmuneTherapy = {
   therapyClass: "corticosteroid" | "ivig" | "scig" | "plasma_exchange" | "b_cell_depleting" | "immunosuppressant" | "biologic" | "other";
@@ -155,7 +155,12 @@ export const patientRecords = mysqlTable("patient_records", {
 });
 
 export const registryAuditLogs = mysqlTable("registry_audit_logs", { id: int("id").autoincrement().primaryKey(), patientRecordId: int("patientRecordId"), actorUserId: int("actorUserId").notNull(), action: mysqlEnum("action", ["created", "updated", "exported", "access_changed"]).notNull(), fieldSummary: varchar("fieldSummary", { length: 500 }).notNull(), occurredAt: timestamp("occurredAt").defaultNow().notNull() });
+export const userMessages = mysqlTable("user_messages", { id: int("id").autoincrement().primaryKey(), senderUserId: int("senderUserId").notNull(), recipientUserId: int("recipientUserId").notNull(), body: text("body").notNull(), createdAt: timestamp("createdAt").defaultNow().notNull() }, table => [
+  index("user_messages_sender_recipient_created_idx").on(table.senderUserId, table.recipientUserId, table.createdAt),
+  index("user_messages_recipient_sender_created_idx").on(table.recipientUserId, table.senderUserId, table.createdAt),
+]);
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type PatientRecord = typeof patientRecords.$inferSelect;
 export type InsertPatientRecord = typeof patientRecords.$inferInsert;
+export type UserMessage = typeof userMessages.$inferSelect;

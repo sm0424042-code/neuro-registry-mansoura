@@ -1,0 +1,2 @@
+CREATE INDEX `user_messages_sender_recipient_created_idx` ON `user_messages` (`senderUserId`,`recipientUserId`,`createdAt`);--> statement-breakpoint
+CREATE INDEX `user_messages_recipient_sender_created_idx` ON `user_messages` (`recipientUserId`,`senderUserId`,`createdAt`);

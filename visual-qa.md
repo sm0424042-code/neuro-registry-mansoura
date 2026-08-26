@@ -40,6 +40,8 @@ The restarted CIDP-selected editor preview at `/records/new?cohort=cidp` visibly
 
 The restarted Access Management view visibly renders the named manual approver, the manual approve/suspend table action, and the three-stage secure sign-in, applicant-details, and manual-decision flow. The governance reminder explicitly excludes passwords, national ID numbers, patient identifiers, and contact details from approval notes.
 
+The protected `/messages` route was captured through the project renderer, but the capture settled on the authenticated dashboard loading shell rather than reliably proving the final Messages workspace. A normal browser session shows the authorised-access gate because it has no approved OAuth session. No artificial colleague or message was created merely for visual proof. Therefore recipient selection, sending, polling, final empty-recipient rendering, and final-screen layout remain unverified in a real approved-user session.
+
 The project preview renderer captured desktop layouts for `/records/new` and `/`, visibly showing the active **Stroke** pathway, the history / examination / discharge-treatment card, the brain-imaging overview visual, and the clinical workflow board. These renderer captures are useful layout evidence but are not treated as a replacement for a real browser-session authentication check.
 
 The code-level update was validated with TypeScript, Vitest, and a production build. The unprotected server startup and the protected access gate both loaded after the latest clinical workflow changes.

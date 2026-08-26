@@ -21,6 +21,11 @@ const adminProcedure = approvedProcedure.use(({ ctx, next }) => {
   return next({ ctx });
 });
 
+const directMessageInputSchema = z.object({
+  recipientUserId: z.number().int().positive(),
+  body: z.string().trim().min(1).max(1000).refine(value => !/\b(MUNR-[A-Z0-9]{4,16}|national\s*id|patient\s*(?:name|phone|mobile)|phone\s*number|mobile\s*number)\b/i.test(value), "Messages must not include research IDs, national IDs, patient names, or phone numbers."),
+});
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -48,6 +53,19 @@ export const appRouter = router({
       const content = Buffer.from(input.contentBase64, "base64");
       if (content.byteLength !== input.sizeBytes) throw new TRPCError({ code: "BAD_REQUEST", message: "The uploaded file size could not be verified." });
       return db.appendResearchFile(input.patientRecordId, ctx.user.id, { fileName: input.fileName, mimeType: input.mimeType, sizeBytes: input.sizeBytes, category: input.category, content });
+    }),
+  }),
+  messages: router({
+    recipients: approvedProcedure.query(({ ctx }) => db.listApprovedMessageRecipients(ctx.user.id)),
+    thread: approvedProcedure.input(z.object({ recipientUserId: z.number().int().positive() })).query(async ({ input, ctx }) => {
+      if (input.recipientUserId === ctx.user.id) throw new TRPCError({ code: "BAD_REQUEST", message: "Choose another approved user to start a conversation." });
+      if (!await db.isApprovedMessageRecipient(input.recipientUserId)) throw new TRPCError({ code: "FORBIDDEN", message: "Messages are available only with approved registry users." });
+      return db.listDirectMessages(ctx.user.id, input.recipientUserId);
+    }),
+    send: approvedProcedure.input(directMessageInputSchema).mutation(async ({ input, ctx }) => {
+      if (input.recipientUserId === ctx.user.id) throw new TRPCError({ code: "BAD_REQUEST", message: "You cannot send a message to yourself." });
+      if (!await db.isApprovedMessageRecipient(input.recipientUserId)) throw new TRPCError({ code: "FORBIDDEN", message: "Messages are available only with approved registry users." });
+      return db.sendDirectMessage(ctx.user.id, input.recipientUserId, input.body);
     }),
   }),
   administration: router({

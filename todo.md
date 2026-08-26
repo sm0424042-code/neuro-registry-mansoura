@@ -123,3 +123,9 @@
 - [x] Add a non-sensitive public summary of the latest clinical workflow additions to the protected access gate.
 - [x] Add a static public workflow demonstration that shows no patient data and does not require sign-in.
 - [x] Strengthen manual registration approval with privacy-safe applicant metadata and visible approver guidance, without passwords or national IDs.
+- [x] Add approved-user direct messaging with database-backed conversations, strict participant authorization, and a patient-data exclusion notice.
+- [ ] Add message authorization and privacy-boundary tests, visible messaging QA, and a release checkpoint.
+- [x] Add explicit message tests for unapproved-recipient rejection and blocked patient-name, phone-number, and national-ID references.
+- [ ] Capture and document final `/messages` workspace layout evidence, distinguishing renderer-only evidence from unauthenticated browser results.
+- [ ] Verify recipient selection, message send/polling, and final empty-recipient state in a real approved browser session without using patient data.
+- [x] Save a checkpoint after the messaging feature passes all checks and tests.

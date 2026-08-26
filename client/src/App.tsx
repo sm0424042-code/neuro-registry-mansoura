@@ -3,6 +3,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import DashboardLayout from "@/components/DashboardLayout";
 import AccessManagement from "@/pages/AccessManagement";
 import Home from "@/pages/Home";
+import Messages from "@/pages/Messages";
 import NotFound from "@/pages/NotFound";
 import PatientEditor from "@/pages/PatientEditor";
 import PatientRegistry from "@/pages/PatientRegistry";
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/workflow-preview" component={PublicWorkflowPreview} />
       <Route path="/">{() => <ProtectedPage><Home /></ProtectedPage>}</Route>
       <Route path="/registry">{() => <ProtectedPage><PatientRegistry /></ProtectedPage>}</Route>
+      <Route path="/messages">{() => <ProtectedPage><Messages /></ProtectedPage>}</Route>
       <Route path="/records/new">{() => <ProtectedPage><PatientEditor mode="create" /></ProtectedPage>}</Route>
       <Route path="/records/:id">{({ id }) => <ProtectedPage><PatientEditor mode="edit" recordId={Number(id)} /></ProtectedPage>}</Route>
       <Route path="/access">{() => <ProtectedPage><AccessManagement /></ProtectedPage>}</Route>

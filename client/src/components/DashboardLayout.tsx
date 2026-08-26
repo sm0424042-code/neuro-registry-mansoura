@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { Activity, BrainCircuit, ClipboardCheck, ClipboardList, Eye, HeartPulse, LayoutDashboard, LogOut, Microscope, PanelLeft, Plus, ShieldCheck, UsersRound } from "lucide-react";
+import { Activity, BrainCircuit, ClipboardCheck, ClipboardList, Eye, HeartPulse, LayoutDashboard, LogOut, MessageSquare, Microscope, PanelLeft, Plus, ShieldCheck, UsersRound } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
@@ -13,6 +13,7 @@ import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 const baseMenuItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/" },
   { icon: ClipboardList, label: "Patient Registry", path: "/registry" },
+  { icon: MessageSquare, label: "Messages", path: "/messages" },
   { icon: Plus, label: "New Record", path: "/records/new" },
 ];
 const SIDEBAR_WIDTH_KEY = "egr-sidebar-width";
