@@ -39,11 +39,26 @@ The loading branch is conditionally mounted only when a further local page exist
 | Screen-reader feedback | Polite loading status is updated. |
 | Motion preference | Skeleton pulse is disabled under reduced-motion preference. |
 
+## Lazy-loading follow-up
+
+Route-level lazy loading was then applied to the public preview, protected dashboard layout, registry, editor, messaging, access-management, home, and not-found pages. Each route is wrapped in an accessible Suspense fallback; protected pages retain their original DashboardLayout gate after the relevant chunk arrives.
+
+| Build comparison | Before route splitting | After route splitting | Change |
+|---|---:|---:|---:|
+| Shared entry JavaScript | 1,051.18 KB raw / 269.85 KB gzip | 631.27 KB raw / 190.02 KB gzip | **−419.91 KB raw (−39%) / −79.83 KB gzip (−29%)** |
+| Public workflow page chunk | Included in the shared entry | 70.70 KB raw / 12.08 KB gzip, requested only for `/workflow-preview` | Deferred from application shell |
+| Protected editor chunk | Included in the shared entry | 93.59 KB raw / 17.48 KB gzip | Not requested by public preview |
+| Protected dashboard chunk | Included in the shared entry | 73.25 KB raw / 14.88 KB gzip | Not requested by public preview |
+
+In the isolated local production run, `/workflow-preview` reached DOM content loaded in **168 ms** and first contentful paint in **192 ms**. Its resource trace contained the public workflow chunk and its direct UI dependencies, while no `PatientEditor`, `DashboardLayout`, `PatientRegistry`, `Messages`, or `AccessManagement` chunk was requested. The unauthenticated `/records/new` route still rendered the Authorised access gate and no registry records. These are local laboratory measurements, not field Core Web Vitals.
+
+> **Interpretation:** The public preview still needs its own route chunk after the small application shell, so this change improves the shared initial payload rather than eliminating the preview’s own code. The primary benefit is that non-visible protected workspaces are no longer downloaded when a visitor opens the public, data-free page.
+
 ## Findings and safe next steps
 
 The feature’s direct runtime impact is low because it uses local React state and conditional markup. No code optimization was applied during this audit: changing the 220 ms interval would trade away the requested visible feedback, and the measured local interaction remains responsive.
 
-The main asset to watch is the existing shared JavaScript bundle. If the product later targets slower networks, the evidence-based next investigation is route-level code splitting for large protected screens or optional dashboard features, measured separately against published hosting with compression and real network conditions. The Skeleton path itself should transition from its fixed local delay to the completion of a real paging promise only if the future Saved Items source becomes asynchronous.
+The main shared JavaScript asset is now materially smaller after route splitting. If the product later targets slower networks, the next evidence-based investigation is splitting large dependencies inside the remaining 631 KB shared shell and measuring against published hosting with compression and real network conditions. The Skeleton path itself should transition from its fixed local delay to the completion of a real paging promise only if the future Saved Items source becomes asynchronous.
 
 ## Limitations
 

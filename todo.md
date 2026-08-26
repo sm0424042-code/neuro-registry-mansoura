@@ -192,3 +192,5 @@
 - [x] Verify Skeleton Loading transition and preservation of public data-only boundaries, then save a checkpoint.
 - [x] Audit public workflow-preview load performance, resource footprint, and local Saved Items batch responsiveness without registry data.
 - [x] Document performance findings, apply evidence-based safe optimizations if needed, and save a checkpoint.
+- [x] Apply route-level lazy loading to non-visible pages with an accessible shared loading fallback.
+- [x] Measure initial-bundle reduction and verify public preview plus protected-route behavior after lazy loading.
