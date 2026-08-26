@@ -54,6 +54,12 @@ In the isolated local production run, `/workflow-preview` reached DOM content lo
 
 > **Interpretation:** The public preview still needs its own route chunk after the small application shell, so this change improves the shared initial payload rather than eliminating the preview’s own code. The primary benefit is that non-visible protected workspaces are no longer downloaded when a visitor opens the public, data-free page.
 
+## Homepage media lazy-loading follow-up
+
+The protected homepage hero uses a single abstract, non-patient brain visual. Its media element now uses native `loading="lazy"` and `decoding="async"`; the surrounding hero retains its existing fixed minimum-height surface and absolute media frame, preventing a layout shift while the image is pending. The attribute is verified by a direct component-render test. This change adds no API request, data field, or registry content.
+
+The homepage itself remains behind the approved-access gate. In an unauthenticated visit, the Home route does not render and the hero image is not requested; the visitor instead sees only the existing Authorised access screen. For an approved user who reaches the overview, the browser can defer the heavy hero image until it is near the viewport while keeping the hero layout stable. The production build stayed within the previously measured lazy-route split: its shared entry is **631.27 KB raw / 190.01 KB gzip**.
+
 ## Findings and safe next steps
 
 The feature’s direct runtime impact is low because it uses local React state and conditional markup. No code optimization was applied during this audit: changing the 220 ms interval would trade away the requested visible feedback, and the measured local interaction remains responsive.

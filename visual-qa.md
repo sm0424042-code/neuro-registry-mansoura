@@ -119,3 +119,7 @@ When a further local public-card batch is requested, the modal now disables the 
 ## Route lazy-loading verification
 
 After route-level lazy loading, the live public `/workflow-preview` route loaded its complete non-patient workflow presentation, including the supplied artwork, Saved Items controls, and all public privacy notices. The normal unauthenticated browser then opened `/records/new`; after its route chunk loaded, it showed only the **Authorised access only** gate and release summary, with no registry record exposed. The production build emitted separate chunks for the public preview, protected dashboard, editor, registry, messages, and access-management screens. The isolated public production resource trace did not request the protected page chunks.
+
+## Homepage hero media loading
+
+The protected overview hero now marks its abstract brain visual for native lazy loading and asynchronous decoding. The fixed hero media region remains in place while the image is pending. An isolated static component test confirms the image keeps the correct non-patient alternative text, `loading="lazy"`, `decoding="async"`, and absolute object-cover layout classes. The ordinary unauthenticated route correctly shows the access gate rather than the protected overview, so no protected hero media or registry content is exposed in that session.

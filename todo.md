@@ -194,3 +194,5 @@
 - [x] Document performance findings, apply evidence-based safe optimizations if needed, and save a checkpoint.
 - [x] Apply route-level lazy loading to non-visible pages with an accessible shared loading fallback.
 - [x] Measure initial-bundle reduction and verify public preview plus protected-route behavior after lazy loading.
+- [x] Apply lazy loading and reserved layout space to heavy homepage media without affecting protected data boundaries.
+- [x] Measure deferred-media behavior and verify responsive homepage rendering, then save a checkpoint.
