@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -39,6 +39,8 @@ export default function PublicWorkflowPreview() {
   const [isArtworkSaved, setIsArtworkSaved] = useState(false);
   const [hasCopiedPreviewLink, setHasCopiedPreviewLink] = useState(false);
   const [isSavedItemsOpen, setIsSavedItemsOpen] = useState(false);
+  const [isSaveConfirming, setIsSaveConfirming] = useState(false);
+  const saveAnimationTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     try {
@@ -48,6 +50,19 @@ export default function PublicWorkflowPreview() {
     }
   }, []);
 
+  useEffect(() => () => {
+    if (saveAnimationTimeoutRef.current !== null) window.clearTimeout(saveAnimationTimeoutRef.current);
+  }, []);
+
+  const triggerSaveConfirmation = () => {
+    if (saveAnimationTimeoutRef.current !== null) window.clearTimeout(saveAnimationTimeoutRef.current);
+    setIsSaveConfirming(false);
+    window.requestAnimationFrame(() => {
+      setIsSaveConfirming(true);
+      saveAnimationTimeoutRef.current = window.setTimeout(() => setIsSaveConfirming(false), 520);
+    });
+  };
+
   const updateArtworkSaved = (nextValue: boolean) => {
     setIsArtworkSaved(nextValue);
     try {
@@ -56,6 +71,8 @@ export default function PublicWorkflowPreview() {
     } catch {
       // The visual state still works when browser storage is unavailable.
     }
+    if (nextValue) triggerSaveConfirmation();
+    else setIsSaveConfirming(false);
     toast.success(nextValue ? "Artwork saved to favorites" : "Artwork removed from favorites");
   };
 
@@ -117,7 +134,7 @@ export default function PublicWorkflowPreview() {
           <div className="group relative touch-pan-y select-none overflow-hidden rounded-2xl border border-white/15 bg-[#061323] shadow-2xl shadow-black/30 transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_22px_50px_rgba(3,13,28,0.42)] active:translate-y-0 active:scale-[0.99] motion-reduce:transition-none">
             <img alt="Mansoura University Neurology Center brain and neural-network artwork" src={brainVisual} className="h-full min-h-[210px] w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] motion-reduce:transition-none" />
             <div className="absolute right-3 top-3 z-10 flex max-w-[calc(100%-1.5rem)] gap-2">
-              <button type="button" aria-pressed={isArtworkSaved} aria-label={isArtworkSaved ? "Remove preview artwork from favorites" : "Save preview artwork to favorites"} onClick={toggleArtworkSaved} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 bg-[#061323]/80 px-3.5 text-xs font-semibold text-white shadow-lg backdrop-blur-md transition-[background-color,transform] duration-150 ease-out hover:bg-[#12344a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bcefe3] active:scale-[0.97] motion-reduce:transition-none">
+              <button type="button" aria-pressed={isArtworkSaved} aria-label={isArtworkSaved ? "Remove preview artwork from favorites" : "Save preview artwork to favorites"} onClick={toggleArtworkSaved} className={`inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 bg-[#061323]/80 px-3.5 text-xs font-semibold text-white shadow-lg backdrop-blur-md transition-[background-color,transform] duration-150 ease-out hover:bg-[#12344a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bcefe3] active:scale-[0.97] motion-reduce:transition-none ${isSaveConfirming ? "save-confirm border-[#bcefe3] bg-[#123d50]" : ""}`}>
                 {isArtworkSaved ? <BookmarkCheck className="h-4 w-4 text-[#bcefe3]" /> : <Bookmark className="h-4 w-4" />}
                 <span>{isArtworkSaved ? "Saved" : "Save"}</span>
               </button>

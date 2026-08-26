@@ -87,3 +87,7 @@ The public preview header now exposes a Saved items trigger with a count badge a
 ## Bottom save/remove notifications
 
 The global toast surface is configured at the bottom-right of the screen. Direct isolated Chromium checks at both 375 px and 1280 px verified that saving emits `Artwork saved to favorites` and removing emits `Artwork removed from favorites`; the toast container reports `data-x-position="right"` and `data-y-position="bottom"` at both widths. These confirmations use only public artwork state and do not display or persist patient, user, record, or registry information.
+
+## Save confirmation animation
+
+At both 375 px and 1280 px widths, a direct Chromium click changed the Save control to `Saved`, set `aria-pressed=true`, applied the `save-confirm` class, and reported the `save-confirm` animation name. After its 520 ms completion window, the animation class cleared while the saved state remained. With reduced motion emulated, the save state still changed correctly but the computed animation name was `none`, confirming that the visual motion is suppressed for users who request reduced motion.
