@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, like, lte, type SQL } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, patientRecords, registryAuditLogs, users } from "../drizzle/schema";
-import type { CohortClinicalData, LaboratoryInvestigation, NeurologicalInvestigation, PatientFollowUp, ProtocolInvestigation, RadiologicalInvestigation, ResearchFile } from "../drizzle/schema";
+import type { CohortClinicalData, ImmuneTherapy, LaboratoryInvestigation, MultipleSclerosisDoseAdherence, NeurologicalInvestigation, PatientFollowUp, ProtocolInvestigation, RadiologicalInvestigation, ResearchFile } from "../drizzle/schema";
 import { storageGetSignedUrl, storagePut } from "./storage";
 import { ENV } from "./_core/env";
 import type { z } from "zod";
@@ -84,7 +84,7 @@ function requireDb(db: Awaited<ReturnType<typeof getDb>>) {
 
 export async function createPatientRecord(input: PatientInput, actorUserId: number) {
   const db = requireDb(await getDb());
-  await db.insert(patientRecords).values({ ...input, ageAtOnset: input.ageAtOnset ?? null, completionOwnerUserId: input.completionOwnerUserId ?? null, clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], laboratoryInvestigations: input.laboratoryInvestigations as LaboratoryInvestigation[], neurologicalInvestigations: input.neurologicalInvestigations as NeurologicalInvestigation[], protocolInvestigations: input.protocolInvestigations as ProtocolInvestigation[], followUpVisits: input.followUpVisits as PatientFollowUp[], researchFiles: [], createdByUserId: actorUserId, lastModifiedByUserId: actorUserId });
+  await db.insert(patientRecords).values({ ...input, ageAtOnset: input.ageAtOnset ?? null, completionOwnerUserId: input.completionOwnerUserId ?? null, briefClinicalHistory: input.briefClinicalHistory ?? null, positiveExaminationFindings: input.positiveExaminationFindings ?? null, dischargeTreatment: input.dischargeTreatment ?? null, immuneTherapies: input.immuneTherapies as ImmuneTherapy[], msDoseAdherence: input.msDoseAdherence as MultipleSclerosisDoseAdherence[], clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], laboratoryInvestigations: input.laboratoryInvestigations as LaboratoryInvestigation[], neurologicalInvestigations: input.neurologicalInvestigations as NeurologicalInvestigation[], protocolInvestigations: input.protocolInvestigations as ProtocolInvestigation[], followUpVisits: input.followUpVisits as PatientFollowUp[], researchFiles: [], createdByUserId: actorUserId, lastModifiedByUserId: actorUserId });
   const result = await db.select().from(patientRecords).where(eq(patientRecords.researchId, input.researchId)).limit(1);
   const created = result[0];
   if (!created) throw new Error("The patient record could not be created");
@@ -97,7 +97,7 @@ export async function updatePatientRecord(id: number, input: PatientInput, actor
 export async function updatePatientRecordWithDb(db: any, id: number, input: PatientInput, actorUserId: number) {
   const existing = await db.select({ id: patientRecords.id }).from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
   if (!existing[0]) throw new Error("Patient record not found");
-  await db.update(patientRecords).set({ ...input, ageAtOnset: input.ageAtOnset ?? null, completionOwnerUserId: input.completionOwnerUserId ?? null, clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], laboratoryInvestigations: input.laboratoryInvestigations as LaboratoryInvestigation[], neurologicalInvestigations: input.neurologicalInvestigations as NeurologicalInvestigation[], protocolInvestigations: input.protocolInvestigations as ProtocolInvestigation[], followUpVisits: input.followUpVisits as PatientFollowUp[], lastModifiedByUserId: actorUserId }).where(eq(patientRecords.id, id));
+  await db.update(patientRecords).set({ ...input, ageAtOnset: input.ageAtOnset ?? null, completionOwnerUserId: input.completionOwnerUserId ?? null, briefClinicalHistory: input.briefClinicalHistory ?? null, positiveExaminationFindings: input.positiveExaminationFindings ?? null, dischargeTreatment: input.dischargeTreatment ?? null, immuneTherapies: input.immuneTherapies as ImmuneTherapy[], msDoseAdherence: input.msDoseAdherence as MultipleSclerosisDoseAdherence[], clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], laboratoryInvestigations: input.laboratoryInvestigations as LaboratoryInvestigation[], neurologicalInvestigations: input.neurologicalInvestigations as NeurologicalInvestigation[], protocolInvestigations: input.protocolInvestigations as ProtocolInvestigation[], followUpVisits: input.followUpVisits as PatientFollowUp[], lastModifiedByUserId: actorUserId }).where(eq(patientRecords.id, id));
   await db.insert(registryAuditLogs).values({ patientRecordId: id, actorUserId, action: "updated", fieldSummary: getPatientUpdateAuditSummary(input) });
   const result = await db.select().from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
   return result[0];

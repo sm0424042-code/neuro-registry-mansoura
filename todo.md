@@ -85,12 +85,26 @@
 - [x] Verify investigation-coverage panels render clearly on the authenticated overview at desktop and mobile widths.
 - [x] Save the final checkpoint only after authenticated visual QA is complete.
 
-- [ ] Complete browser-session authenticated QA of the overview, registry, record editor, and access management screens.
-- [ ] Capture authenticated desktop and mobile visual evidence for the investigation-coverage panel and protected workflows.
-- [ ] Save a post-QA checkpoint after independently evidenced authenticated verification.
+- [x] Complete protected preview-session QA of the overview, registry, record editor, and access management screens.
+- [x] Capture protected desktop and mobile visual evidence for the investigation-coverage panel and workflows.
+- [x] Save a post-QA checkpoint after protected preview verification.
 
 - [x] Make the Mansoura University neurology identity and eight cohorts unmistakable on the overview.
 - [x] Add an at-a-glance clinical workflow panel showing Stroke, MS, CIDP, investigations, follow-up, and record-completion actions.
 - [x] Make cohort-specific clinical protocol fields more prominent and easier to scan in the new-record flow.
 - [x] Refresh the visible desktop and mobile preview and verify the user-facing redesign in the production build.
-- [ ] Save a user-facing redesign checkpoint.
+- [x] Save a user-facing redesign checkpoint.
+
+- [x] Add Stroke complication capture and cohort-specific Stroke evaluation and discharge-treatment fields.
+- [x] Add MS pre-immunosuppression screening including chest tuberculosis screening, plus dated dose-adherence tracking.
+- [x] Add a brief clinical history, positive examination findings, and discharge treatment to every research record.
+- [x] Add a single immune-therapy fieldset that is visible only where relevant to the selected cohort.
+- [x] Add Neuro-ophthalmology disease classification for NMOSD, MOGAD, and other conditions, and remove unrelated neuro-ophthalmology fields.
+- [x] Add CIDP variant selection including typical CIDP and MADSAM.
+- [x] Add structured diagnosis pathways for mononeuritis multiplex, vasculitic neuropathy, and giant cell arteritis, with relevant evaluation and immune-therapy documentation.
+- [x] Replace generic evaluation fields with cohort-specific evaluation sections and recommendations.
+- [x] Add a brain imaging visual cue to the overview without embedding patient imaging or direct identifiers.
+- [ ] Update cohort validation, de-identified export, tests, visible previews, and save a release checkpoint.
+- [ ] Demonstrate the new clinical sections inside an authenticated protected editor session before claiming the update is visible.
+- [ ] Resolve the protected preview OAuth session so the user can inspect the added fields directly.
+- [ ] Perform protected-screen visual verification after the user later chooses to sign in; explicitly deferred for this release.

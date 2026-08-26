@@ -43,6 +43,13 @@
       "when": 1787700538707,
       "tag": "0005_public_energizer",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1787704071474,
+      "tag": "0006_safe_speedball",
+      "breakpoints": true
     }
   ]
 }

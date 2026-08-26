@@ -1,11 +1,11 @@
 # Visual QA Notes
 
-The authenticated preview was reviewed at 1280x900 and 390x844 for `/records/new`. The English patient editor renders the new Research ID Profile card, privacy checkpoint, cohort-specific clinical section, and Radiological Investigations section. The desktop view preserves the persistent sidebar, clear two-column hierarchy, and readable research safeguards. The mobile view stacks the form cards, keeps the Save action reachable, and preserves the radiology empty state and Research ID metadata card without horizontal overflow.
+## Verified in the current session
 
-The unauthenticated browser route correctly shows the protected access gate and does not expose registry content without a session.
+The protected `/records/new` route was opened in the live sandbox browser. It displayed the **Authorised access only** gate and did not expose registry data, confirming that a missing session cookie does not reveal protected research records.
 
-## Mansoura University update
+The code-level update was validated with TypeScript, Vitest, and a production build. The unprotected server startup and the protected access gate both loaded after the latest clinical workflow changes.
 
-The authenticated project preview was reviewed on desktop at 1280×900 for `/`, `/registry`, `/records/new`, and `/access`, and on mobile at 390×844 for `/` and `/records/new`.
+## Deferred verification
 
-The desktop overview rendered the Mansoura University Neurology identity, the eight cohort labels including CIDP, record-completion metrics, and the Investigation Coverage panel with radiology, laboratory, neurological, protocol-complete, and in-progress checklist indicators. The patient editor showed the MUNR Research ID pattern, completion owner assignment, missing-item checklist, cohort protocol prompts, structured investigation sections, longitudinal follow-up, and protected research-file controls. The access screen displayed manual approval wording for Abdelrahman Ibrahim Rashad and the de-identified export safeguards. On mobile, the overview stacked the cohort and investigation-coverage panels legibly, while the record editor maintained readable form sections without horizontal overflow.
+The authenticated overview, registry, record editor, and access-management screens were **not** visually reviewed in the current session because the browser did not hold an approved OAuth session. The user explicitly asked to skip the sign-in step. In particular, the new Stroke complications, MS TB screening and adherence, immune therapy, NMOSD/MOGAD/GCA, and CIDP/vasculitic-neuropathy screens require a later authenticated visual review before they can be claimed as demonstrated in the live editor.
