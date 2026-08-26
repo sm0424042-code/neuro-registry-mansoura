@@ -1,7 +1,8 @@
 import { Badge } from "@/components/ui/badge";
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { canClearAllSavedItems } from "@/lib/savedItemsAccess";
 import { SAVED_ITEMS_PAGE_SIZE, nextVisibleSavedItemCount, visibleSavedItems } from "@/lib/savedItemsPagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -30,6 +31,7 @@ import {
 
 const brainVisual = "/manus-storage/478fad80-a175-11f1-995e-03d05cd60a9d_e14e1e86.png";
 const artworkFavoriteKey = "munr.preview.artwork.favorite";
+const savedItemsBatchLoadingDelay = 220;
 const artworkSavedItem = {
   id: "mansoura-neurology-center-preview",
   category: "preview",
@@ -59,7 +61,9 @@ export default function PublicWorkflowPreview() {
   const [savedFilter, setSavedFilter] = useState<"all" | "preview">("all");
   const [isClearSavedOpen, setIsClearSavedOpen] = useState(false);
   const [visibleSavedCount, setVisibleSavedCount] = useState(SAVED_ITEMS_PAGE_SIZE);
+  const [isLoadingSavedBatch, setIsLoadingSavedBatch] = useState(false);
   const saveAnimationTimeoutRef = useRef<number | null>(null);
+  const savedBatchTimeoutRef = useRef<number | null>(null);
   const savedItemsScrollRef = useRef<HTMLDivElement | null>(null);
   const savedItemsLoadRef = useRef<HTMLDivElement | null>(null);
   const canClearSavedItems = canClearAllSavedItems(user);
@@ -74,6 +78,7 @@ export default function PublicWorkflowPreview() {
 
   useEffect(() => () => {
     if (saveAnimationTimeoutRef.current !== null) window.clearTimeout(saveAnimationTimeoutRef.current);
+    if (savedBatchTimeoutRef.current !== null) window.clearTimeout(savedBatchTimeoutRef.current);
   }, []);
 
   const triggerSaveConfirmation = () => {
@@ -160,8 +165,20 @@ export default function PublicWorkflowPreview() {
   const filteredSavedItems = useMemo(() => savedPreviewItems.filter((item) => (savedFilter === "all" || item.category === savedFilter) && [item.title, item.description, "public preview", "preview artwork"].some((value) => value.toLowerCase().includes(savedSearchTerm))), [savedPreviewItems, savedFilter, savedSearchTerm]);
   const visibleSavedItemsList = visibleSavedItems(filteredSavedItems, visibleSavedCount);
   const hasMoreSavedItems = visibleSavedItemsList.length < filteredSavedItems.length;
+  const loadMoreSavedItems = useCallback(() => {
+    if (isLoadingSavedBatch || !hasMoreSavedItems) return;
+    setIsLoadingSavedBatch(true);
+    if (savedBatchTimeoutRef.current !== null) window.clearTimeout(savedBatchTimeoutRef.current);
+    savedBatchTimeoutRef.current = window.setTimeout(() => {
+      setVisibleSavedCount((count) => nextVisibleSavedItemCount(count, filteredSavedItems.length));
+      setIsLoadingSavedBatch(false);
+      savedBatchTimeoutRef.current = null;
+    }, savedItemsBatchLoadingDelay);
+  }, [filteredSavedItems.length, hasMoreSavedItems, isLoadingSavedBatch]);
 
   useEffect(() => {
+    if (savedBatchTimeoutRef.current !== null) window.clearTimeout(savedBatchTimeoutRef.current);
+    setIsLoadingSavedBatch(false);
     setVisibleSavedCount(SAVED_ITEMS_PAGE_SIZE);
   }, [savedSearchTerm, savedFilter, isArtworkSaved]);
 
@@ -169,11 +186,11 @@ export default function PublicWorkflowPreview() {
     const sentinel = savedItemsLoadRef.current;
     if (!isSavedItemsOpen || !hasMoreSavedItems || !sentinel || typeof IntersectionObserver === "undefined") return;
     const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) setVisibleSavedCount((count) => nextVisibleSavedItemCount(count, filteredSavedItems.length));
+      if (entries.some((entry) => entry.isIntersecting)) loadMoreSavedItems();
     }, { root: savedItemsScrollRef.current, rootMargin: "140px" });
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [isSavedItemsOpen, hasMoreSavedItems, filteredSavedItems.length]);
+  }, [isSavedItemsOpen, hasMoreSavedItems, loadMoreSavedItems]);
 
   return (
     <main className="min-h-screen bg-[#f6faf8] text-[#203943]">
@@ -228,7 +245,7 @@ export default function PublicWorkflowPreview() {
                     <img src={item.imageUrl} alt={`${item.title} saved preview artwork`} className="h-40 w-full object-cover" />
                     <div className="p-5"><p className="text-[10px] font-bold tracking-[0.15em] text-[#3b7d73]">PUBLIC PREVIEW</p><h3 className="mt-1 font-display text-xl text-[#1e444c]">{item.title}</h3><p className="mt-2 text-sm leading-6 text-[#547175]">{item.description}</p><button type="button" onClick={() => updateArtworkSaved(false)} className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-[#cce1da] bg-white px-3.5 text-sm font-semibold text-[#276d65] transition-colors hover:bg-[#eff9f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98]">Remove from saved items</button></div>
                   </article>)}
-                  {hasMoreSavedItems ? <div ref={savedItemsLoadRef} className="flex flex-col items-center gap-2 py-3"><button type="button" onClick={() => setVisibleSavedCount((count) => nextVisibleSavedItemCount(count, filteredSavedItems.length))} className="min-h-10 rounded-lg border border-[#cce1da] bg-white px-3.5 text-sm font-semibold text-[#276d65] transition-colors hover:bg-[#eff9f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98]">Load more saved items</button><p className="text-xs font-medium text-[#4f7773]" role="status">More items load automatically as you scroll.</p></div> : <p className="py-2 text-center text-xs text-[#5e7d7a]" aria-live="polite">Showing {visibleSavedItemsList.length} of {filteredSavedItems.length} saved item{filteredSavedItems.length === 1 ? "" : "s"}</p>}
+                  {hasMoreSavedItems ? <div ref={savedItemsLoadRef} className="space-y-3 py-3"><SavedItemsBatchSkeleton isVisible={isLoadingSavedBatch} /><div className="flex flex-col items-center gap-2"><button type="button" disabled={isLoadingSavedBatch} onClick={loadMoreSavedItems} className="min-h-10 rounded-lg border border-[#cce1da] bg-white px-3.5 text-sm font-semibold text-[#276d65] transition-colors hover:bg-[#eff9f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98] disabled:cursor-wait disabled:opacity-70">{isLoadingSavedBatch ? "Loading next saved items" : "Load more saved items"}</button><p className="text-xs font-medium text-[#4f7773]" role="status" aria-live="polite">{isLoadingSavedBatch ? "Loading the next local preview cards…" : "More items load automatically as you scroll."}</p></div></div> : <p className="py-2 text-center text-xs text-[#5e7d7a]" aria-live="polite">Showing {visibleSavedItemsList.length} of {filteredSavedItems.length} saved item{filteredSavedItems.length === 1 ? "" : "s"}</p>}
                 </div>
               ) : (
                 <div className="rounded-2xl border border-dashed border-[#bddbd4] bg-[#f1faf7] px-5 py-9 text-center"><Search className="mx-auto h-6 w-6 text-[#43877d]" /><h3 className="mt-3 font-display text-lg text-[#24434b]">No matching saved items</h3><p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#587476]">Try a different search term or switch to All items.</p><button type="button" onClick={() => { setSavedSearch(""); setSavedFilter("all"); }} className="mt-4 min-h-9 rounded-lg border border-[#cce1da] bg-white px-3 text-sm font-semibold text-[#276d65] transition-colors hover:bg-[#eff9f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98]">Clear search</button></div>
@@ -281,3 +298,7 @@ export default function PublicWorkflowPreview() {
 
 function PreviewStep({ number, label }: { number: string; label: string }) { return <li className="flex items-center gap-3"><span className="grid h-6 w-6 place-items-center rounded-full bg-[#e7f5f0] text-xs font-bold text-[#28736a]">{number}</span>{label}</li>; }
 function PreviewField({ label }: { label: string }) { return <div className="rounded-xl border border-[#e6eeeb] bg-[#fbfdfc] px-4 py-3 text-sm text-[#567075]">{label}</div>; }
+export function SavedItemsBatchSkeleton({ isVisible }: { isVisible: boolean }) {
+  if (!isVisible) return null;
+  return <div className="space-y-4" aria-hidden="true">{[0, 1].map((index) => <div key={index} className="overflow-hidden rounded-2xl border border-[#d9ebe5] bg-white shadow-sm"><Skeleton className="h-28 rounded-none bg-[#dcefe9] motion-reduce:animate-none" /><div className="space-y-3 p-5"><Skeleton className="h-3 w-24 rounded-full bg-[#dcefe9] motion-reduce:animate-none" /><Skeleton className="h-6 w-4/5 rounded-lg bg-[#e5f3ef] motion-reduce:animate-none" /><Skeleton className="h-4 w-full rounded-lg bg-[#edf7f4] motion-reduce:animate-none" /><Skeleton className="h-4 w-3/5 rounded-lg bg-[#edf7f4] motion-reduce:animate-none" /></div></div>)}</div>;
+}

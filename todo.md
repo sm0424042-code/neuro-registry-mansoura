@@ -188,3 +188,5 @@
 - [x] Verify disabled unauthenticated/non-admin presentation and approved-administrator authorization state, then save a checkpoint.
 - [x] Add local-only progressive rendering and infinite scrolling to Saved Items for large card collections.
 - [x] Verify incremental loading, end-of-list, filtering, and no-result behavior at mobile and desktop widths, then save a checkpoint.
+- [x] Add a reduced-motion-safe Skeleton Loading state while the next local Saved Items batch is rendered.
+- [x] Verify Skeleton Loading transition and preservation of public data-only boundaries, then save a checkpoint.
