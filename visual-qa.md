@@ -95,3 +95,7 @@ At both 375 px and 1280 px widths, a direct Chromium click changed the Save cont
 ## Saved Items search and filter
 
 With the public preview artwork saved locally, isolated Chromium checks at both 375 px and 1280 px confirmed the discovery controls inside Saved Items: the default All items filter shows the card; a `Mansoura` search preserves the matching card; an unmatched search shows the explicit `No matching saved items` state without the card; Clear search restores the list; and selecting Public preview retains the card with `aria-pressed=true`. These controls search only the local public-preview label text and never query, expose, or store patient, user, clinical-record, or live registry information.
+
+## Confirmed Clear All
+
+At both 375 px and 1280 px widths, direct isolated Chromium checks verified that Clear all first opens an alert titled `Clear saved items?` while the public preview storage value remains present. Choosing Keep saved items retains both the stored value and card. Confirming Clear all removes the local storage value, updates the Saved items count to 0, renders the empty state, and emits the bottom toast `Saved items cleared`. The confirmation explicitly states that the action affects only public preview cards on this device and does not affect patient, user, clinical-record, or live registry data.

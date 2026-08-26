@@ -179,3 +179,5 @@
 - [x] Verify save animation state and fallback behavior at mobile and desktop widths, then save a checkpoint.
 - [x] Add accessible search and filter controls inside the local-only Saved Items modal.
 - [x] Verify matched, filtered, and no-result Saved Items states at mobile and desktop widths, then save a checkpoint.
+- [x] Add a confirmed Clear All action to local-only Saved Items with a success toast.
+- [x] Verify cancel, confirm-clear, and post-clear empty states at mobile and desktop widths, then save a checkpoint.

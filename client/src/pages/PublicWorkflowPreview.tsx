@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
@@ -19,6 +20,7 @@ import {
   Search,
   Share2,
   ShieldCheck,
+  Trash2,
   UsersRound,
 } from "lucide-react";
 
@@ -43,6 +45,7 @@ export default function PublicWorkflowPreview() {
   const [isSaveConfirming, setIsSaveConfirming] = useState(false);
   const [savedSearch, setSavedSearch] = useState("");
   const [savedFilter, setSavedFilter] = useState<"all" | "preview">("all");
+  const [isClearSavedOpen, setIsClearSavedOpen] = useState(false);
   const saveAnimationTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -80,6 +83,19 @@ export default function PublicWorkflowPreview() {
   };
 
   const toggleArtworkSaved = () => updateArtworkSaved(!isArtworkSaved);
+
+  const clearAllSavedItems = () => {
+    setIsArtworkSaved(false);
+    setIsSaveConfirming(false);
+    setSavedSearch("");
+    setSavedFilter("all");
+    try {
+      window.localStorage.removeItem(artworkFavoriteKey);
+    } catch {
+      // The local UI still clears if browser storage is restricted.
+    }
+    toast.success("Saved items cleared");
+  };
 
   const sharePreview = async () => {
     const previewUrl = new URL("/workflow-preview", window.location.origin).toString();
@@ -166,7 +182,7 @@ export default function PublicWorkflowPreview() {
               <div className="space-y-3">
                 <label htmlFor="saved-items-search" className="text-xs font-bold tracking-[0.13em] text-[#4e7775]">FIND SAVED ITEMS</label>
                 <div className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#5f8582]" /><input id="saved-items-search" value={savedSearch} onChange={(event) => setSavedSearch(event.target.value)} placeholder="Search public preview cards" className="min-h-11 w-full rounded-xl border border-[#cfe5dd] bg-white py-2 pl-10 pr-3 text-sm text-[#24434b] outline-none transition-colors placeholder:text-[#73908d] focus:border-[#4ba696] focus:ring-2 focus:ring-[#bfe9e0]" /></div>
-                <div className="flex flex-wrap gap-2" aria-label="Filter saved items"><button type="button" aria-pressed={savedFilter === "all"} onClick={() => setSavedFilter("all")} className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98] ${savedFilter === "all" ? "border-[#24776a] bg-[#24776a] text-white" : "border-[#cce1da] bg-white text-[#39746d] hover:bg-[#eff9f6]"}`}>All items</button><button type="button" aria-pressed={savedFilter === "preview"} onClick={() => setSavedFilter("preview")} className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98] ${savedFilter === "preview" ? "border-[#24776a] bg-[#24776a] text-white" : "border-[#cce1da] bg-white text-[#39746d] hover:bg-[#eff9f6]"}`}>Public preview</button></div>
+                <div className="flex flex-wrap items-center justify-between gap-2" aria-label="Filter saved items"><div className="flex flex-wrap gap-2"><button type="button" aria-pressed={savedFilter === "all"} onClick={() => setSavedFilter("all")} className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98] ${savedFilter === "all" ? "border-[#24776a] bg-[#24776a] text-white" : "border-[#cce1da] bg-white text-[#39746d] hover:bg-[#eff9f6]"}`}>All items</button><button type="button" aria-pressed={savedFilter === "preview"} onClick={() => setSavedFilter("preview")} className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98] ${savedFilter === "preview" ? "border-[#24776a] bg-[#24776a] text-white" : "border-[#cce1da] bg-white text-[#39746d] hover:bg-[#eff9f6]"}`}>Public preview</button></div><button type="button" onClick={() => setIsClearSavedOpen(true)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-[#9b3b33] transition-colors hover:bg-[#fff0ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5685a]"><Trash2 className="h-3.5 w-3.5" />Clear all</button></div>
               </div>
               {savedArtworkMatches ? (
                 <article className="overflow-hidden rounded-2xl border border-[#cfe5dd] bg-white shadow-sm">
@@ -182,6 +198,13 @@ export default function PublicWorkflowPreview() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isClearSavedOpen} onOpenChange={setIsClearSavedOpen}>
+        <AlertDialogContent className="border-[#efd0cb] bg-[#fffaf9] text-[#3b302e]">
+          <AlertDialogHeader><AlertDialogTitle className="font-display text-2xl text-[#5d2925]">Clear saved items?</AlertDialogTitle><AlertDialogDescription className="leading-6 text-[#785954]">This removes the public preview cards saved on this device. It does not affect any patient, user, clinical-record, or live registry data.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel>Keep saved items</AlertDialogCancel><AlertDialogAction onClick={clearAllSavedItems} className="bg-[#a64138] text-white hover:bg-[#86342d]">Clear all</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="mx-auto max-w-6xl space-y-8 px-5 py-8 md:px-10 md:py-12">
         <section className="grid gap-4 md:grid-cols-[1.15fr_0.85fr]">
