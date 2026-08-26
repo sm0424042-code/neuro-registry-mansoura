@@ -171,3 +171,5 @@
 - [x] Save a new checkpoint specifically for the Save/Favorite artwork-card update after state verification.
 - [x] Add an accessible Share button beside Save, with native sharing when supported and a copy-link fallback.
 - [x] Verify native-share and copy-link fallback behavior without sharing registry or patient data, then save a checkpoint.
+- [x] Add an accessible Saved Items modal that lists locally saved public preview cards and has a clear empty state.
+- [x] Verify save, open-saved-items, remove, and empty-state flows at mobile and desktop widths, then save a checkpoint.

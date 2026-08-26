@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   ArrowRight,
@@ -37,6 +38,7 @@ const workflows = [
 export default function PublicWorkflowPreview() {
   const [isArtworkSaved, setIsArtworkSaved] = useState(false);
   const [hasCopiedPreviewLink, setHasCopiedPreviewLink] = useState(false);
+  const [isSavedItemsOpen, setIsSavedItemsOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -46,8 +48,7 @@ export default function PublicWorkflowPreview() {
     }
   }, []);
 
-  const toggleArtworkSaved = () => {
-    const nextValue = !isArtworkSaved;
+  const updateArtworkSaved = (nextValue: boolean) => {
     setIsArtworkSaved(nextValue);
     try {
       if (nextValue) window.localStorage.setItem(artworkFavoriteKey, "true");
@@ -56,6 +57,8 @@ export default function PublicWorkflowPreview() {
       // The visual state still works when browser storage is unavailable.
     }
   };
+
+  const toggleArtworkSaved = () => updateArtworkSaved(!isArtworkSaved);
 
   const sharePreview = async () => {
     const previewUrl = new URL("/workflow-preview", window.location.origin).toString();
@@ -101,7 +104,10 @@ export default function PublicWorkflowPreview() {
         <div className="relative mx-auto grid max-w-6xl items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="relative z-10">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-[#c6f1e6]"><ShieldCheck className="h-3.5 w-3.5" />PUBLIC, NON-PATIENT DEMONSTRATION</div>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-[#c6f1e6]"><ShieldCheck className="h-3.5 w-3.5" />PUBLIC, NON-PATIENT DEMONSTRATION</div>
+                <button type="button" aria-haspopup="dialog" onClick={() => setIsSavedItemsOpen(true)} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 text-xs font-semibold text-white transition-[background-color,transform] duration-150 ease-out hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bcefe3] active:scale-[0.97] motion-reduce:transition-none"><BookmarkCheck className="h-3.5 w-3.5 text-[#bcefe3]" />Saved items<span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#bcefe3] px-1 text-[10px] font-bold text-[#092238]">{isArtworkSaved ? 1 : 0}</span></button>
+              </div>
               <a href="/records/new" className="text-sm text-[#c6f1e6] underline-offset-4 hover:underline">Return to secure access</a>
             </div>
             <h1 className="mt-7 max-w-3xl font-display text-3xl leading-tight md:text-5xl">Mansoura University Neurology Research Registry</h1>
@@ -124,6 +130,25 @@ export default function PublicWorkflowPreview() {
           </div>
         </div>
       </section>
+
+      <Dialog open={isSavedItemsOpen} onOpenChange={setIsSavedItemsOpen}>
+        <DialogContent className="border-[#cfe5dd] bg-[#f8fcfa] p-0 text-[#203943] sm:max-w-xl">
+          <DialogHeader className="border-b border-[#dcebe6] px-6 pt-6 pb-5 text-left">
+            <DialogTitle className="flex items-center gap-2 font-display text-2xl text-[#1e444c]"><BookmarkCheck className="h-5 w-5 text-[#24776a]" />Saved items</DialogTitle>
+            <DialogDescription className="mt-2 leading-6 text-[#587476]">Saved preview cards are kept on this device only. They do not include patient records, user information, or live registry data.</DialogDescription>
+          </DialogHeader>
+          {isArtworkSaved ? (
+            <div className="p-6">
+              <article className="overflow-hidden rounded-2xl border border-[#cfe5dd] bg-white shadow-sm">
+                <img src={brainVisual} alt="Mansoura University Neurology Center saved preview artwork" className="h-40 w-full object-cover" />
+                <div className="p-5"><p className="text-[10px] font-bold tracking-[0.15em] text-[#3b7d73]">PUBLIC PREVIEW</p><h3 className="mt-1 font-display text-xl text-[#1e444c]">Mansoura University Neurology Center</h3><p className="mt-2 text-sm leading-6 text-[#547175]">Non-patient artwork and public workflow preview.</p><button type="button" onClick={() => updateArtworkSaved(false)} className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-[#cce1da] bg-white px-3.5 text-sm font-semibold text-[#276d65] transition-colors hover:bg-[#eff9f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98]">Remove from saved items</button></div>
+              </article>
+            </div>
+          ) : (
+            <div className="px-6 py-12 text-center"><span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#e5f4ef] text-[#2b7d71]"><BookmarkCheck className="h-6 w-6" /></span><h3 className="mt-4 font-display text-xl text-[#24434b]">No saved items yet</h3><p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#587476]">Use the Save button on the public preview artwork card to keep it here for later on this device.</p></div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <div className="mx-auto max-w-6xl space-y-8 px-5 py-8 md:px-10 md:py-12">
         <section className="grid gap-4 md:grid-cols-[1.15fr_0.85fr]">

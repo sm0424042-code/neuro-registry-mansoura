@@ -79,3 +79,7 @@ The same isolated Chromium state exercise was repeated at a 1280 px desktop view
 ## Public Share artwork card
 
 The artwork card now places a Share button beside Save at both 375 px and 1280 px widths without obscuring the institutional artwork or the non-patient caption. An isolated Chromium run verified both share paths using only the public workflow URL: a mocked native-share handler received the public title, public workflow description, and `/workflow-preview` URL; with native sharing unavailable, the fallback copied that same public URL and visibly changed the button label to `Copied`. No patient, user, record, or registry data was included in either payload.
+
+## Saved Items surface
+
+The public preview header now exposes a Saved items trigger with a count badge at both 375 px and 1280 px widths; the layout remains legible without crowding the public preview badge, secure-access link, or artwork controls. Direct isolated Chromium exercises at both viewport widths verified the complete local-only flow: the modal opens with `Saved items` and a `No saved items yet` empty state at count 0; saving the public artwork produces a stored public card and Remove action at count 1; removing it restores the empty state, count 0, and clears the browser storage key. No patient, user, clinical-record, or live registry data appears in the modal or its storage.
