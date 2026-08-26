@@ -155,3 +155,7 @@ The terminal unavailable-image Overlay now uses the `unavailable-overlay-enter` 
 ## Unavailable-image copy link
 
 At the Retry limit, the terminal Overlay now exposes a small **Copy image link** button. It copies the resolved original image URL so the user can paste it into a new tab; successful copying changes the label to **Link copied** and announces that confirmation for assistive technologies. The control is the only pointer-enabled child inside the otherwise non-interactive overlay. Unit coverage verifies the terminal overlay includes the accessible control and that a relative original media path becomes an absolute URL suitable for a separate tab. The URL points only to the static abstract hero media, never to patient, user, record, or clinical data.
+
+## Copied-link green confirmation
+
+After a successful copy, the Overlay’s copy-link button uses a green confirmation background and border for 2.2 seconds before returning to its default teal appearance. Repeated copies reset the interval, and the component cleans up the timer on unmount or a subsequent image error. Static coverage verifies the default and green class sets, duration, and reduced-motion transition suppression; only the non-patient static image URL is involved.

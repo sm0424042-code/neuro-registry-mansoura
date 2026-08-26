@@ -63,6 +63,7 @@ export const HOME_HERO_RETRY_FAILURE_LIMIT = 3;
 export const RETRY_TOOLTIP_TEXT = "Try loading the original image again";
 export const HOME_HERO_UNAVAILABLE_TEXT = "Image unavailable. The fallback visual remains available.";
 export const COPY_IMAGE_LINK_TEXT = "Copy image link";
+export const COPY_IMAGE_LINK_SUCCESS_DURATION_MS = 2200;
 export function getHomeHeroMediaSource(mode: HomeHeroMediaMode, retryAttempt = 0) {
   if (mode === "fallback") return fallbackBrainVisual;
   return retryAttempt > 0 ? `${brainVisual}?retry=${retryAttempt}` : brainVisual;
@@ -73,6 +74,9 @@ export function canRetryHomeHeroImage(failedRetryAttempts: number) {
 export function getCopyableHomeHeroMediaUrl(source: string, origin: string) {
   return new URL(source, origin).toString();
 }
+export function getCopyImageLinkButtonClass(hasCopied: boolean) {
+  return `pointer-events-auto mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold text-[#e4fbf5] transition-[background-color,border-color,box-shadow] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8eee2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061923] active:scale-[0.97] motion-reduce:transition-none ${hasCopied ? "border-[#b7f3cc] bg-[#237a49] shadow-[0_0_0_3px_rgba(114,220,152,0.18)]" : "border-[#9be4d5]/65 bg-[#123c44]/90 hover:bg-[#1b5860]"}`;
+}
 
 export function HomeHeroMedia({ initialMode = "original", initialFailedRetryAttempts = 0 }: { initialMode?: HomeHeroMediaMode; initialFailedRetryAttempts?: number }) {
   const [mode, setMode] = React.useState<HomeHeroMediaMode>(initialMode);
@@ -80,8 +84,12 @@ export function HomeHeroMedia({ initialMode = "original", initialFailedRetryAtte
   const [failedRetryAttempts, setFailedRetryAttempts] = React.useState(initialFailedRetryAttempts);
   const [failedImageUrl, setFailedImageUrl] = React.useState(() => getHomeHeroMediaSource("original"));
   const [hasCopiedImageLink, setHasCopiedImageLink] = React.useState(false);
+  const copyResetTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFallback = mode === "fallback";
   const canRetry = canRetryHomeHeroImage(failedRetryAttempts);
+  React.useEffect(() => () => {
+    if (copyResetTimerRef.current) clearTimeout(copyResetTimerRef.current);
+  }, []);
   const retryOriginalImage = () => {
     setRetryAttempt((attempt) => attempt + 1);
     setMode("original");
@@ -90,6 +98,7 @@ export function HomeHeroMedia({ initialMode = "original", initialFailedRetryAtte
     if (currentTarget.src.startsWith("data:image/svg+xml")) return;
     setFailedImageUrl(currentTarget.currentSrc || currentTarget.src);
     setHasCopiedImageLink(false);
+    if (copyResetTimerRef.current) clearTimeout(copyResetTimerRef.current);
     if (retryAttempt > 0) setFailedRetryAttempts((count) => Math.min(count + 1, HOME_HERO_RETRY_FAILURE_LIMIT));
     setMode("fallback");
   };
@@ -101,12 +110,17 @@ export function HomeHeroMedia({ initialMode = "original", initialFailedRetryAtte
     try {
       await navigator.clipboard.writeText(url);
       setHasCopiedImageLink(true);
+      if (copyResetTimerRef.current) clearTimeout(copyResetTimerRef.current);
+      copyResetTimerRef.current = setTimeout(() => {
+        setHasCopiedImageLink(false);
+        copyResetTimerRef.current = null;
+      }, COPY_IMAGE_LINK_SUCCESS_DURATION_MS);
     } catch {
       setHasCopiedImageLink(false);
     }
   };
 
-  return <><img src={getHomeHeroMediaSource(mode, retryAttempt)} alt={isFallback ? "Abstract neural-network fallback visual — no patient image" : "Abstract non-patient-specific neural-network brain visual"} loading="lazy" decoding="async" onError={handleImageError} onLoad={handleImageLoad} className="absolute inset-0 h-full w-full object-cover object-center brightness-[0.46] contrast-[1.28] grayscale" />{isFallback ? <>{canRetry ? <><Tooltip><TooltipTrigger asChild><button type="button" onClick={retryOriginalImage} aria-label="Retry loading the original neural-network image" className="group absolute right-4 top-4 z-20 inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-[#9be4d5]/70 bg-[#061923]/90 px-3 text-xs font-semibold text-[#def8f0] shadow-lg backdrop-blur-sm transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-[#c8f6ea] hover:bg-[#174a52] hover:shadow-[0_12px_28px_rgba(89,216,193,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8eee2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061923] active:translate-y-0 active:scale-[0.97] motion-reduce:transform-none motion-reduce:transition-none"><RotateCw className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:rotate-[-20deg] group-active:rotate-[100deg] motion-reduce:transform-none motion-reduce:transition-none" />Retry</button></TooltipTrigger><TooltipContent side="bottom" sideOffset={10} className="border border-[#8fdccc]/60 bg-[#061923]/95 text-[#e4fbf5] shadow-xl motion-reduce:animate-none">{RETRY_TOOLTIP_TEXT}</TooltipContent></Tooltip><span className="sr-only" role="status" aria-live="polite">Original image unavailable. A fallback visual is shown. You can retry loading the original image.</span></> : <div className="unavailable-overlay-enter pointer-events-none absolute inset-0 z-20 grid place-items-center bg-[#020c0e]/65 px-6 text-center backdrop-blur-sm" role="status" aria-live="polite"><div className="max-w-sm rounded-xl border border-[#d0ece5]/45 bg-[#061923]/75 px-4 py-3 text-sm font-medium leading-6 text-[#e4fbf5] shadow-xl"><p>{HOME_HERO_UNAVAILABLE_TEXT}</p><button type="button" onClick={copyFailedImageLink} aria-label="Copy the original image link to open in a new tab" className="pointer-events-auto mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-[#9be4d5]/65 bg-[#123c44]/90 px-3 text-xs font-semibold text-[#e4fbf5] transition-colors hover:bg-[#1b5860] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8eee2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061923] active:scale-[0.97] motion-reduce:transition-none">{hasCopiedImageLink ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{hasCopiedImageLink ? "Link copied" : COPY_IMAGE_LINK_TEXT}</button><span className="sr-only" aria-live="polite">{hasCopiedImageLink ? "Original image link copied. You can open it in a new tab." : "Copy the original image link to try opening it in a new tab."}</span></div></div>}</> : null}</>;
+  return <><img src={getHomeHeroMediaSource(mode, retryAttempt)} alt={isFallback ? "Abstract neural-network fallback visual — no patient image" : "Abstract non-patient-specific neural-network brain visual"} loading="lazy" decoding="async" onError={handleImageError} onLoad={handleImageLoad} className="absolute inset-0 h-full w-full object-cover object-center brightness-[0.46] contrast-[1.28] grayscale" />{isFallback ? <>{canRetry ? <><Tooltip><TooltipTrigger asChild><button type="button" onClick={retryOriginalImage} aria-label="Retry loading the original neural-network image" className="group absolute right-4 top-4 z-20 inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-[#9be4d5]/70 bg-[#061923]/90 px-3 text-xs font-semibold text-[#def8f0] shadow-lg backdrop-blur-sm transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-[#c8f6ea] hover:bg-[#174a52] hover:shadow-[0_12px_28px_rgba(89,216,193,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8eee2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061923] active:translate-y-0 active:scale-[0.97] motion-reduce:transform-none motion-reduce:transition-none"><RotateCw className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:rotate-[-20deg] group-active:rotate-[100deg] motion-reduce:transform-none motion-reduce:transition-none" />Retry</button></TooltipTrigger><TooltipContent side="bottom" sideOffset={10} className="border border-[#8fdccc]/60 bg-[#061923]/95 text-[#e4fbf5] shadow-xl motion-reduce:animate-none">{RETRY_TOOLTIP_TEXT}</TooltipContent></Tooltip><span className="sr-only" role="status" aria-live="polite">Original image unavailable. A fallback visual is shown. You can retry loading the original image.</span></> : <div className="unavailable-overlay-enter pointer-events-none absolute inset-0 z-20 grid place-items-center bg-[#020c0e]/65 px-6 text-center backdrop-blur-sm" role="status" aria-live="polite"><div className="max-w-sm rounded-xl border border-[#d0ece5]/45 bg-[#061923]/75 px-4 py-3 text-sm font-medium leading-6 text-[#e4fbf5] shadow-xl"><p>{HOME_HERO_UNAVAILABLE_TEXT}</p><button type="button" onClick={copyFailedImageLink} aria-label="Copy the original image link to open in a new tab" className={getCopyImageLinkButtonClass(hasCopiedImageLink)}>{hasCopiedImageLink ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{hasCopiedImageLink ? "Link copied" : COPY_IMAGE_LINK_TEXT}</button><span className="sr-only" aria-live="polite">{hasCopiedImageLink ? "Original image link copied. You can open it in a new tab." : "Copy the original image link to try opening it in a new tab."}</span></div></div>}</> : null}</>;
 }
 function Coverage({ label, value }: { label: string; value: number }) { return <div className="rounded-xl border border-[#d3e6e0] bg-white/70 p-3"><p className="text-[11px] font-medium text-[#63807d]">{label}</p><p className="mt-1 text-xl font-semibold text-[#1f5860]">{value}</p></div>; }
 function WorkflowCard({ icon: Icon, title, items }: { icon: typeof Activity; title: string; items: string[] }) { return <article className="rounded-xl border border-[#e5eeeb] bg-[#fbfdfc] p-4"><span className="grid h-8 w-8 place-items-center rounded-lg bg-[#e8f6f1] text-[#28736a]"><Icon className="h-4 w-4" /></span><h3 className="mt-3 text-sm font-semibold text-[#24404a]">{title}</h3><ul className="mt-2 space-y-1.5 text-xs leading-5 text-slate-500">{items.map(item => <li key={item} className="flex gap-2"><span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[#52aa94]" />{item}</li>)}</ul></article>; }

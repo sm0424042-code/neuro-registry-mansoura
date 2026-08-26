@@ -212,3 +212,5 @@
 - [x] Test overlay fade-in styling and preserve the retry-limit behavior, then save a checkpoint.
 - [x] Add an accessible control in the unavailable-image overlay to copy the original image link.
 - [x] Test copy-link feedback, overlay accessibility, and privacy-safe URL handling, then save a checkpoint.
+- [x] Add a brief green success confirmation state to the overlay Copy image link button after copying.
+- [x] Test timed success styling, copy feedback, and reduced-motion behavior, then save a checkpoint.

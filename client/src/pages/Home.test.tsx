@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { canRetryHomeHeroImage, COPY_IMAGE_LINK_TEXT, getCopyableHomeHeroMediaUrl, getHomeHeroMediaSource, HomeHeroMedia, HOME_HERO_RETRY_FAILURE_LIMIT, HOME_HERO_UNAVAILABLE_TEXT, RETRY_TOOLTIP_TEXT } from "./Home";
+import { canRetryHomeHeroImage, COPY_IMAGE_LINK_SUCCESS_DURATION_MS, COPY_IMAGE_LINK_TEXT, getCopyableHomeHeroMediaUrl, getCopyImageLinkButtonClass, getHomeHeroMediaSource, HomeHeroMedia, HOME_HERO_RETRY_FAILURE_LIMIT, HOME_HERO_UNAVAILABLE_TEXT, RETRY_TOOLTIP_TEXT } from "./Home";
 
 describe("HomeHeroMedia", () => {
   it("defers the heavy homepage visual while reserving its styled visual surface", () => {
@@ -52,5 +52,13 @@ describe("HomeHeroMedia", () => {
 
   it("copies an absolute original-image URL suitable for opening in another tab", () => {
     expect(getCopyableHomeHeroMediaUrl("/manus-storage/example.png?retry=3", "https://registry.example")).toBe("https://registry.example/manus-storage/example.png?retry=3");
+  });
+
+  it("uses a temporary green style after a successful copied-link confirmation", () => {
+    expect(COPY_IMAGE_LINK_SUCCESS_DURATION_MS).toBe(2200);
+    expect(getCopyImageLinkButtonClass(false)).toContain("bg-[#123c44]/90");
+    expect(getCopyImageLinkButtonClass(true)).toContain("bg-[#237a49]");
+    expect(getCopyImageLinkButtonClass(true)).toContain("border-[#b7f3cc]");
+    expect(getCopyImageLinkButtonClass(true)).toContain("motion-reduce:transition-none");
   });
 });

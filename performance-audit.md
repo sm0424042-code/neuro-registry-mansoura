@@ -96,6 +96,10 @@ The unavailable-image overlay now fades from transparent to opaque over **220 ms
 
 At the terminal unavailable-image state, the overlay now includes a compact **Copy image link** control. It copies the fully resolved original image URL—including the most recent retry marker—to the browser clipboard, allowing the user to paste it into a new tab. The control changes to **Link copied** after a successful copy and provides a live text confirmation for assistive technologies. The copied value is solely the static, non-patient hero-media URL; no record, user, patient, or clinical data is included.
 
+## Copied-link green confirmation
+
+After a successful copy, the Copy image link button now adopts a clear green background, border, and subtle confirmation ring for **2.2 seconds** before returning to its standard teal state. Repeated successful copies reset the timer, and the timer is cleared if the component unmounts or a new media error occurs. The confirmation retains the text-and-icon change to **Link copied**, while nonessential colour transitions are disabled for reduced-motion users. This is entirely local UI state and does not change the copied URL or data boundary.
+
 ## Findings and safe next steps
 
 The feature’s direct runtime impact is low because it uses local React state and conditional markup. No code optimization was applied during this audit: changing the 220 ms interval would trade away the requested visible feedback, and the measured local interaction remains responsive.
