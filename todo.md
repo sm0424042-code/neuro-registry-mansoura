@@ -190,3 +190,5 @@
 - [x] Verify incremental loading, end-of-list, filtering, and no-result behavior at mobile and desktop widths, then save a checkpoint.
 - [x] Add a reduced-motion-safe Skeleton Loading state while the next local Saved Items batch is rendered.
 - [x] Verify Skeleton Loading transition and preservation of public data-only boundaries, then save a checkpoint.
+- [x] Audit public workflow-preview load performance, resource footprint, and local Saved Items batch responsiveness without registry data.
+- [x] Document performance findings, apply evidence-based safe optimizations if needed, and save a checkpoint.
