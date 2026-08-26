@@ -21,9 +21,11 @@ const adminProcedure = approvedProcedure.use(({ ctx, next }) => {
   return next({ ctx });
 });
 
+const directIdentifierPattern = /\bMUNR-[A-Z0-9]{4,16}\b|\bpatient\b|\bnational\s*id\b|\b(?:medical\s*record|hospital|file)\s*(?:number|no\.?|id)\b|\b(?:phone|mobile|telephone|contact)\s*(?:number|no\.?)\b|\b(?:home|postal|residential)?\s*address\b|\b(?:date\s*of\s*birth|birth\s*date|dob)\b|\b(?:mrn|nhs\s*number)\b|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b\d{14}\b|(?:\+?20|0)?1[0125]\d{8}|اسم\s*المريض|(?:المريض|مريض|المرضى)|رقم\s*(?:الهاتف|التليفون|الجوال|المحمول|الهوية|البطاقة|الملف|المستشفى|السجل\s*الطبي)|الرقم\s*القومي|عنوان(?:\s*المريض)?|تاريخ\s*الميلاد|(?:البريد\s*الإلكتروني|ايميل)/i;
+
 const directMessageInputSchema = z.object({
   recipientUserId: z.number().int().positive(),
-  body: z.string().trim().min(1).max(1000).refine(value => !/\b(MUNR-[A-Z0-9]{4,16}|national\s*id|patient\s*(?:name|phone|mobile)|phone\s*number|mobile\s*number)\b/i.test(value), "Messages must not include research IDs, national IDs, patient names, or phone numbers."),
+  body: z.string().trim().min(1).max(1000).refine(value => !directIdentifierPattern.test(value), "Messages must not include Research IDs, patient information, contact details, national or medical-record numbers, addresses, dates of birth, or email addresses."),
 });
 
 export const appRouter = router({

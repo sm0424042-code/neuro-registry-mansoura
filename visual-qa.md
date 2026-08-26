@@ -46,6 +46,8 @@ The public `/workflow-preview` page was opened in the live browser after the mes
 
 The browser was scrolled to the full messaging panels. The two panels remain legible side by side on desktop: the left panel identifies direct work conversations as separate from records, and the right panel visibly lists the three approval and identifier-boundary rules followed by the complete warning. This is public, non-patient workflow evidence only; it does not represent a sent message or authenticated chat interaction.
 
+After the expanded identifier-validation update, the public messaging panel was reopened in the live browser. It now visibly states that the app blocks MUNR IDs and obvious patient or contact identifiers in both English and Arabic. Its warning visibly covers patient information, names, contact details, addresses, dates of birth, national or medical-record numbers, MUNR Research IDs, report text, and clinical record details, while continuing to display no user, message, or patient data.
+
 The project preview renderer captured desktop layouts for `/records/new` and `/`, visibly showing the active **Stroke** pathway, the history / examination / discharge-treatment card, the brain-imaging overview visual, and the clinical workflow board. These renderer captures are useful layout evidence but are not treated as a replacement for a real browser-session authentication check.
 
 The code-level update was validated with TypeScript, Vitest, and a production build. The unprotected server startup and the protected access gate both loaded after the latest clinical workflow changes.
