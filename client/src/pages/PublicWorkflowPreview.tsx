@@ -26,7 +26,7 @@ const workflows = [
     icon: BrainCircuit,
     title: "Multiple Sclerosis",
     tone: "bg-[#eef1fb] text-[#59699a]",
-    fields: ["MSFC components and disease-modifying therapy", "Tuberculin and chest TB screen", "Infection-exclusion review before immune therapy", "Dated dose adherence"],
+    fields: ["MSFC components and disease-modifying therapy", "Chest imaging and tuberculin / IGRA TB screen", "Varicella immunity (VZV immunoglobulin / serology)", "Infection-exclusion review before immune therapy", "Dated dose adherence"],
   },
   {
     icon: Microscope,
@@ -77,7 +77,7 @@ export default function PublicWorkflowPreview() {
 
         <section className="grid gap-5 lg:grid-cols-[1fr_1fr]">
           <Card className="border-[#dce8e4]"><CardContent className="p-6"><div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-[#edf5fa] text-[#4c7798]"><FileText className="h-5 w-5" /></span><div><p className="text-[10px] font-bold tracking-[0.14em] text-[#5d7a84]">COMMON RECORD SECTIONS</p><h2 className="font-display text-2xl text-[#24434b]">Kept separate from clinical data</h2></div></div><div className="mt-5 grid gap-3 sm:grid-cols-2"><PreviewField label="Brief clinical history" /><PreviewField label="Positive examination findings" /><PreviewField label="Discharge treatment" /><PreviewField label="Completion owner and missing items" /><PreviewField label="Secure investigation files" /><PreviewField label="Longitudinal follow-up" /></div></CardContent></Card>
-          <Card className="border-[#cfe5dd] bg-[#f0f9f6]"><CardContent className="p-6"><Pill className="h-6 w-6 text-[#28736a]" /><p className="mt-4 text-[10px] font-bold tracking-[0.14em] text-[#3c7b72]">IMMUNE-THERAPY SAFETY</p><h2 className="mt-2 font-display text-2xl text-[#21464d]">Pre-therapy infection-exclusion review</h2><p className="mt-3 text-sm leading-6 text-[#557377]">The protected form records a protocol status and a research-safe note before relevant immune therapy. The treating team determines which screening or referral is appropriate; this demonstration does not offer treatment advice.</p><a href="/records/new" className="mt-6 inline-flex items-center rounded-md bg-[#17616c] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#104f58]">Open secure registry<ArrowRight className="ml-2 h-4 w-4" /></a></CardContent></Card>
+          <Card className="border-[#cfe5dd] bg-[#f0f9f6]"><CardContent className="p-6"><Pill className="h-6 w-6 text-[#28736a]" /><p className="mt-4 text-[10px] font-bold tracking-[0.14em] text-[#3c7b72]">IMMUNE-THERAPY SAFETY</p><h2 className="mt-2 font-display text-2xl text-[#21464d]">Pre-therapy infection-exclusion review</h2><p className="mt-3 text-sm leading-6 text-[#557377]">The protected form now records chest imaging, tuberculin / IGRA TB screening, and varicella immunity (VZV immunoglobulin / serology) as protocol items with a status and research-safe note before relevant immune therapy. The treating team determines which screening or referral is appropriate; this demonstration does not offer treatment advice.</p><a href="/records/new" className="mt-6 inline-flex items-center rounded-md bg-[#17616c] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#104f58]">Open secure registry<ArrowRight className="ml-2 h-4 w-4" /></a></CardContent></Card>
         </section>
       </div>
     </main>
