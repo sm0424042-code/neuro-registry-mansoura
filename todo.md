@@ -96,6 +96,7 @@
 - [x] Save a user-facing redesign checkpoint.
 
 - [x] Add Stroke complication capture and cohort-specific Stroke evaluation and discharge-treatment fields.
+- [x] Reconfirm the explicit Stroke complication selector in the Stroke-only clinical workflow and validation contract.
 - [x] Add MS pre-immunosuppression screening including chest tuberculosis screening, plus dated dose-adherence tracking.
 - [x] Add a brief clinical history, positive examination findings, and discharge treatment to every research record.
 - [x] Add a single immune-therapy fieldset that is visible only where relevant to the selected cohort.
