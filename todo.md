@@ -122,3 +122,4 @@
 - [ ] After a future approved OAuth sign-in, verify Stroke, MS, CIDP, and Neuro-ophthalmology cohort controls interactively in `/records/new`, then correct the visual QA record.
 - [x] Add a non-sensitive public summary of the latest clinical workflow additions to the protected access gate.
 - [x] Add a static public workflow demonstration that shows no patient data and does not require sign-in.
+- [x] Strengthen manual registration approval with privacy-safe applicant metadata and visible approver guidance, without passwords or national IDs.
