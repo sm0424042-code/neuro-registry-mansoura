@@ -80,6 +80,10 @@ The Retry control now has a compact visual lift, brighter border and teal glow o
 
 The fallback-only Retry control now uses the template’s Radix Tooltip component. Hovering or focusing the button reveals **Try loading the original image again** below the control, with the existing dark/teal visual language and reduced-motion-safe animation suppression. The button retains its explicit accessible name; the tooltip supplements rather than replaces it. The tooltip only exists with fallback state, so the normal successful-image path adds no extra interaction surface or data flow.
 
+## Retry-limit follow-up
+
+Retry is now bounded to **three failed reloads**. Each failed retry returns to the static fallback and increments the local failure count; after the third failure, the Retry button and tooltip are removed and an accessible status message states: **Image unavailable. The fallback visual remains available.** The fallback remains visible and stable, while successful original-image loads reset the failure count. Errors from the embedded fallback itself are ignored so the error state cannot loop. This remains a local media-state control with no patient, record, user, or registry data flow.
+
 ## Findings and safe next steps
 
 The feature’s direct runtime impact is low because it uses local React state and conditional markup. No code optimization was applied during this audit: changing the 220 ms interval would trade away the requested visible feedback, and the measured local interaction remains responsive.

@@ -59,22 +59,37 @@ export default function Home() {
 
 function Metric({ icon: Icon, label, value, loading, tone }: { icon: typeof Activity; label: string; value: number; loading: boolean; tone: "teal" | "blue" | "amber" | "green" }) { const colors = { teal: "bg-[#e9f7f3] text-[#257161]", blue: "bg-[#eef3fa] text-[#3f668f]", amber: "bg-[#fff4e8] text-[#a96735]", green: "bg-[#eef7eb] text-[#597c50]" }; return <Card className="border-[#e1e9e5] shadow-sm"><CardContent className="p-5"><div className="flex items-start justify-between"><div><p className="text-xs font-medium text-slate-500">{label}</p>{loading ? <Skeleton className="mt-3 h-8 w-20" /> : <p className="mt-2 text-2xl font-semibold tracking-tight text-[#1d333f]">{value}</p>}</div><span className={`grid h-10 w-10 place-items-center rounded-xl ${colors[tone]}`}><Icon className="h-5 w-5" /></span></div></CardContent></Card>; }
 export type HomeHeroMediaMode = "original" | "fallback";
+export const HOME_HERO_RETRY_FAILURE_LIMIT = 3;
 export const RETRY_TOOLTIP_TEXT = "Try loading the original image again";
+export const HOME_HERO_UNAVAILABLE_TEXT = "Image unavailable. The fallback visual remains available.";
 export function getHomeHeroMediaSource(mode: HomeHeroMediaMode, retryAttempt = 0) {
   if (mode === "fallback") return fallbackBrainVisual;
   return retryAttempt > 0 ? `${brainVisual}?retry=${retryAttempt}` : brainVisual;
 }
+export function canRetryHomeHeroImage(failedRetryAttempts: number) {
+  return failedRetryAttempts < HOME_HERO_RETRY_FAILURE_LIMIT;
+}
 
-export function HomeHeroMedia({ initialMode = "original" }: { initialMode?: HomeHeroMediaMode }) {
+export function HomeHeroMedia({ initialMode = "original", initialFailedRetryAttempts = 0 }: { initialMode?: HomeHeroMediaMode; initialFailedRetryAttempts?: number }) {
   const [mode, setMode] = React.useState<HomeHeroMediaMode>(initialMode);
   const [retryAttempt, setRetryAttempt] = React.useState(0);
+  const [failedRetryAttempts, setFailedRetryAttempts] = React.useState(initialFailedRetryAttempts);
   const isFallback = mode === "fallback";
+  const canRetry = canRetryHomeHeroImage(failedRetryAttempts);
   const retryOriginalImage = () => {
     setRetryAttempt((attempt) => attempt + 1);
     setMode("original");
   };
+  const handleImageError = ({ currentTarget }: React.SyntheticEvent<HTMLImageElement>) => {
+    if (currentTarget.src.startsWith("data:image/svg+xml")) return;
+    if (retryAttempt > 0) setFailedRetryAttempts((count) => Math.min(count + 1, HOME_HERO_RETRY_FAILURE_LIMIT));
+    setMode("fallback");
+  };
+  const handleImageLoad = () => {
+    if (mode === "original") setFailedRetryAttempts(0);
+  };
 
-  return <><img src={getHomeHeroMediaSource(mode, retryAttempt)} alt={isFallback ? "Abstract neural-network fallback visual — no patient image" : "Abstract non-patient-specific neural-network brain visual"} loading="lazy" decoding="async" onError={() => setMode("fallback")} className="absolute inset-0 h-full w-full object-cover object-center brightness-[0.46] contrast-[1.28] grayscale" />{isFallback ? <><Tooltip><TooltipTrigger asChild><button type="button" onClick={retryOriginalImage} aria-label="Retry loading the original neural-network image" className="group absolute right-4 top-4 z-20 inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-[#9be4d5]/70 bg-[#061923]/90 px-3 text-xs font-semibold text-[#def8f0] shadow-lg backdrop-blur-sm transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-[#c8f6ea] hover:bg-[#174a52] hover:shadow-[0_12px_28px_rgba(89,216,193,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8eee2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061923] active:translate-y-0 active:scale-[0.97] motion-reduce:transform-none motion-reduce:transition-none"><RotateCw className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:rotate-[-20deg] group-active:rotate-[100deg] motion-reduce:transform-none motion-reduce:transition-none" />Retry</button></TooltipTrigger><TooltipContent side="bottom" sideOffset={10} className="border border-[#8fdccc]/60 bg-[#061923]/95 text-[#e4fbf5] shadow-xl motion-reduce:animate-none">{RETRY_TOOLTIP_TEXT}</TooltipContent></Tooltip><span className="sr-only" role="status" aria-live="polite">Original image unavailable. A fallback visual is shown. You can retry loading the original image.</span></> : null}</>;
+  return <><img src={getHomeHeroMediaSource(mode, retryAttempt)} alt={isFallback ? "Abstract neural-network fallback visual — no patient image" : "Abstract non-patient-specific neural-network brain visual"} loading="lazy" decoding="async" onError={handleImageError} onLoad={handleImageLoad} className="absolute inset-0 h-full w-full object-cover object-center brightness-[0.46] contrast-[1.28] grayscale" />{isFallback ? <>{canRetry ? <><Tooltip><TooltipTrigger asChild><button type="button" onClick={retryOriginalImage} aria-label="Retry loading the original neural-network image" className="group absolute right-4 top-4 z-20 inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-[#9be4d5]/70 bg-[#061923]/90 px-3 text-xs font-semibold text-[#def8f0] shadow-lg backdrop-blur-sm transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-[#c8f6ea] hover:bg-[#174a52] hover:shadow-[0_12px_28px_rgba(89,216,193,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b8eee2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#061923] active:translate-y-0 active:scale-[0.97] motion-reduce:transform-none motion-reduce:transition-none"><RotateCw className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:rotate-[-20deg] group-active:rotate-[100deg] motion-reduce:transform-none motion-reduce:transition-none" />Retry</button></TooltipTrigger><TooltipContent side="bottom" sideOffset={10} className="border border-[#8fdccc]/60 bg-[#061923]/95 text-[#e4fbf5] shadow-xl motion-reduce:animate-none">{RETRY_TOOLTIP_TEXT}</TooltipContent></Tooltip><span className="sr-only" role="status" aria-live="polite">Original image unavailable. A fallback visual is shown. You can retry loading the original image.</span></> : <p className="absolute right-4 top-4 z-20 max-w-[15rem] rounded-lg border border-[#d0ece5]/40 bg-[#061923]/90 px-3 py-2 text-xs leading-5 text-[#e4fbf5] shadow-lg backdrop-blur-sm" role="status" aria-live="polite">{HOME_HERO_UNAVAILABLE_TEXT}</p>}</> : null}</>;
 }
 function Coverage({ label, value }: { label: string; value: number }) { return <div className="rounded-xl border border-[#d3e6e0] bg-white/70 p-3"><p className="text-[11px] font-medium text-[#63807d]">{label}</p><p className="mt-1 text-xl font-semibold text-[#1f5860]">{value}</p></div>; }
 function WorkflowCard({ icon: Icon, title, items }: { icon: typeof Activity; title: string; items: string[] }) { return <article className="rounded-xl border border-[#e5eeeb] bg-[#fbfdfc] p-4"><span className="grid h-8 w-8 place-items-center rounded-lg bg-[#e8f6f1] text-[#28736a]"><Icon className="h-4 w-4" /></span><h3 className="mt-3 text-sm font-semibold text-[#24404a]">{title}</h3><ul className="mt-2 space-y-1.5 text-xs leading-5 text-slate-500">{items.map(item => <li key={item} className="flex gap-2"><span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[#52aa94]" />{item}</li>)}</ul></article>; }

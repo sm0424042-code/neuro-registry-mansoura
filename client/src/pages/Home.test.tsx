@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { getHomeHeroMediaSource, HomeHeroMedia, RETRY_TOOLTIP_TEXT } from "./Home";
+import { canRetryHomeHeroImage, getHomeHeroMediaSource, HomeHeroMedia, HOME_HERO_RETRY_FAILURE_LIMIT, HOME_HERO_UNAVAILABLE_TEXT, RETRY_TOOLTIP_TEXT } from "./Home";
 
 describe("HomeHeroMedia", () => {
   it("defers the heavy homepage visual while reserving its styled visual surface", () => {
@@ -31,5 +31,16 @@ describe("HomeHeroMedia", () => {
     expect(fallbackMarkup).toContain("hover:-translate-y-0.5");
     expect(fallbackMarkup).toContain("group-hover:rotate-[-20deg]");
     expect(fallbackMarkup).toContain("motion-reduce:transform-none");
+  });
+
+  it("hides Retry and explains image unavailability after three failed retry attempts", () => {
+    const limitedMarkup = renderToStaticMarkup(<HomeHeroMedia initialMode="fallback" initialFailedRetryAttempts={HOME_HERO_RETRY_FAILURE_LIMIT} />);
+
+    expect(canRetryHomeHeroImage(0)).toBe(true);
+    expect(canRetryHomeHeroImage(HOME_HERO_RETRY_FAILURE_LIMIT - 1)).toBe(true);
+    expect(canRetryHomeHeroImage(HOME_HERO_RETRY_FAILURE_LIMIT)).toBe(false);
+    expect(limitedMarkup).not.toContain("Retry loading the original neural-network image");
+    expect(limitedMarkup).toContain(HOME_HERO_UNAVAILABLE_TEXT);
+    expect(limitedMarkup).toContain('role="status"');
   });
 });

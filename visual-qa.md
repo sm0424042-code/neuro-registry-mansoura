@@ -139,3 +139,7 @@ The fallback-only Retry button now lifts slightly, brightens its border and back
 ## Retry tooltip
 
 The fallback Retry control now uses the project’s accessible tooltip component. Hovering or focusing the button reveals the explanatory text **Try loading the original image again** below it. The trigger retains its direct accessible name, uses the existing focus treatment, and the tooltip’s nonessential animation is suppressed for reduced-motion preferences. Tooltip state occurs only in the local fallback-media control and exposes no patient, user, record, or clinical information.
+
+## Retry failure limit
+
+The fallback media control now allows up to three failed Retry reloads. After the third failure, Retry and its tooltip are removed and a simple `role="status"` message appears: **Image unavailable. The fallback visual remains available.** The abstract fallback remains visible in its original frame. Unit coverage verifies Retry is available before the limit, unavailable at the limit, and replaced by the accessible message without adding patient, user, record, or clinical content.
