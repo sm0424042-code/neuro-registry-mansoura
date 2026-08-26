@@ -84,6 +84,10 @@ The fallback-only Retry control now uses the template’s Radix Tooltip componen
 
 Retry is now bounded to **three failed reloads**. Each failed retry returns to the static fallback and increments the local failure count; after the third failure, the Retry button and tooltip are removed and an accessible status message states: **Image unavailable. The fallback visual remains available.** The fallback remains visible and stable, while successful original-image loads reset the failure count. Errors from the embedded fallback itself are ignored so the error state cannot loop. This remains a local media-state control with no patient, record, user, or registry data flow.
 
+## Unavailable-image overlay follow-up
+
+At the retry limit, the unavailable-image status is now presented as a centered, semi-transparent overlay spanning the fallback visual rather than as a small corner text block. The overlay uses a dark translucent surface with modest background blur and a high-contrast message panel, so the abstract fallback remains visibly present behind it. It is `pointer-events-none`, preserving the non-interactive terminal state, and retains `role="status"` with polite live announcement semantics. This is a presentation-only change; the retry count, fallback persistence, and privacy boundary are unchanged.
+
 ## Findings and safe next steps
 
 The feature’s direct runtime impact is low because it uses local React state and conditional markup. No code optimization was applied during this audit: changing the 220 ms interval would trade away the requested visible feedback, and the measured local interaction remains responsive.

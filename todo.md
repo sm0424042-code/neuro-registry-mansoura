@@ -206,3 +206,5 @@
 - [x] Test Retry tooltip semantics and preserve fallback-retry behavior, then save a checkpoint.
 - [x] Limit fallback Retry to three failed attempts and hide the control afterwards.
 - [x] Display and test an accessible unavailable-image message after the Retry limit, then save a checkpoint.
+- [x] Present the retry-limit unavailable-image message as a readable semi-transparent overlay over the fallback visual.
+- [x] Test overlay semantics, visual treatment, and unchanged retry-limit behavior, then save a checkpoint.

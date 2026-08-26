@@ -42,5 +42,8 @@ describe("HomeHeroMedia", () => {
     expect(limitedMarkup).not.toContain("Retry loading the original neural-network image");
     expect(limitedMarkup).toContain(HOME_HERO_UNAVAILABLE_TEXT);
     expect(limitedMarkup).toContain('role="status"');
+    expect(limitedMarkup).toContain("absolute inset-0 z-20 grid place-items-center");
+    expect(limitedMarkup).toContain("bg-[#020c0e]/65");
+    expect(limitedMarkup).toContain("backdrop-blur-sm");
   });
 });

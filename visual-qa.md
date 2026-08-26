@@ -143,3 +143,7 @@ The fallback Retry control now uses the project’s accessible tooltip component
 ## Retry failure limit
 
 The fallback media control now allows up to three failed Retry reloads. After the third failure, Retry and its tooltip are removed and a simple `role="status"` message appears: **Image unavailable. The fallback visual remains available.** The abstract fallback remains visible in its original frame. Unit coverage verifies Retry is available before the limit, unavailable at the limit, and replaced by the accessible message without adding patient, user, record, or clinical content.
+
+## Unavailable-image overlay
+
+After the Retry limit, the unavailable-image status now appears as a centered, semi-transparent Overlay over the abstract fallback visual. The overlay spans the media region with a dark translucent background and subtle blur, while its message panel remains high contrast and accessible through `role="status"`. Static coverage confirms the full-overlay geometry, transparency class, and blur treatment; the retry-limit state and all data boundaries remain unchanged.
