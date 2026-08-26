@@ -16,6 +16,7 @@ import {
   Microscope,
   MessageSquare,
   Pill,
+  Search,
   Share2,
   ShieldCheck,
   UsersRound,
@@ -40,6 +41,8 @@ export default function PublicWorkflowPreview() {
   const [hasCopiedPreviewLink, setHasCopiedPreviewLink] = useState(false);
   const [isSavedItemsOpen, setIsSavedItemsOpen] = useState(false);
   const [isSaveConfirming, setIsSaveConfirming] = useState(false);
+  const [savedSearch, setSavedSearch] = useState("");
+  const [savedFilter, setSavedFilter] = useState<"all" | "preview">("all");
   const saveAnimationTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -116,6 +119,9 @@ export default function PublicWorkflowPreview() {
     }
   };
 
+  const savedSearchTerm = savedSearch.trim().toLowerCase();
+  const savedArtworkMatches = isArtworkSaved && (savedFilter === "all" || savedFilter === "preview") && ["mansoura university neurology center", "public preview", "preview artwork"].some((value) => value.includes(savedSearchTerm));
+
   return (
     <main className="min-h-screen bg-[#f6faf8] text-[#203943]">
       <section className="relative overflow-hidden bg-[#091d30] px-5 py-8 text-white md:px-10 md:py-12">
@@ -156,11 +162,20 @@ export default function PublicWorkflowPreview() {
             <DialogDescription className="mt-2 leading-6 text-[#587476]">Saved preview cards are kept on this device only. They do not include patient records, user information, or live registry data.</DialogDescription>
           </DialogHeader>
           {isArtworkSaved ? (
-            <div className="p-6">
-              <article className="overflow-hidden rounded-2xl border border-[#cfe5dd] bg-white shadow-sm">
-                <img src={brainVisual} alt="Mansoura University Neurology Center saved preview artwork" className="h-40 w-full object-cover" />
-                <div className="p-5"><p className="text-[10px] font-bold tracking-[0.15em] text-[#3b7d73]">PUBLIC PREVIEW</p><h3 className="mt-1 font-display text-xl text-[#1e444c]">Mansoura University Neurology Center</h3><p className="mt-2 text-sm leading-6 text-[#547175]">Non-patient artwork and public workflow preview.</p><button type="button" onClick={() => updateArtworkSaved(false)} className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-[#cce1da] bg-white px-3.5 text-sm font-semibold text-[#276d65] transition-colors hover:bg-[#eff9f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98]">Remove from saved items</button></div>
-              </article>
+            <div className="space-y-5 p-6">
+              <div className="space-y-3">
+                <label htmlFor="saved-items-search" className="text-xs font-bold tracking-[0.13em] text-[#4e7775]">FIND SAVED ITEMS</label>
+                <div className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#5f8582]" /><input id="saved-items-search" value={savedSearch} onChange={(event) => setSavedSearch(event.target.value)} placeholder="Search public preview cards" className="min-h-11 w-full rounded-xl border border-[#cfe5dd] bg-white py-2 pl-10 pr-3 text-sm text-[#24434b] outline-none transition-colors placeholder:text-[#73908d] focus:border-[#4ba696] focus:ring-2 focus:ring-[#bfe9e0]" /></div>
+                <div className="flex flex-wrap gap-2" aria-label="Filter saved items"><button type="button" aria-pressed={savedFilter === "all"} onClick={() => setSavedFilter("all")} className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98] ${savedFilter === "all" ? "border-[#24776a] bg-[#24776a] text-white" : "border-[#cce1da] bg-white text-[#39746d] hover:bg-[#eff9f6]"}`}>All items</button><button type="button" aria-pressed={savedFilter === "preview"} onClick={() => setSavedFilter("preview")} className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98] ${savedFilter === "preview" ? "border-[#24776a] bg-[#24776a] text-white" : "border-[#cce1da] bg-white text-[#39746d] hover:bg-[#eff9f6]"}`}>Public preview</button></div>
+              </div>
+              {savedArtworkMatches ? (
+                <article className="overflow-hidden rounded-2xl border border-[#cfe5dd] bg-white shadow-sm">
+                  <img src={brainVisual} alt="Mansoura University Neurology Center saved preview artwork" className="h-40 w-full object-cover" />
+                  <div className="p-5"><p className="text-[10px] font-bold tracking-[0.15em] text-[#3b7d73]">PUBLIC PREVIEW</p><h3 className="mt-1 font-display text-xl text-[#1e444c]">Mansoura University Neurology Center</h3><p className="mt-2 text-sm leading-6 text-[#547175]">Non-patient artwork and public workflow preview.</p><button type="button" onClick={() => updateArtworkSaved(false)} className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-[#cce1da] bg-white px-3.5 text-sm font-semibold text-[#276d65] transition-colors hover:bg-[#eff9f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98]">Remove from saved items</button></div>
+                </article>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-[#bddbd4] bg-[#f1faf7] px-5 py-9 text-center"><Search className="mx-auto h-6 w-6 text-[#43877d]" /><h3 className="mt-3 font-display text-lg text-[#24434b]">No matching saved items</h3><p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#587476]">Try a different search term or switch to All items.</p><button type="button" onClick={() => { setSavedSearch(""); setSavedFilter("all"); }} className="mt-4 min-h-9 rounded-lg border border-[#cce1da] bg-white px-3 text-sm font-semibold text-[#276d65] transition-colors hover:bg-[#eff9f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98]">Clear search</button></div>
+              )}
             </div>
           ) : (
             <div className="px-6 py-12 text-center"><span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#e5f4ef] text-[#2b7d71]"><BookmarkCheck className="h-6 w-6" /></span><h3 className="mt-4 font-display text-xl text-[#24434b]">No saved items yet</h3><p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#587476]">Use the Save button on the public preview artwork card to keep it here for later on this device.</p></div>

@@ -91,3 +91,7 @@ The global toast surface is configured at the bottom-right of the screen. Direct
 ## Save confirmation animation
 
 At both 375 px and 1280 px widths, a direct Chromium click changed the Save control to `Saved`, set `aria-pressed=true`, applied the `save-confirm` class, and reported the `save-confirm` animation name. After its 520 ms completion window, the animation class cleared while the saved state remained. With reduced motion emulated, the save state still changed correctly but the computed animation name was `none`, confirming that the visual motion is suppressed for users who request reduced motion.
+
+## Saved Items search and filter
+
+With the public preview artwork saved locally, isolated Chromium checks at both 375 px and 1280 px confirmed the discovery controls inside Saved Items: the default All items filter shows the card; a `Mansoura` search preserves the matching card; an unmatched search shows the explicit `No matching saved items` state without the card; Clear search restores the list; and selecting Public preview retains the card with `aria-pressed=true`. These controls search only the local public-preview label text and never query, expose, or store patient, user, clinical-record, or live registry information.
