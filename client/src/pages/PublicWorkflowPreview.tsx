@@ -1,8 +1,9 @@
 import { Badge } from "@/components/ui/badge";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { canClearAllSavedItems } from "@/lib/savedItemsAccess";
+import { SAVED_ITEMS_PAGE_SIZE, nextVisibleSavedItemCount, visibleSavedItems } from "@/lib/savedItemsPagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -29,6 +30,13 @@ import {
 
 const brainVisual = "/manus-storage/478fad80-a175-11f1-995e-03d05cd60a9d_e14e1e86.png";
 const artworkFavoriteKey = "munr.preview.artwork.favorite";
+const artworkSavedItem = {
+  id: "mansoura-neurology-center-preview",
+  category: "preview",
+  title: "Mansoura University Neurology Center",
+  description: "Non-patient artwork and public workflow preview.",
+  imageUrl: brainVisual,
+};
 
 const workflows = [
   { icon: HeartPulse, title: "Stroke", tone: "bg-[#e8f6f3] text-[#28736a]", fields: ["NIHSS severity score and mRS outcome", "TOAST aetiology and dysphagia screen", "Stroke complication and functional outcome", "Discharge treatment"] },
@@ -50,7 +58,10 @@ export default function PublicWorkflowPreview() {
   const [savedSearch, setSavedSearch] = useState("");
   const [savedFilter, setSavedFilter] = useState<"all" | "preview">("all");
   const [isClearSavedOpen, setIsClearSavedOpen] = useState(false);
+  const [visibleSavedCount, setVisibleSavedCount] = useState(SAVED_ITEMS_PAGE_SIZE);
   const saveAnimationTimeoutRef = useRef<number | null>(null);
+  const savedItemsScrollRef = useRef<HTMLDivElement | null>(null);
+  const savedItemsLoadRef = useRef<HTMLDivElement | null>(null);
   const canClearSavedItems = canClearAllSavedItems(user);
 
   useEffect(() => {
@@ -145,7 +156,24 @@ export default function PublicWorkflowPreview() {
   };
 
   const savedSearchTerm = savedSearch.trim().toLowerCase();
-  const savedArtworkMatches = isArtworkSaved && (savedFilter === "all" || savedFilter === "preview") && ["mansoura university neurology center", "public preview", "preview artwork"].some((value) => value.includes(savedSearchTerm));
+  const savedPreviewItems = useMemo(() => isArtworkSaved ? [artworkSavedItem] : [], [isArtworkSaved]);
+  const filteredSavedItems = useMemo(() => savedPreviewItems.filter((item) => (savedFilter === "all" || item.category === savedFilter) && [item.title, item.description, "public preview", "preview artwork"].some((value) => value.toLowerCase().includes(savedSearchTerm))), [savedPreviewItems, savedFilter, savedSearchTerm]);
+  const visibleSavedItemsList = visibleSavedItems(filteredSavedItems, visibleSavedCount);
+  const hasMoreSavedItems = visibleSavedItemsList.length < filteredSavedItems.length;
+
+  useEffect(() => {
+    setVisibleSavedCount(SAVED_ITEMS_PAGE_SIZE);
+  }, [savedSearchTerm, savedFilter, isArtworkSaved]);
+
+  useEffect(() => {
+    const sentinel = savedItemsLoadRef.current;
+    if (!isSavedItemsOpen || !hasMoreSavedItems || !sentinel || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) setVisibleSavedCount((count) => nextVisibleSavedItemCount(count, filteredSavedItems.length));
+    }, { root: savedItemsScrollRef.current, rootMargin: "140px" });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [isSavedItemsOpen, hasMoreSavedItems, filteredSavedItems.length]);
 
   return (
     <main className="min-h-screen bg-[#f6faf8] text-[#203943]">
@@ -194,11 +222,14 @@ export default function PublicWorkflowPreview() {
                 <div className="flex flex-wrap items-center justify-between gap-2" aria-label="Filter saved items"><div className="flex flex-wrap gap-2"><button type="button" aria-pressed={savedFilter === "all"} onClick={() => setSavedFilter("all")} className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98] ${savedFilter === "all" ? "border-[#24776a] bg-[#24776a] text-white" : "border-[#cce1da] bg-white text-[#39746d] hover:bg-[#eff9f6]"}`}>All items</button><button type="button" aria-pressed={savedFilter === "preview"} onClick={() => setSavedFilter("preview")} className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98] ${savedFilter === "preview" ? "border-[#24776a] bg-[#24776a] text-white" : "border-[#cce1da] bg-white text-[#39746d] hover:bg-[#eff9f6]"}`}>Public preview</button></div><button type="button" disabled={!canClearSavedItems} aria-describedby={!canClearSavedItems ? "clear-all-permission-hint" : undefined} title={!canClearSavedItems ? "Available only to an approved administrator" : "Clear all locally saved preview cards"} onClick={() => setIsClearSavedOpen(true)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-[#9b3b33] transition-colors hover:bg-[#fff0ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5685a] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:bg-transparent"><span className="relative"><Trash2 className="h-3.5 w-3.5" /><LockKeyhole className="absolute -right-1.5 -top-1.5 h-2.5 w-2.5 rounded-full bg-[#f8fcfa] p-px text-[#9b3b33]" /></span>Clear all</button></div>
                 {!canClearSavedItems && <p id="clear-all-permission-hint" className="flex items-center gap-1.5 text-xs leading-5 text-[#805f5a]"><LockKeyhole className="h-3.5 w-3.5 shrink-0" />Clear all is available only after secure sign-in as an approved administrator.</p>}
               </div>
-              {savedArtworkMatches ? (
-                <article className="overflow-hidden rounded-2xl border border-[#cfe5dd] bg-white shadow-sm">
-                  <img src={brainVisual} alt="Mansoura University Neurology Center saved preview artwork" className="h-40 w-full object-cover" />
-                  <div className="p-5"><p className="text-[10px] font-bold tracking-[0.15em] text-[#3b7d73]">PUBLIC PREVIEW</p><h3 className="mt-1 font-display text-xl text-[#1e444c]">Mansoura University Neurology Center</h3><p className="mt-2 text-sm leading-6 text-[#547175]">Non-patient artwork and public workflow preview.</p><button type="button" onClick={() => updateArtworkSaved(false)} className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-[#cce1da] bg-white px-3.5 text-sm font-semibold text-[#276d65] transition-colors hover:bg-[#eff9f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98]">Remove from saved items</button></div>
-                </article>
+              {filteredSavedItems.length > 0 ? (
+                <div ref={savedItemsScrollRef} className="max-h-[min(56vh,34rem)] space-y-4 overflow-y-auto overscroll-contain pr-1" aria-label="Saved items results">
+                  {visibleSavedItemsList.map((item) => <article key={item.id} className="overflow-hidden rounded-2xl border border-[#cfe5dd] bg-white shadow-sm">
+                    <img src={item.imageUrl} alt={`${item.title} saved preview artwork`} className="h-40 w-full object-cover" />
+                    <div className="p-5"><p className="text-[10px] font-bold tracking-[0.15em] text-[#3b7d73]">PUBLIC PREVIEW</p><h3 className="mt-1 font-display text-xl text-[#1e444c]">{item.title}</h3><p className="mt-2 text-sm leading-6 text-[#547175]">{item.description}</p><button type="button" onClick={() => updateArtworkSaved(false)} className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-[#cce1da] bg-white px-3.5 text-sm font-semibold text-[#276d65] transition-colors hover:bg-[#eff9f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98]">Remove from saved items</button></div>
+                  </article>)}
+                  {hasMoreSavedItems ? <div ref={savedItemsLoadRef} className="flex flex-col items-center gap-2 py-3"><button type="button" onClick={() => setVisibleSavedCount((count) => nextVisibleSavedItemCount(count, filteredSavedItems.length))} className="min-h-10 rounded-lg border border-[#cce1da] bg-white px-3.5 text-sm font-semibold text-[#276d65] transition-colors hover:bg-[#eff9f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98]">Load more saved items</button><p className="text-xs font-medium text-[#4f7773]" role="status">More items load automatically as you scroll.</p></div> : <p className="py-2 text-center text-xs text-[#5e7d7a]" aria-live="polite">Showing {visibleSavedItemsList.length} of {filteredSavedItems.length} saved item{filteredSavedItems.length === 1 ? "" : "s"}</p>}
+                </div>
               ) : (
                 <div className="rounded-2xl border border-dashed border-[#bddbd4] bg-[#f1faf7] px-5 py-9 text-center"><Search className="mx-auto h-6 w-6 text-[#43877d]" /><h3 className="mt-3 font-display text-lg text-[#24434b]">No matching saved items</h3><p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#587476]">Try a different search term or switch to All items.</p><button type="button" onClick={() => { setSavedSearch(""); setSavedFilter("all"); }} className="mt-4 min-h-9 rounded-lg border border-[#cce1da] bg-white px-3 text-sm font-semibold text-[#276d65] transition-colors hover:bg-[#eff9f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98]">Clear search</button></div>
               )}

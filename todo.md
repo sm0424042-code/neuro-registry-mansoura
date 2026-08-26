@@ -186,3 +186,5 @@
 - [x] Document the safe registration and administrator-promotion step required before any protected destructive action is enabled.
 - [x] Disable and lock the Saved Items Clear All action unless the current session is an approved administrator.
 - [x] Verify disabled unauthenticated/non-admin presentation and approved-administrator authorization state, then save a checkpoint.
+- [x] Add local-only progressive rendering and infinite scrolling to Saved Items for large card collections.
+- [x] Verify incremental loading, end-of-list, filtering, and no-result behavior at mobile and desktop widths, then save a checkpoint.
