@@ -129,3 +129,5 @@
 - [ ] Capture and document final `/messages` workspace layout evidence, distinguishing renderer-only evidence from unauthenticated browser results.
 - [ ] Verify recipient selection, message send/polling, and final empty-recipient state in a real approved browser session without using patient data.
 - [x] Save a checkpoint after the messaging feature passes all checks and tests.
+- [x] Add a public, non-patient messaging workflow demonstration so the messaging safeguards are visibly inspectable without sign-in.
+- [x] Save an updated checkpoint containing the public messaging workflow demonstration and completed validation.
