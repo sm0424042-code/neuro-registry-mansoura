@@ -107,6 +107,7 @@
 - [x] Add structured diagnosis pathways for mononeuritis multiplex, vasculitic neuropathy, and giant cell arteritis, with relevant evaluation and immune-therapy documentation.
 - [x] Replace generic evaluation fields with cohort-specific evaluation sections and recommendations.
 - [x] Add a brain imaging visual cue to the overview without embedding patient imaging or direct identifiers.
+- [x] Redesign the protected Overview hero with a prominent privacy-safe brain image and responsive layout verification.
 - [x] Update cohort validation, de-identified export, tests, and public visible previews.
 - [x] Save an updated release checkpoint containing the public clinical workflow summary.
 - [ ] Demonstrate the new clinical sections inside a real approved browser session before claiming the update is visible.
