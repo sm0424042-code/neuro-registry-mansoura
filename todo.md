@@ -109,6 +109,7 @@
 - [x] Add a brain imaging visual cue to the overview without embedding patient imaging or direct identifiers.
 - [x] Redesign the protected Overview hero with a prominent privacy-safe brain image and responsive layout verification.
 - [x] Refine the Overview hero into a premium black design with a higher-contrast privacy-safe brain visual and responsive verification.
+- [x] Apply the selected privacy-safe neural-network direction through a dark brain image plus a visible node-and-connection overlay, with desktop and mobile verification.
 - [x] Update cohort validation, de-identified export, tests, and public visible previews.
 - [x] Save an updated release checkpoint containing the public clinical workflow summary.
 - [ ] Demonstrate the new clinical sections inside a real approved browser session before claiming the update is visible.

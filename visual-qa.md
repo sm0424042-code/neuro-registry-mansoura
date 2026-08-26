@@ -22,6 +22,10 @@ The Overview was then refined to a premium black-charcoal treatment. The final d
 
 At 390×844, the final black Overview stacks the copy and dark brain visual cleanly. The image remains recognizable, the pale-teal primary action and white text retain contrast, and the privacy-safe image label remains readable without horizontal overflow.
 
+Following the user's selection of the neural-network direction, the final desktop Overview was verified with a dark privacy-safe brain image plus a restrained teal node-and-connection overlay. The neural network is visibly concentrated over the brain rather than the copy column, preserving a clear editorial hierarchy and the black premium treatment.
+
+At 390×844, the selected neural-network visual stays visible beneath the Overview copy. The node-and-connection overlay, brain detail, action controls, and privacy label remain readable without horizontal overflow.
+
 The project preview renderer captured desktop layouts for `/records/new` and `/`, visibly showing the active **Stroke** pathway, the history / examination / discharge-treatment card, the brain-imaging overview visual, and the clinical workflow board. These renderer captures are useful layout evidence but are not treated as a replacement for a real browser-session authentication check.
 
 The code-level update was validated with TypeScript, Vitest, and a production build. The unprotected server startup and the protected access gate both loaded after the latest clinical workflow changes.
