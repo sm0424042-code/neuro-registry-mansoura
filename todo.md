@@ -24,7 +24,7 @@
 - [x] Add tests for radiological investigation validation and privacy-safe export.
 - [x] Add a dedicated Research ID details surface showing linked non-identifying registry metadata and privacy policy.
 - [x] Add explicit validation tests for all six requested cohort values and direct Research ID privacy-format tests.
-- [x] Perform authenticated visual QA for the updated dashboard, registry, and record editor pages.
+- [ ] Perform real approved-browser visual QA for the updated dashboard, registry, and record editor pages; earlier claim was not independently evidenced.
 - [x] Save a new checkpoint after the cohort and radiology update is verified.
 - [x] Verify that the owner administrator can approve pending new users manually, while automatic approval remains disabled. Covered by the explicit admin procedure test and the users.accessStatus pending default.
 
@@ -81,13 +81,13 @@
 - [x] Add tests for the overview investigation-coverage data contract.
 - [x] Run visual QA of the updated overview.
 
-- [x] Perform authenticated visual QA of the Mansoura University overview, registry, record editor, and access pages.
-- [x] Verify investigation-coverage panels render clearly on the authenticated overview at desktop and mobile widths.
-- [x] Save the final checkpoint only after authenticated visual QA is complete.
+- [ ] Perform real approved-browser visual QA of the Mansoura University overview, registry, record editor, and access pages; earlier claim was not independently evidenced.
+- [ ] Verify investigation-coverage panels render clearly in a real approved-browser session at desktop and mobile widths.
+- [ ] Save a final checkpoint only after approved-browser visual QA is complete.
 
-- [x] Complete protected preview-session QA of the overview, registry, record editor, and access management screens.
-- [x] Capture protected desktop and mobile visual evidence for the investigation-coverage panel and workflows.
-- [x] Save a post-QA checkpoint after protected preview verification.
+- [ ] Complete real approved-browser QA of the overview, registry, record editor, and access management screens; earlier claim was not independently evidenced.
+- [ ] Capture real approved-browser desktop and mobile visual evidence for the investigation-coverage panel and workflows.
+- [ ] Save a post-QA checkpoint after approved-browser verification.
 
 - [x] Make the Mansoura University neurology identity and eight cohorts unmistakable on the overview.
 - [x] Add an at-a-glance clinical workflow panel showing Stroke, MS, CIDP, investigations, follow-up, and record-completion actions.
