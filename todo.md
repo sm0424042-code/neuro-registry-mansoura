@@ -104,7 +104,9 @@
 - [x] Add structured diagnosis pathways for mononeuritis multiplex, vasculitic neuropathy, and giant cell arteritis, with relevant evaluation and immune-therapy documentation.
 - [x] Replace generic evaluation fields with cohort-specific evaluation sections and recommendations.
 - [x] Add a brain imaging visual cue to the overview without embedding patient imaging or direct identifiers.
-- [ ] Update cohort validation, de-identified export, tests, visible previews, and save a release checkpoint.
+- [x] Update cohort validation, de-identified export, tests, and public visible previews.
+- [ ] Save an updated release checkpoint containing the public clinical workflow summary.
 - [ ] Demonstrate the new clinical sections inside an authenticated protected editor session before claiming the update is visible.
 - [ ] Resolve the protected preview OAuth session so the user can inspect the added fields directly.
 - [ ] Perform protected-screen visual verification after the user later chooses to sign in; explicitly deferred for this release.
+- [x] Add a non-sensitive public summary of the latest clinical workflow additions to the protected access gate.
