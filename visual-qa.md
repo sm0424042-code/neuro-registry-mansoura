@@ -83,3 +83,7 @@ The artwork card now places a Share button beside Save at both 375 px and 1280 p
 ## Saved Items surface
 
 The public preview header now exposes a Saved items trigger with a count badge at both 375 px and 1280 px widths; the layout remains legible without crowding the public preview badge, secure-access link, or artwork controls. Direct isolated Chromium exercises at both viewport widths verified the complete local-only flow: the modal opens with `Saved items` and a `No saved items yet` empty state at count 0; saving the public artwork produces a stored public card and Remove action at count 1; removing it restores the empty state, count 0, and clears the browser storage key. No patient, user, clinical-record, or live registry data appears in the modal or its storage.
+
+## Bottom save/remove notifications
+
+The global toast surface is configured at the bottom-right of the screen. Direct isolated Chromium checks at both 375 px and 1280 px verified that saving emits `Artwork saved to favorites` and removing emits `Artwork removed from favorites`; the toast container reports `data-x-position="right"` and `data-y-position="bottom"` at both widths. These confirmations use only public artwork state and do not display or persist patient, user, record, or registry information.

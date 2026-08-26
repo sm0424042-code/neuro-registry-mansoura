@@ -56,6 +56,7 @@ export default function PublicWorkflowPreview() {
     } catch {
       // The visual state still works when browser storage is unavailable.
     }
+    toast.success(nextValue ? "Artwork saved to favorites" : "Artwork removed from favorites");
   };
 
   const toggleArtworkSaved = () => updateArtworkSaved(!isArtworkSaved);
