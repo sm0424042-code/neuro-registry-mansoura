@@ -1,6 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
+import { canClearAllSavedItems } from "@/lib/savedItemsAccess";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -20,6 +22,7 @@ import {
   Search,
   Share2,
   ShieldCheck,
+  LockKeyhole,
   Trash2,
   UsersRound,
 } from "lucide-react";
@@ -39,6 +42,7 @@ const workflows = [
 ] as const;
 
 export default function PublicWorkflowPreview() {
+  const { user } = useAuth();
   const [isArtworkSaved, setIsArtworkSaved] = useState(false);
   const [hasCopiedPreviewLink, setHasCopiedPreviewLink] = useState(false);
   const [isSavedItemsOpen, setIsSavedItemsOpen] = useState(false);
@@ -47,6 +51,7 @@ export default function PublicWorkflowPreview() {
   const [savedFilter, setSavedFilter] = useState<"all" | "preview">("all");
   const [isClearSavedOpen, setIsClearSavedOpen] = useState(false);
   const saveAnimationTimeoutRef = useRef<number | null>(null);
+  const canClearSavedItems = canClearAllSavedItems(user);
 
   useEffect(() => {
     try {
@@ -85,6 +90,10 @@ export default function PublicWorkflowPreview() {
   const toggleArtworkSaved = () => updateArtworkSaved(!isArtworkSaved);
 
   const clearAllSavedItems = () => {
+    if (!canClearSavedItems) {
+      toast.error("Administrator approval is required to clear all saved items");
+      return;
+    }
     setIsArtworkSaved(false);
     setIsSaveConfirming(false);
     setSavedSearch("");
@@ -182,7 +191,8 @@ export default function PublicWorkflowPreview() {
               <div className="space-y-3">
                 <label htmlFor="saved-items-search" className="text-xs font-bold tracking-[0.13em] text-[#4e7775]">FIND SAVED ITEMS</label>
                 <div className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#5f8582]" /><input id="saved-items-search" value={savedSearch} onChange={(event) => setSavedSearch(event.target.value)} placeholder="Search public preview cards" className="min-h-11 w-full rounded-xl border border-[#cfe5dd] bg-white py-2 pl-10 pr-3 text-sm text-[#24434b] outline-none transition-colors placeholder:text-[#73908d] focus:border-[#4ba696] focus:ring-2 focus:ring-[#bfe9e0]" /></div>
-                <div className="flex flex-wrap items-center justify-between gap-2" aria-label="Filter saved items"><div className="flex flex-wrap gap-2"><button type="button" aria-pressed={savedFilter === "all"} onClick={() => setSavedFilter("all")} className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98] ${savedFilter === "all" ? "border-[#24776a] bg-[#24776a] text-white" : "border-[#cce1da] bg-white text-[#39746d] hover:bg-[#eff9f6]"}`}>All items</button><button type="button" aria-pressed={savedFilter === "preview"} onClick={() => setSavedFilter("preview")} className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98] ${savedFilter === "preview" ? "border-[#24776a] bg-[#24776a] text-white" : "border-[#cce1da] bg-white text-[#39746d] hover:bg-[#eff9f6]"}`}>Public preview</button></div><button type="button" onClick={() => setIsClearSavedOpen(true)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-[#9b3b33] transition-colors hover:bg-[#fff0ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5685a]"><Trash2 className="h-3.5 w-3.5" />Clear all</button></div>
+                <div className="flex flex-wrap items-center justify-between gap-2" aria-label="Filter saved items"><div className="flex flex-wrap gap-2"><button type="button" aria-pressed={savedFilter === "all"} onClick={() => setSavedFilter("all")} className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98] ${savedFilter === "all" ? "border-[#24776a] bg-[#24776a] text-white" : "border-[#cce1da] bg-white text-[#39746d] hover:bg-[#eff9f6]"}`}>All items</button><button type="button" aria-pressed={savedFilter === "preview"} onClick={() => setSavedFilter("preview")} className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3caa98] ${savedFilter === "preview" ? "border-[#24776a] bg-[#24776a] text-white" : "border-[#cce1da] bg-white text-[#39746d] hover:bg-[#eff9f6]"}`}>Public preview</button></div><button type="button" disabled={!canClearSavedItems} aria-describedby={!canClearSavedItems ? "clear-all-permission-hint" : undefined} title={!canClearSavedItems ? "Available only to an approved administrator" : "Clear all locally saved preview cards"} onClick={() => setIsClearSavedOpen(true)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-[#9b3b33] transition-colors hover:bg-[#fff0ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5685a] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:bg-transparent"><span className="relative"><Trash2 className="h-3.5 w-3.5" /><LockKeyhole className="absolute -right-1.5 -top-1.5 h-2.5 w-2.5 rounded-full bg-[#f8fcfa] p-px text-[#9b3b33]" /></span>Clear all</button></div>
+                {!canClearSavedItems && <p id="clear-all-permission-hint" className="flex items-center gap-1.5 text-xs leading-5 text-[#805f5a]"><LockKeyhole className="h-3.5 w-3.5 shrink-0" />Clear all is available only after secure sign-in as an approved administrator.</p>}
               </div>
               {savedArtworkMatches ? (
                 <article className="overflow-hidden rounded-2xl border border-[#cfe5dd] bg-white shadow-sm">

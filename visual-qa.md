@@ -103,3 +103,7 @@ At both 375 px and 1280 px widths, direct isolated Chromium checks verified that
 ## Owner-only protected data boundary
 
 The protected Access Management screen now states that no protected record-clear or deletion action is currently enabled. It documents that any future destructive registry-data control must be bound server-side to Abdelrahman Ibrahim Rashad’s registered OAuth identity and administrator role, rather than to a display name or local password. The standard sandbox browser remains unauthenticated, so this protected-screen wording is implementation and build evidence only; a future approved OAuth session is required before claiming live visual verification.
+
+## Locked Clear All state
+
+In the normal unauthenticated browser session, a saved public-preview card remains visible inside Saved Items while Clear all is visibly muted, carries a lock overlay, has the title `Available only to an approved administrator`, and is semantically disabled. The accompanying instruction states that Clear all becomes available only after secure sign-in as an approved administrator. The extracted browser state confirmed `disabled: true`. The shared access-rule unit test separately verifies that only `{ role: "admin", accessStatus: "approved" }` enables the action, while absent, user, pending-admin, and suspended-admin states are rejected.

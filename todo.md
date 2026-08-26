@@ -184,3 +184,5 @@
 - [x] Confirm whether the request limits device-local Saved Items clearing or protected registry-data clearing before changing any authorization behavior.
 - [x] Prepare owner-only destructive registry-data authorization for Abdelrahman Ibrahim Rashad’s future approved account without custom credentials.
 - [x] Document the safe registration and administrator-promotion step required before any protected destructive action is enabled.
+- [x] Disable and lock the Saved Items Clear All action unless the current session is an approved administrator.
+- [x] Verify disabled unauthenticated/non-admin presentation and approved-administrator authorization state, then save a checkpoint.
