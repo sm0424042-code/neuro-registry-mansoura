@@ -72,6 +72,10 @@ When the fallback is visible, a compact **Retry** button is positioned over the 
 
 The Home route chunk is now **7.11 KB gzip**. The incremental retry control remains route-local and is not downloaded by the public workflow preview. Unit tests cover fallback-source selection, fresh retry URL selection, the absence of the Retry control during a normal image load, and its accessible presence when fallback state is active.
 
+## Retry interaction refinement
+
+The Retry control now has a compact visual lift, brighter border and teal glow on pointer hover, plus a restrained icon turn to signal the available reload action. Pressing it restores the button to its starting position with the existing scale acknowledgement. Keyboard focus remains visible with a high-contrast ring and offset, and all nonessential transform and transition effects are disabled under the reduced-motion preference. The implementation remains a style-only refinement; it does not change fallback, retry, network, or protected-data behavior.
+
 ## Findings and safe next steps
 
 The feature’s direct runtime impact is low because it uses local React state and conditional markup. No code optimization was applied during this audit: changing the 220 ms interval would trade away the requested visible feedback, and the measured local interaction remains responsive.

@@ -26,5 +26,8 @@ describe("HomeHeroMedia", () => {
     expect(fallbackMarkup).toContain("Retry loading the original neural-network image");
     expect(fallbackMarkup).toContain("Original image unavailable. A fallback visual is shown.");
     expect(fallbackMarkup).toContain("Abstract neural-network fallback visual — no patient image");
+    expect(fallbackMarkup).toContain("hover:-translate-y-0.5");
+    expect(fallbackMarkup).toContain("group-hover:rotate-[-20deg]");
+    expect(fallbackMarkup).toContain("motion-reduce:transform-none");
   });
 });

@@ -200,3 +200,5 @@
 - [x] Test fallback rendering, accessibility, and protected data boundaries, then save a checkpoint.
 - [x] Add an accessible Retry control over the homepage fallback image to reload the original media.
 - [x] Test retry, repeated failure fallback, and protected data boundaries, then save a checkpoint.
+- [x] Refine the fallback Retry control with reduced-motion-safe hover, focus, and press feedback.
+- [x] Verify Retry styling semantics and interaction coverage, then save a checkpoint.

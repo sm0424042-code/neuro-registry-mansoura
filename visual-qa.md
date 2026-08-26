@@ -131,3 +131,7 @@ If the protected overview’s original abstract brain image fails, the media com
 ## Homepage hero fallback retry
 
 When fallback state is active, the hero now exposes a small **Retry** button above the visual. It has the accessible label **Retry loading the original neural-network image** and a polite status message that explains the fallback state. Selecting Retry restores a fresh original-image URL with a retry marker; a repeated media error returns to the abstract fallback. Static tests prove the normal state has no Retry control while fallback state exposes the control and non-patient fallback description.
+
+## Retry hover feedback
+
+The fallback-only Retry button now lifts slightly, brightens its border and background, and gains a restrained teal shadow on hover; its reload icon turns slightly as an interaction cue. Keyboard focus still uses an explicit ring, while press feedback returns the button to position and slightly scales it. The static component test confirms the hover, icon, and reduced-motion classes are emitted, and `motion-reduce` disables nonessential transforms and transitions.
