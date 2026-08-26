@@ -6,8 +6,10 @@ The protected `/records/new` route was opened in the live sandbox browser. It di
 
 The same protected route now visibly displays a **Latest clinical workflow added** release summary on desktop and mobile. The summary names the new Stroke, MS, CIDP/neuropathy, and Neuro-ophthalmology pathways while exposing no patient-specific data. The mobile capture stacked the secure sign-in card, the release summary, and the protected editor skeleton without horizontal overflow.
 
+The project preview renderer captured desktop layouts for `/records/new` and `/`, visibly showing the active **Stroke** pathway, the history / examination / discharge-treatment card, the brain-imaging overview visual, and the clinical workflow board. These renderer captures are useful layout evidence but are not treated as a replacement for a real browser-session authentication check.
+
 The code-level update was validated with TypeScript, Vitest, and a production build. The unprotected server startup and the protected access gate both loaded after the latest clinical workflow changes.
 
 ## Deferred verification
 
-The authenticated overview, registry, record editor, and access-management screens were **not** visually reviewed in the current session because the browser did not hold an approved OAuth session. The user explicitly asked to skip the sign-in step. In particular, the new Stroke complications, MS TB screening and adherence, immune therapy, NMOSD/MOGAD/GCA, and CIDP/vasculitic-neuropathy screens require a later authenticated visual review before they can be claimed as demonstrated in the live editor.
+The sandbox browser does not hold an approved OAuth session, and the user explicitly asked to skip the sign-in step. A later approved browser-session review remains required for interactive checks of all cohort selectors, especially MS and CIDP-specific editor controls. The renderer captures and contract tests evidence implementation and layout only; they do not constitute authenticated browser verification.
