@@ -52,7 +52,7 @@ The project preview renderer captured desktop layouts for `/records/new` and `/`
 
 The code-level update was validated with TypeScript, Vitest, and a production build. The unprotected server startup and the protected access gate both loaded after the latest clinical workflow changes.
 
-The latest messaging validation passed TypeScript, all **15** Vitest tests, and the production build. The test suite now explicitly proves that an approved user cannot read a direct-message thread for a recipient who is no longer approved, and that the database thread reader is not invoked for that rejected request.
+The latest messaging validation passed TypeScript, all **16** Vitest tests, and the production build. The test suite explicitly proves that an approved user cannot read a direct-message thread for a recipient who is no longer approved, that the database thread reader is not invoked for that rejected request, and that expanded English and Arabic direct-identifier examples are rejected.
 
 ## Deferred verification
 
