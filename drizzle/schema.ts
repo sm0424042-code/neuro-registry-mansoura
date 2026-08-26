@@ -17,7 +17,15 @@ export type MultipleSclerosisDoseAdherence = {
   reason?: string | null;
 };
 
-export type StrokeClinicalData = {
+export type CohortEvaluationItem = {
+  code: string;
+  label: string;
+  status: "not_assessed" | "recorded" | "abnormal" | "not_applicable" | "pending";
+  value?: string | null;
+};
+type EvaluationChecklist = { evaluationItems?: CohortEvaluationItem[] };
+
+export type StrokeClinicalData = EvaluationChecklist & {
   cohort: "stroke";
   strokeType: "ischemic" | "hemorrhagic" | "tia" | "other" | "unknown";
   vascularTerritory: "aca" | "mca_complete" | "mca_incomplete" | "pca" | "vertebrobasilar" | "other" | "unknown";
@@ -27,7 +35,7 @@ export type StrokeClinicalData = {
   strokeEvaluation: "nihss_and_mrs" | "nihss_only" | "mrs_only" | "not_recorded" | "unknown";
 };
 
-export type MultipleSclerosisClinicalData = {
+export type MultipleSclerosisClinicalData = EvaluationChecklist & {
   cohort: "multiple_sclerosis";
   diseaseCourse: "relapsing_remitting" | "primary_progressive" | "secondary_progressive" | "clinically_isolated_syndrome" | "unknown";
   disabilityLevel: "mild" | "moderate" | "severe" | "unknown";
@@ -42,7 +50,7 @@ export type MultipleSclerosisClinicalData = {
   msEvaluation: "clinical_mri_msfc" | "clinical_mri" | "clinical_only" | "treatment_safety" | "unknown";
 };
 
-export type AbnormalMovementClinicalData = {
+export type AbnormalMovementClinicalData = EvaluationChecklist & {
   cohort: "abnormal_movements";
   movementPhenotype: "tremor" | "dystonia" | "chorea" | "ataxia" | "tics" | "other" | "unknown";
   distribution: "focal" | "segmental" | "generalized" | "unknown";
@@ -52,7 +60,7 @@ export type AbnormalMovementClinicalData = {
   movementEvaluation: "phenomenology_and_video" | "phenomenology_only" | "imaging_reviewed" | "unknown";
 };
 
-export type GuillainBarreClinicalData = {
+export type GuillainBarreClinicalData = EvaluationChecklist & {
   cohort: "guillain_barre";
   variant: "aidp" | "aman" | "amsan" | "miller_fisher" | "other" | "unknown";
   disabilityScore: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "unknown";
@@ -61,7 +69,7 @@ export type GuillainBarreClinicalData = {
   gbsEvaluation: "gbs_disability_and_respiratory" | "gbs_disability_only" | "electrodiagnostic_reviewed" | "unknown";
 };
 
-export type MyastheniaGravisClinicalData = {
+export type MyastheniaGravisClinicalData = EvaluationChecklist & {
   cohort: "myasthenia_gravis";
   mgfaClass: "I" | "II" | "III" | "IV" | "V" | "unknown";
   antibodyStatus: "achr" | "musk" | "lrp4" | "seronegative" | "unknown";
@@ -71,7 +79,7 @@ export type MyastheniaGravisClinicalData = {
   mgEvaluation: "mgfa_and_qmg" | "mgfa_only" | "respiratory_review" | "unknown";
 };
 
-export type MyelopathyClinicalData = {
+export type MyelopathyClinicalData = EvaluationChecklist & {
   cohort: "myelopathy";
   level: "cervical" | "thoracic" | "lumbar" | "multilevel" | "unknown";
   cause: "degenerative" | "inflammatory" | "compressive" | "vascular" | "infectious" | "other" | "unknown";
@@ -81,7 +89,7 @@ export type MyelopathyClinicalData = {
   myelopathyEvaluation: "mri_and_neuroexam" | "mri_only" | "csf_reviewed" | "unknown";
 };
 
-export type NeuroOphthalmologyClinicalData = {
+export type NeuroOphthalmologyClinicalData = EvaluationChecklist & {
   cohort: "neuro_ophthalmology";
   visualSyndrome: "optic_neuritis" | "visual_field_defect" | "diplopia" | "papilledema" | "other" | "unknown";
   laterality: "right" | "left" | "bilateral" | "unknown";
@@ -93,7 +101,7 @@ export type NeuroOphthalmologyClinicalData = {
   neuroOphEvaluation: "acuity_fields_oct" | "fundus_and_oct" | "antibody_workup" | "gca_pathway" | "unknown";
 };
 
-export type CIDPClinicalData = {
+export type CIDPClinicalData = EvaluationChecklist & {
   cohort: "cidp";
   phenotype: "typical" | "madsam" | "distal" | "focal" | "motor" | "sensory" | "other" | "unknown";
   diagnosticPathway: "cidp" | "mononeuritis_multiplex" | "vasculitic_neuropathy" | "other" | "unknown";

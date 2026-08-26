@@ -26,6 +26,10 @@ Following the user's selection of the neural-network direction, the final deskto
 
 At 390×844, the selected neural-network visual stays visible beneath the Overview copy. The node-and-connection overlay, brain detail, action controls, and privacy label remain readable without horizontal overflow.
 
+The public workflow demonstration was updated and verified at desktop and mobile sizes for the explicit cohort evaluation update. It now shows all eight disease cohorts with itemized evaluation sections: Stroke NIHSS/mRS; MS EDSS/MSFC; Abnormal Movements phenomenology/severity; GBS disability/MRC/respiratory status; MG MGFA/MG-ADL/QMG; Myelopathy functional/gait/UMN-LMN review; Neuro-ophthalmology visual acuity/fields/OCT; and CIDP INCAT/ONLS/MRC/EMG-NCS/vasculitic review. The page remains explicitly non-patient and free of live registry data, and the mobile version stacks all cards without horizontal overflow.
+
+The project preview renderer for `/records/new` visibly rendered the Stroke-specific **Stroke evaluation items** card underneath the standard Stroke fields. It contains five separately labelled controls—NIHSS, mRS, TOAST aetiology, dysphagia screen, and functional outcome—each with a status selector and optional research-safe recorded-value field. This renderer capture is layout evidence; interactive browser-session verification remains deferred.
+
 The project preview renderer captured desktop layouts for `/records/new` and `/`, visibly showing the active **Stroke** pathway, the history / examination / discharge-treatment card, the brain-imaging overview visual, and the clinical workflow board. These renderer captures are useful layout evidence but are not treated as a replacement for a real browser-session authentication check.
 
 The code-level update was validated with TypeScript, Vitest, and a production build. The unprotected server startup and the protected access gate both loaded after the latest clinical workflow changes.

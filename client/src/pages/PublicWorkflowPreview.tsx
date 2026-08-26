@@ -16,30 +16,14 @@ import {
 const brainVisual = "/manus-storage/mansoura-brain-imaging-overview_f9f978a6.png";
 
 const workflows = [
-  {
-    icon: HeartPulse,
-    title: "Stroke",
-    tone: "bg-[#e8f6f3] text-[#28736a]",
-    fields: ["Stroke type and vascular territory", "Stroke complication", "NIHSS / mRS evaluation", "Discharge treatment"],
-  },
-  {
-    icon: BrainCircuit,
-    title: "Multiple Sclerosis",
-    tone: "bg-[#eef1fb] text-[#59699a]",
-    fields: ["MSFC components and disease-modifying therapy", "Chest imaging and tuberculin / IGRA TB screen", "Varicella immunity (VZV immunoglobulin / serology)", "Infection-exclusion review before immune therapy", "Dated dose adherence"],
-  },
-  {
-    icon: Microscope,
-    title: "CIDP & inflammatory neuropathy",
-    tone: "bg-[#eff8f1] text-[#4d7d5c]",
-    fields: ["Typical CIDP and MADSAM variants", "Mononeuritis multiplex and vasculitic pathway", "EMG/NCS, CSF, and targeted protocol tests", "Immune therapy safety review"],
-  },
-  {
-    icon: Eye,
-    title: "Neuro-ophthalmology",
-    tone: "bg-[#fbf1e8] text-[#9c6b3c]",
-    fields: ["NMOSD, MOGAD, and GCA classification", "AQP4/MOG profile", "Fundus, visual fields, and OCT", "Linked systemic disease"],
-  },
+  { icon: HeartPulse, title: "Stroke", tone: "bg-[#e8f6f3] text-[#28736a]", fields: ["NIHSS severity score and mRS outcome", "TOAST aetiology and dysphagia screen", "Stroke complication and functional outcome", "Discharge treatment"] },
+  { icon: BrainCircuit, title: "Multiple Sclerosis", tone: "bg-[#eef1fb] text-[#59699a]", fields: ["EDSS and MSFC: 25-foot walk, 9-Hole Peg, PASAT-3", "Relapse activity and disease-modifying therapy", "Chest imaging, TB screen, and VZV immunity", "Infection-exclusion review and dated dose adherence"] },
+  { icon: Microscope, title: "Abnormal Movements", tone: "bg-[#f8f1fa] text-[#83558b]", fields: ["Phenomenology and distribution", "Severity rating and functional impact", "Video / examination review", "Targeted imaging or testing"] },
+  { icon: HeartPulse, title: "Guillain–Barré Syndrome", tone: "bg-[#eff7fb] text-[#4c7595]", fields: ["GBS disability score and MRC sum score", "Respiratory and autonomic status", "Electrodiagnostic pattern", "Immune-therapy pathway where relevant"] },
+  { icon: HeartPulse, title: "Myasthenia Gravis", tone: "bg-[#fbf4e9] text-[#9a6e36]", fields: ["MGFA class and MG-ADL / QMG", "Ocular, bulbar, and respiratory evaluation", "Antibody / thymoma pathway", "Treatment response"] },
+  { icon: BrainCircuit, title: "Myelopathy", tone: "bg-[#f0f5eb] text-[#5f7b4e]", fields: ["Functional disability and gait / mobility", "UMN / LMN signs and sensory level", "Bladder / bowel function", "Spine MRI and CSF pathway"] },
+  { icon: Eye, title: "Neuro-ophthalmology", tone: "bg-[#fbf1e8] text-[#9c6b3c]", fields: ["Visual acuity, fields, and OCT", "Fundus / optic disc and RAPD", "NMOSD, MOGAD, and GCA classification", "AQP4/MOG and GCA pathway"] },
+  { icon: Microscope, title: "CIDP & inflammatory neuropathy", tone: "bg-[#eff8f1] text-[#4d7d5c]", fields: ["INCAT / ONLS disability and MRC sum score", "Sensory ataxia and EMG / NCS evidence", "Typical CIDP, MADSAM, mononeuritis, and vasculitic pathway", "CSF, targeted testing, and immune-therapy safety"] },
 ] as const;
 
 export default function PublicWorkflowPreview() {
