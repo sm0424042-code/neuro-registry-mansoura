@@ -123,3 +123,7 @@ After route-level lazy loading, the live public `/workflow-preview` route loaded
 ## Homepage hero media loading
 
 The protected overview hero now marks its abstract brain visual for native lazy loading and asynchronous decoding. The fixed hero media region remains in place while the image is pending. An isolated static component test confirms the image keeps the correct non-patient alternative text, `loading="lazy"`, `decoding="async"`, and absolute object-cover layout classes. The ordinary unauthenticated route correctly shows the access gate rather than the protected overview, so no protected hero media or registry content is exposed in that session.
+
+## Homepage hero fallback image
+
+If the protected overview’s original abstract brain image fails, the media component replaces it once with an embedded neural-network SVG fallback. It stays within the same hero frame and uses the accessible text **Abstract neural-network fallback visual — no patient image**. The unit test verifies both source replacement and the guard that prevents a repeated fallback error loop. The fallback is a static abstract illustration and contains no patient, user, record, or clinical content.

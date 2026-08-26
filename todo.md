@@ -196,3 +196,5 @@
 - [x] Measure initial-bundle reduction and verify public preview plus protected-route behavior after lazy loading.
 - [x] Apply lazy loading and reserved layout space to heavy homepage media without affecting protected data boundaries.
 - [x] Measure deferred-media behavior and verify responsive homepage rendering, then save a checkpoint.
+- [x] Add a privacy-safe automatic fallback visual for failed homepage media loads.
+- [x] Test fallback rendering, accessibility, and protected data boundaries, then save a checkpoint.

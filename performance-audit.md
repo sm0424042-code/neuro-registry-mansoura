@@ -60,6 +60,12 @@ The protected homepage hero uses a single abstract, non-patient brain visual. It
 
 The homepage itself remains behind the approved-access gate. In an unauthenticated visit, the Home route does not render and the hero image is not requested; the visitor instead sees only the existing Authorised access screen. For an approved user who reaches the overview, the browser can defer the heavy hero image until it is near the viewport while keeping the hero layout stable. The production build stayed within the previously measured lazy-route split: its shared entry is **631.27 KB raw / 190.01 KB gzip**.
 
+## Homepage media fallback follow-up
+
+If the original overview visual fails to load, its error handler now replaces it once with an embedded SVG neural-network illustration. The fallback is packaged with the Home route rather than fetched from a third party, keeps the existing object-cover media frame, and uses an explicit alternative text stating that it is an abstract fallback with no patient image. A guard on the image dataset prevents an error loop if the replacement path is reached again. The fallback adds no record, user, patient, clinical, or network data flow.
+
+The Home route chunk increased from **5.85 KB gzip** to **6.67 KB gzip** after including the fallback illustration, a bounded **0.82 KB gzip** resilience cost that removes any fallback-network dependency. Unit coverage verifies the first failure replaces the source with the embedded SVG, retains the fallback after a repeated error call, and changes the alt text to the non-patient fallback description.
+
 ## Findings and safe next steps
 
 The feature’s direct runtime impact is low because it uses local React state and conditional markup. No code optimization was applied during this audit: changing the 220 ms interval would trade away the requested visible feedback, and the measured local interaction remains responsive.
