@@ -208,3 +208,5 @@
 - [x] Display and test an accessible unavailable-image message after the Retry limit, then save a checkpoint.
 - [x] Present the retry-limit unavailable-image message as a readable semi-transparent overlay over the fallback visual.
 - [x] Test overlay semantics, visual treatment, and unchanged retry-limit behavior, then save a checkpoint.
+- [x] Add a reduced-motion-safe fade-in transition when the unavailable-image overlay appears.
+- [x] Test overlay fade-in styling and preserve the retry-limit behavior, then save a checkpoint.

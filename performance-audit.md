@@ -88,6 +88,10 @@ Retry is now bounded to **three failed reloads**. Each failed retry returns to t
 
 At the retry limit, the unavailable-image status is now presented as a centered, semi-transparent overlay spanning the fallback visual rather than as a small corner text block. The overlay uses a dark translucent surface with modest background blur and a high-contrast message panel, so the abstract fallback remains visibly present behind it. It is `pointer-events-none`, preserving the non-interactive terminal state, and retains `role="status"` with polite live announcement semantics. This is a presentation-only change; the retry count, fallback persistence, and privacy boundary are unchanged.
 
+## Unavailable-image overlay fade-in
+
+The unavailable-image overlay now fades from transparent to opaque over **220 ms** using the existing snappy UI easing. The transition animates only opacity and is declared inside `prefers-reduced-motion: no-preference`; users who request reduced motion receive the final overlay state without the animation. The behavior remains local to the protected homepage media component and does not affect retry counting, loading, or data access.
+
 ## Findings and safe next steps
 
 The feature’s direct runtime impact is low because it uses local React state and conditional markup. No code optimization was applied during this audit: changing the 220 ms interval would trade away the requested visible feedback, and the measured local interaction remains responsive.

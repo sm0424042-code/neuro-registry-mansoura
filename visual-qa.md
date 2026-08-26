@@ -147,3 +147,7 @@ The fallback media control now allows up to three failed Retry reloads. After th
 ## Unavailable-image overlay
 
 After the Retry limit, the unavailable-image status now appears as a centered, semi-transparent Overlay over the abstract fallback visual. The overlay spans the media region with a dark translucent background and subtle blur, while its message panel remains high contrast and accessible through `role="status"`. Static coverage confirms the full-overlay geometry, transparency class, and blur treatment; the retry-limit state and all data boundaries remain unchanged.
+
+## Unavailable-image overlay fade-in
+
+The terminal unavailable-image Overlay now uses the `unavailable-overlay-enter` opacity transition when nonessential motion is allowed. It fades in over 220 ms without moving or resizing the media region. The animation is scoped to `prefers-reduced-motion: no-preference`, so users who prefer reduced motion see the accessible final Overlay without animation. Static coverage confirms the overlay carries the dedicated animation class.

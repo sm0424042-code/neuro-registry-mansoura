@@ -45,5 +45,6 @@ describe("HomeHeroMedia", () => {
     expect(limitedMarkup).toContain("absolute inset-0 z-20 grid place-items-center");
     expect(limitedMarkup).toContain("bg-[#020c0e]/65");
     expect(limitedMarkup).toContain("backdrop-blur-sm");
+    expect(limitedMarkup).toContain("unavailable-overlay-enter");
   });
 });
