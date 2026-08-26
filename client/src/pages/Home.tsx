@@ -25,20 +25,21 @@ export default function Home() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 fade-rise">
-      <section className="relative overflow-hidden rounded-[1.65rem] bg-[#091d30] shadow-[0_22px_50px_rgba(10,31,49,0.19)]">
-        <div className="absolute inset-0 opacity-80 [background:radial-gradient(circle_at_22%_16%,#236b77_0,transparent_26%),radial-gradient(circle_at_78%_82%,#315b76_0,transparent_31%)]" />
-        <div className="relative grid min-h-[390px] lg:grid-cols-[1.03fr_0.97fr]">
+      <section className="relative overflow-hidden rounded-[1.65rem] border border-[#242a31] bg-[#050607] shadow-[0_28px_70px_rgba(0,0,0,0.34)]">
+        <div className="absolute inset-0 [background:radial-gradient(circle_at_15%_5%,rgba(67,103,106,0.36)_0,transparent_27%),radial-gradient(circle_at_82%_85%,rgba(18,74,84,0.26)_0,transparent_34%)]" />
+        <div className="absolute left-8 top-0 h-full w-px bg-gradient-to-b from-transparent via-[#67cfc0]/40 to-transparent" />
+        <div className="relative grid min-h-[400px] lg:grid-cols-[1.03fr_0.97fr]">
           <div className="flex flex-col justify-center px-6 py-9 text-white md:px-9 lg:py-12">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium text-[#bfeee2]"><BrainCircuit className="h-3.5 w-3.5" />MANSOURA UNIVERSITY · NEUROLOGY</div>
-            <h1 className="mt-5 max-w-xl font-display text-3xl leading-tight md:text-4xl">Mansoura Neurology Research Registry</h1>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-slate-300">An accountable research workflow for Stroke, MS, CIDP, inflammatory neuropathy, movement disorders, myelopathy, and neuro-ophthalmology.</p>
-            <div className="mt-7 flex flex-wrap gap-3"><Button onClick={() => navigate("/records/new")} className="bg-[#a5e1d2] text-[#0a2831] hover:bg-[#c2efe5]"><ClipboardPlus className="mr-2 h-4 w-4" />Create research record</Button><Button variant="outline" onClick={() => navigate("/registry")} className="border-white/25 bg-white/5 text-white hover:bg-white/10 hover:text-white">Review registry<ArrowRight className="ml-2 h-4 w-4" /></Button></div>
-            <p className="mt-6 flex items-center gap-2 text-xs text-[#b7d9d3]"><ShieldCheck className="h-3.5 w-3.5" />Pseudonymised research data only · no direct identifiers</p>
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[#4c6c6c] bg-[#101516] px-3 py-1 text-xs font-medium text-[#bce4dc]"><BrainCircuit className="h-3.5 w-3.5" />MANSOURA UNIVERSITY · NEUROLOGY</div>
+            <h1 className="mt-5 max-w-xl font-display text-3xl leading-tight text-[#f5f8f7] md:text-4xl">Mansoura Neurology Research Registry</h1>
+            <p className="mt-4 max-w-xl text-sm leading-6 text-[#c5d0cf]">An accountable research workflow for Stroke, MS, CIDP, inflammatory neuropathy, movement disorders, myelopathy, and neuro-ophthalmology.</p>
+            <div className="mt-7 flex flex-wrap gap-3"><Button onClick={() => navigate("/records/new")} className="bg-[#d1f0e9] text-[#061114] shadow-[0_8px_26px_rgba(84,180,159,0.22)] hover:bg-[#e4faf5]"><ClipboardPlus className="mr-2 h-4 w-4" />Create research record</Button><Button variant="outline" onClick={() => navigate("/registry")} className="border-[#5b686a] bg-[#111719] text-[#eef5f3] hover:bg-[#1b2527] hover:text-white">Review registry<ArrowRight className="ml-2 h-4 w-4" /></Button></div>
+            <p className="mt-6 flex items-center gap-2 text-xs text-[#a9c7c1]"><ShieldCheck className="h-3.5 w-3.5" />Pseudonymised research data only · no direct identifiers</p>
           </div>
-          <div className="relative min-h-[250px] border-t border-white/10 lg:min-h-0 lg:border-l lg:border-t-0">
-            <img src={brainVisual} alt="Abstract non-patient-specific brain MRI visual" className="absolute inset-0 h-full w-full object-cover object-center" />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,29,48,0.68)_0%,rgba(9,29,48,0.12)_55%,rgba(9,29,48,0.36)_100%)]" />
-            <div className="absolute inset-x-5 bottom-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#0b2334]/70 px-4 py-3 backdrop-blur-sm"><div className="flex items-center gap-3"><span className="grid h-8 w-8 place-items-center rounded-lg bg-[#bfeee2]/15 text-[#bfeee2]"><ImageIcon className="h-4 w-4" /></span><div><p className="text-[10px] font-bold tracking-[0.14em] text-[#bfeee2]">NEUROIMAGING CONTEXT</p><p className="mt-0.5 text-xs text-slate-200">Abstract visual — no patient scan</p></div></div><span className="rounded-full border border-white/15 px-2.5 py-1 text-[10px] font-medium text-slate-200">BRAIN MRI</span></div>
+          <div className="relative min-h-[250px] border-t border-[#2d383a] bg-[#020303] lg:min-h-0 lg:border-l lg:border-t-0">
+            <img src={brainVisual} alt="Abstract non-patient-specific brain MRI visual" className="absolute inset-0 h-full w-full object-cover object-center brightness-[0.62] contrast-[1.3] grayscale" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,6,7,0.88)_0%,rgba(5,6,7,0.16)_52%,rgba(5,6,7,0.5)_100%)]" />
+            <div className="absolute inset-x-5 bottom-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#536366] bg-[#080b0c]/85 px-4 py-3 shadow-2xl backdrop-blur-sm"><div className="flex items-center gap-3"><span className="grid h-8 w-8 place-items-center rounded-lg bg-[#b8eee2]/10 text-[#b8eee2]"><ImageIcon className="h-4 w-4" /></span><div><p className="text-[10px] font-bold tracking-[0.14em] text-[#b8eee2]">NEUROIMAGING CONTEXT</p><p className="mt-0.5 text-xs text-[#d2dddb]">Abstract visual — no patient scan</p></div></div><span className="rounded-full border border-[#536366] bg-[#111719] px-2.5 py-1 text-[10px] font-medium text-[#e4efed]">BRAIN MRI</span></div>
           </div>
         </div>
       </section>
