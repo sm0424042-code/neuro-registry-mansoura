@@ -5,6 +5,8 @@ export type ImmuneTherapy = {
   agent?: string | null;
   status: "planned" | "active" | "completed" | "discontinued" | "unknown";
   startDate?: string | null;
+  infectionExclusionStatus?: "not_assessed" | "cleared" | "positive_or_suspected" | "referred" | "not_indicated" | "unknown";
+  infectionExclusionNote?: string | null;
   note?: string | null;
 };
 
