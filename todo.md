@@ -202,3 +202,5 @@
 - [x] Test retry, repeated failure fallback, and protected data boundaries, then save a checkpoint.
 - [x] Refine the fallback Retry control with reduced-motion-safe hover, focus, and press feedback.
 - [x] Verify Retry styling semantics and interaction coverage, then save a checkpoint.
+- [x] Add an accessible hover and focus tooltip to clarify the fallback Retry action.
+- [x] Test Retry tooltip semantics and preserve fallback-retry behavior, then save a checkpoint.

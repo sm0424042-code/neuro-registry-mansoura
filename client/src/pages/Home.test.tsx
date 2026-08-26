@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { getHomeHeroMediaSource, HomeHeroMedia } from "./Home";
+import { getHomeHeroMediaSource, HomeHeroMedia, RETRY_TOOLTIP_TEXT } from "./Home";
 
 describe("HomeHeroMedia", () => {
   it("defers the heavy homepage visual while reserving its styled visual surface", () => {
@@ -26,6 +26,8 @@ describe("HomeHeroMedia", () => {
     expect(fallbackMarkup).toContain("Retry loading the original neural-network image");
     expect(fallbackMarkup).toContain("Original image unavailable. A fallback visual is shown.");
     expect(fallbackMarkup).toContain("Abstract neural-network fallback visual — no patient image");
+    expect(RETRY_TOOLTIP_TEXT).toBe("Try loading the original image again");
+    expect(fallbackMarkup).toContain('data-slot="tooltip-trigger"');
     expect(fallbackMarkup).toContain("hover:-translate-y-0.5");
     expect(fallbackMarkup).toContain("group-hover:rotate-[-20deg]");
     expect(fallbackMarkup).toContain("motion-reduce:transform-none");

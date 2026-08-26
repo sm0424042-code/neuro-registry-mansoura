@@ -135,3 +135,7 @@ When fallback state is active, the hero now exposes a small **Retry** button abo
 ## Retry hover feedback
 
 The fallback-only Retry button now lifts slightly, brightens its border and background, and gains a restrained teal shadow on hover; its reload icon turns slightly as an interaction cue. Keyboard focus still uses an explicit ring, while press feedback returns the button to position and slightly scales it. The static component test confirms the hover, icon, and reduced-motion classes are emitted, and `motion-reduce` disables nonessential transforms and transitions.
+
+## Retry tooltip
+
+The fallback Retry control now uses the project’s accessible tooltip component. Hovering or focusing the button reveals the explanatory text **Try loading the original image again** below it. The trigger retains its direct accessible name, uses the existing focus treatment, and the tooltip’s nonessential animation is suppressed for reduced-motion preferences. Tooltip state occurs only in the local fallback-media control and exposes no patient, user, record, or clinical information.

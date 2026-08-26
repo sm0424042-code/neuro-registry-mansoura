@@ -76,6 +76,10 @@ The Home route chunk is now **7.11 KB gzip**. The incremental retry control rema
 
 The Retry control now has a compact visual lift, brighter border and teal glow on pointer hover, plus a restrained icon turn to signal the available reload action. Pressing it restores the button to its starting position with the existing scale acknowledgement. Keyboard focus remains visible with a high-contrast ring and offset, and all nonessential transform and transition effects are disabled under the reduced-motion preference. The implementation remains a style-only refinement; it does not change fallback, retry, network, or protected-data behavior.
 
+## Retry tooltip follow-up
+
+The fallback-only Retry control now uses the template’s Radix Tooltip component. Hovering or focusing the button reveals **Try loading the original image again** below the control, with the existing dark/teal visual language and reduced-motion-safe animation suppression. The button retains its explicit accessible name; the tooltip supplements rather than replaces it. The tooltip only exists with fallback state, so the normal successful-image path adds no extra interaction surface or data flow.
+
 ## Findings and safe next steps
 
 The feature’s direct runtime impact is low because it uses local React state and conditional markup. No code optimization was applied during this audit: changing the 220 ms interval would trade away the requested visible feedback, and the measured local interaction remains responsive.
