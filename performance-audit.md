@@ -92,6 +92,10 @@ At the retry limit, the unavailable-image status is now presented as a centered,
 
 The unavailable-image overlay now fades from transparent to opaque over **220 ms** using the existing snappy UI easing. The transition animates only opacity and is declared inside `prefers-reduced-motion: no-preference`; users who request reduced motion receive the final overlay state without the animation. The behavior remains local to the protected homepage media component and does not affect retry counting, loading, or data access.
 
+## Unavailable-image copy-link follow-up
+
+At the terminal unavailable-image state, the overlay now includes a compact **Copy image link** control. It copies the fully resolved original image URL—including the most recent retry marker—to the browser clipboard, allowing the user to paste it into a new tab. The control changes to **Link copied** after a successful copy and provides a live text confirmation for assistive technologies. The copied value is solely the static, non-patient hero-media URL; no record, user, patient, or clinical data is included.
+
 ## Findings and safe next steps
 
 The feature’s direct runtime impact is low because it uses local React state and conditional markup. No code optimization was applied during this audit: changing the 220 ms interval would trade away the requested visible feedback, and the measured local interaction remains responsive.

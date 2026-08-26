@@ -210,3 +210,5 @@
 - [x] Test overlay semantics, visual treatment, and unchanged retry-limit behavior, then save a checkpoint.
 - [x] Add a reduced-motion-safe fade-in transition when the unavailable-image overlay appears.
 - [x] Test overlay fade-in styling and preserve the retry-limit behavior, then save a checkpoint.
+- [x] Add an accessible control in the unavailable-image overlay to copy the original image link.
+- [x] Test copy-link feedback, overlay accessibility, and privacy-safe URL handling, then save a checkpoint.

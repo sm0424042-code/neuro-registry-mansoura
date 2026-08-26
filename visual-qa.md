@@ -151,3 +151,7 @@ After the Retry limit, the unavailable-image status now appears as a centered, s
 ## Unavailable-image overlay fade-in
 
 The terminal unavailable-image Overlay now uses the `unavailable-overlay-enter` opacity transition when nonessential motion is allowed. It fades in over 220 ms without moving or resizing the media region. The animation is scoped to `prefers-reduced-motion: no-preference`, so users who prefer reduced motion see the accessible final Overlay without animation. Static coverage confirms the overlay carries the dedicated animation class.
+
+## Unavailable-image copy link
+
+At the Retry limit, the terminal Overlay now exposes a small **Copy image link** button. It copies the resolved original image URL so the user can paste it into a new tab; successful copying changes the label to **Link copied** and announces that confirmation for assistive technologies. The control is the only pointer-enabled child inside the otherwise non-interactive overlay. Unit coverage verifies the terminal overlay includes the accessible control and that a relative original media path becomes an absolute URL suitable for a separate tab. The URL points only to the static abstract hero media, never to patient, user, record, or clinical data.

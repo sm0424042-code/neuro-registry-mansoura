@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { canRetryHomeHeroImage, getHomeHeroMediaSource, HomeHeroMedia, HOME_HERO_RETRY_FAILURE_LIMIT, HOME_HERO_UNAVAILABLE_TEXT, RETRY_TOOLTIP_TEXT } from "./Home";
+import { canRetryHomeHeroImage, COPY_IMAGE_LINK_TEXT, getCopyableHomeHeroMediaUrl, getHomeHeroMediaSource, HomeHeroMedia, HOME_HERO_RETRY_FAILURE_LIMIT, HOME_HERO_UNAVAILABLE_TEXT, RETRY_TOOLTIP_TEXT } from "./Home";
 
 describe("HomeHeroMedia", () => {
   it("defers the heavy homepage visual while reserving its styled visual surface", () => {
@@ -46,5 +46,11 @@ describe("HomeHeroMedia", () => {
     expect(limitedMarkup).toContain("bg-[#020c0e]/65");
     expect(limitedMarkup).toContain("backdrop-blur-sm");
     expect(limitedMarkup).toContain("unavailable-overlay-enter");
+    expect(limitedMarkup).toContain(COPY_IMAGE_LINK_TEXT);
+    expect(limitedMarkup).toContain("Copy the original image link to open in a new tab");
+  });
+
+  it("copies an absolute original-image URL suitable for opening in another tab", () => {
+    expect(getCopyableHomeHeroMediaUrl("/manus-storage/example.png?retry=3", "https://registry.example")).toBe("https://registry.example/manus-storage/example.png?retry=3");
   });
 });
