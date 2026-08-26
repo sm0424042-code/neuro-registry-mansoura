@@ -56,4 +56,4 @@ The latest messaging validation passed TypeScript, all **15** Vitest tests, and 
 
 ## Deferred verification
 
-The sandbox browser does not hold an approved OAuth session, and the user explicitly asked to skip the sign-in step. A later approved browser-session review remains required for interactive checks of all cohort selectors, especially MS and CIDP-specific editor controls. The renderer captures and contract tests evidence implementation and layout only; they do not constitute authenticated browser verification.
+The sandbox browser does not hold an approved OAuth session, and the user explicitly asked to bypass the sign-in step and live interaction check for now. A later approved browser-session review remains required for interactive checks of all cohort selectors and messaging flows. The renderer captures and contract tests evidence implementation and layout only; they do not constitute authenticated browser verification.

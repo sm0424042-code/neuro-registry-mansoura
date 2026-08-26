@@ -134,3 +134,4 @@
 - [x] Improve the Messages recipient loading and error states so no approved user or message needs to be fabricated for interface verification.
 - [x] Add explicit tests that reject opening a direct-message thread with an unapproved recipient.
 - [x] Extend message validation to reject additional direct identifiers in English and Arabic, including addresses, dates of birth, medical-record numbers, and Arabic identifier phrases.
+- [ ] Resume real approved-session messaging interaction QA only if the user later requests it; explicitly deferred at the user's request.
