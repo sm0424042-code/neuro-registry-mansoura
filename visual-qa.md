@@ -99,3 +99,7 @@ With the public preview artwork saved locally, isolated Chromium checks at both 
 ## Confirmed Clear All
 
 At both 375 px and 1280 px widths, direct isolated Chromium checks verified that Clear all first opens an alert titled `Clear saved items?` while the public preview storage value remains present. Choosing Keep saved items retains both the stored value and card. Confirming Clear all removes the local storage value, updates the Saved items count to 0, renders the empty state, and emits the bottom toast `Saved items cleared`. The confirmation explicitly states that the action affects only public preview cards on this device and does not affect patient, user, clinical-record, or live registry data.
+
+## Owner-only protected data boundary
+
+The protected Access Management screen now states that no protected record-clear or deletion action is currently enabled. It documents that any future destructive registry-data control must be bound server-side to Abdelrahman Ibrahim Rashad’s registered OAuth identity and administrator role, rather than to a display name or local password. The standard sandbox browser remains unauthenticated, so this protected-screen wording is implementation and build evidence only; a future approved OAuth session is required before claiming live visual verification.

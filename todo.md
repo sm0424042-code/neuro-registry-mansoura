@@ -181,3 +181,6 @@
 - [x] Verify matched, filtered, and no-result Saved Items states at mobile and desktop widths, then save a checkpoint.
 - [x] Add a confirmed Clear All action to local-only Saved Items with a success toast.
 - [x] Verify cancel, confirm-clear, and post-clear empty states at mobile and desktop widths, then save a checkpoint.
+- [x] Confirm whether the request limits device-local Saved Items clearing or protected registry-data clearing before changing any authorization behavior.
+- [x] Prepare owner-only destructive registry-data authorization for Abdelrahman Ibrahim Rashad’s future approved account without custom credentials.
+- [x] Document the safe registration and administrator-promotion step required before any protected destructive action is enabled.

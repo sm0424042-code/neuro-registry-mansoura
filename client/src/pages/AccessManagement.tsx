@@ -92,15 +92,16 @@ export default function AccessManagement() {
       </Card>
     </section>
 
-    <section className="grid gap-4 md:grid-cols-3">
+    <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <Card className="border-[#dce9e5] shadow-sm"><CardContent className="p-5"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf7f4] text-[#2d716a]"><KeyRound className="h-4 w-4" /></span><p className="mt-4 text-xs font-bold tracking-[0.12em] text-[#3d7a72]">1. SECURE SIGN-IN</p><p className="mt-2 text-sm leading-6 text-slate-600">Accounts use the existing OAuth identity flow. The registry does not create, display, or store local passwords.</p></CardContent></Card>
       <Card className="border-[#dce9e5] shadow-sm"><CardContent className="p-5"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf7f4] text-[#2d716a]"><UsersRound className="h-4 w-4" /></span><p className="mt-4 text-xs font-bold tracking-[0.12em] text-[#3d7a72]">2. APPLICANT DETAILS</p><p className="mt-2 text-sm leading-6 text-slate-600">The approver reviews the authenticated display name, institutional email when available, requested role, and protocol authorisation.</p></CardContent></Card>
-      <Card className="border-[#dce9e5] shadow-sm"><CardContent className="p-5"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf7f4] text-[#2d716a]"><ShieldCheck className="h-4 w-4" /></span><p className="mt-4 text-xs font-bold tracking-[0.12em] text-[#3d7a72]">3. MANUAL DECISION</p><p className="mt-2 text-sm leading-6 text-slate-600">Abdelrahman Ibrahim Rashad approves or suspends access. Approval does not grant permission to export direct identifiers.</p></CardContent></Card>
+      <Card className="border-[#dce9e5] shadow-sm"><CardContent className="p-5"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf7f4] text-[#2d716a]"><ShieldCheck className="h-4 w-4" /></span><p className="mt-4 text-xs font-bold tracking-[0.12em] text-[#3d7a72]">3. MANUAL DECISION</p><p className="mt-2 text-sm leading-6 text-slate-600">Abdelrahman Ibrahim Rashad approves or suspends access. Approval does not grant permission to export direct identifiers or clear protected registry data.</p></CardContent></Card>
+      <Card className="border-[#efd9d4] bg-[#fffaf9] shadow-sm"><CardContent className="p-5"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#fff0ee] text-[#9b3b33]"><ShieldAlert className="h-4 w-4" /></span><p className="mt-4 text-xs font-bold tracking-[0.12em] text-[#9b4b42]">4. OWNER-ONLY CLEARING</p><p className="mt-2 text-sm leading-6 text-[#705651]">No protected record-clear or deletion control is enabled today. If one is approved later, it must be bound server-side to Abdelrahman’s registered OAuth identity and administrator role—not to a display name or local password.</p></CardContent></Card>
     </section>
 
     <div className="flex gap-3 rounded-xl border border-[#f0d8bb] bg-[#fff8ef] p-4 text-sm leading-6 text-[#805824]">
       <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
-      <p><strong>Privacy and governance reminder:</strong> Do not collect passwords, national ID numbers, patient identifiers, or contact details in approval notes. Abdelrahman Ibrahim Rashad should approve only users authorised under the research protocol and institutional requirements.</p>
+      <p><strong>Privacy and governance reminder:</strong> Do not collect passwords, national ID numbers, patient identifiers, or contact details in approval notes. After Abdelrahman Ibrahim Rashad completes secure sign-in, an existing administrator must approve the account and assign its administrator role using the authenticated OAuth identity. Public preview Saved Items are separate browser-local preferences and never clear protected registry data.</p>
     </div>
   </div>;
 }
