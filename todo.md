@@ -165,3 +165,7 @@
 - [x] Re-run validation, verify mobile and desktop preview behavior, and save a checkpoint for the interaction update.
 - [x] Improve the mobile public-preview artwork card with smooth, reduced-motion-safe transitions and touch-friendly behavior.
 - [x] Re-run validation, verify the mobile and desktop preview, and save a checkpoint for the interaction update.
+- [x] Add an accessible Save/Favorite button to the public preview artwork card with local-only persistence.
+- [x] Verify saved and unsaved states on mobile and desktop, re-run validation, and save a checkpoint.
+- [x] Toggle the preview Save/Favorite control and document both unsaved and saved states at mobile and desktop widths.
+- [x] Save a new checkpoint specifically for the Save/Favorite artwork-card update after state verification.

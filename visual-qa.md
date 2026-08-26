@@ -65,3 +65,13 @@ The user-supplied Mansoura University Neurology Center artwork is now hosted thr
 ## Mobile artwork-card interaction update
 
 The supplied preview artwork card now uses a restrained 200 ms lift/shadow transition on hover, a subtle press-scale response on touch, and a 500 ms image zoom transition. The card declares `touch-pan-y` so the page retains natural vertical touch scrolling, while `motion-reduce:transition-none` and `motion-reduce` image handling respect reduced-motion preferences. Mobile capture at 375 px shows the artwork card full-width with readable wrapped caption text and no horizontal overflow. Desktop capture at 1280 px preserves the two-column hero composition and caption legibility. A screenshot cannot simulate a finger gesture, so touch physics are evidenced by the rendered classes and responsive layout rather than a real-device gesture test.
+
+## Save/Favorite artwork card
+
+The public artwork card now includes a keyboard-accessible Save button with an 11 px minimum-height touch target, visible pressed state, bookmark icon swap, and clear accessible labels for saving or removing the preview artwork from favorites. Mobile capture at 375 px shows the control comfortably inset in the artwork card without covering the main institutional mark; desktop capture at 1280 px preserves the same placement and hierarchy. The state is stored only under a fixed preview-specific key in the browser's local storage, with a safe fallback when storage is unavailable; no patient, user, or registry data is persisted.
+
+## Save/Favorite state verification
+
+A temporary local Chromium session exercised the actual preview control without any account, user, or registry data. The initial state rendered `Save` with `aria-pressed=false` and no stored value; one click changed it to `Saved`, `aria-pressed=true`, and `localStorage` value `true`; a second click returned it to `Save`, `aria-pressed=false`, and removed the storage value. This confirms both toggle states and local-only persistence behavior. The test used `http://127.0.0.1:3000/workflow-preview` solely for isolated verification and did not affect production data.
+
+The same isolated Chromium state exercise was repeated at a 1280 px desktop viewport with identical results: `Save` / false / no storage, then `Saved` / true / stored `true`, then `Save` / false / storage removed. Together with the 375 px run, both responsive widths have direct state-transition evidence.
