@@ -75,3 +75,7 @@ The public artwork card now includes a keyboard-accessible Save button with an 1
 A temporary local Chromium session exercised the actual preview control without any account, user, or registry data. The initial state rendered `Save` with `aria-pressed=false` and no stored value; one click changed it to `Saved`, `aria-pressed=true`, and `localStorage` value `true`; a second click returned it to `Save`, `aria-pressed=false`, and removed the storage value. This confirms both toggle states and local-only persistence behavior. The test used `http://127.0.0.1:3000/workflow-preview` solely for isolated verification and did not affect production data.
 
 The same isolated Chromium state exercise was repeated at a 1280 px desktop viewport with identical results: `Save` / false / no storage, then `Saved` / true / stored `true`, then `Save` / false / storage removed. Together with the 375 px run, both responsive widths have direct state-transition evidence.
+
+## Public Share artwork card
+
+The artwork card now places a Share button beside Save at both 375 px and 1280 px widths without obscuring the institutional artwork or the non-patient caption. An isolated Chromium run verified both share paths using only the public workflow URL: a mocked native-share handler received the public title, public workflow description, and `/workflow-preview` URL; with native sharing unavailable, the fallback copied that same public URL and visibly changed the button label to `Copied`. No patient, user, record, or registry data was included in either payload.

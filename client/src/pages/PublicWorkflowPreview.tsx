@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
 import {
   ArrowRight,
   Bookmark,
@@ -14,6 +15,7 @@ import {
   Microscope,
   MessageSquare,
   Pill,
+  Share2,
   ShieldCheck,
   UsersRound,
 } from "lucide-react";
@@ -34,6 +36,7 @@ const workflows = [
 
 export default function PublicWorkflowPreview() {
   const [isArtworkSaved, setIsArtworkSaved] = useState(false);
+  const [hasCopiedPreviewLink, setHasCopiedPreviewLink] = useState(false);
 
   useEffect(() => {
     try {
@@ -54,6 +57,44 @@ export default function PublicWorkflowPreview() {
     }
   };
 
+  const sharePreview = async () => {
+    const previewUrl = new URL("/workflow-preview", window.location.origin).toString();
+    const shareData = {
+      title: "Mansoura University Neurology Research Registry",
+      text: "Explore the public, non-patient workflow preview.",
+      url: previewUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+      }
+    }
+
+    try {
+      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(previewUrl);
+      else {
+        const helper = document.createElement("textarea");
+        helper.value = previewUrl;
+        helper.setAttribute("readonly", "");
+        helper.className = "fixed opacity-0";
+        document.body.appendChild(helper);
+        helper.select();
+        const copied = document.execCommand("copy");
+        helper.remove();
+        if (!copied) throw new Error("Copy command was unavailable");
+      }
+      setHasCopiedPreviewLink(true);
+      window.setTimeout(() => setHasCopiedPreviewLink(false), 2200);
+      toast.success("Public preview link copied");
+    } catch {
+      toast.error("Unable to copy the preview link", { description: "Copy the public preview URL from your browser address bar instead." });
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#f6faf8] text-[#203943]">
       <section className="relative overflow-hidden bg-[#091d30] px-5 py-8 text-white md:px-10 md:py-12">
@@ -68,10 +109,17 @@ export default function PublicWorkflowPreview() {
           </div>
           <div className="group relative touch-pan-y select-none overflow-hidden rounded-2xl border border-white/15 bg-[#061323] shadow-2xl shadow-black/30 transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_22px_50px_rgba(3,13,28,0.42)] active:translate-y-0 active:scale-[0.99] motion-reduce:transition-none">
             <img alt="Mansoura University Neurology Center brain and neural-network artwork" src={brainVisual} className="h-full min-h-[210px] w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] motion-reduce:transition-none" />
-            <button type="button" aria-pressed={isArtworkSaved} aria-label={isArtworkSaved ? "Remove preview artwork from favorites" : "Save preview artwork to favorites"} onClick={toggleArtworkSaved} className="absolute right-3 top-3 z-10 inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 bg-[#061323]/80 px-3.5 text-xs font-semibold text-white shadow-lg backdrop-blur-md transition-[background-color,transform] duration-150 ease-out hover:bg-[#12344a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bcefe3] active:scale-[0.97] motion-reduce:transition-none">
-              {isArtworkSaved ? <BookmarkCheck className="h-4 w-4 text-[#bcefe3]" /> : <Bookmark className="h-4 w-4" />}
-              <span>{isArtworkSaved ? "Saved" : "Save"}</span>
-            </button>
+            <div className="absolute right-3 top-3 z-10 flex max-w-[calc(100%-1.5rem)] gap-2">
+              <button type="button" aria-pressed={isArtworkSaved} aria-label={isArtworkSaved ? "Remove preview artwork from favorites" : "Save preview artwork to favorites"} onClick={toggleArtworkSaved} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 bg-[#061323]/80 px-3.5 text-xs font-semibold text-white shadow-lg backdrop-blur-md transition-[background-color,transform] duration-150 ease-out hover:bg-[#12344a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bcefe3] active:scale-[0.97] motion-reduce:transition-none">
+                {isArtworkSaved ? <BookmarkCheck className="h-4 w-4 text-[#bcefe3]" /> : <Bookmark className="h-4 w-4" />}
+                <span>{isArtworkSaved ? "Saved" : "Save"}</span>
+              </button>
+              <button type="button" aria-label="Share public workflow preview" onClick={sharePreview} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 bg-[#061323]/80 px-3.5 text-xs font-semibold text-white shadow-lg backdrop-blur-md transition-[background-color,transform] duration-150 ease-out hover:bg-[#12344a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bcefe3] active:scale-[0.97] motion-reduce:transition-none">
+                <Share2 className="h-4 w-4" />
+                <span>{hasCopiedPreviewLink ? "Copied" : "Share"}</span>
+              </button>
+              <span className="sr-only" aria-live="polite">{hasCopiedPreviewLink ? "Public preview link copied." : ""}</span>
+            </div>
             <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#061323] via-[#061323]/70 to-transparent px-5 pb-4 pt-12"><p className="text-[10px] font-bold tracking-[0.16em] text-[#bcefe3]">MANSOURA UNIVERSITY · NEUROLOGY CENTER</p><p className="mt-1 text-xs text-slate-200">Brand artwork supplied for this non-patient preview · touch to explore</p></div>
           </div>
         </div>

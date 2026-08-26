@@ -169,3 +169,5 @@
 - [x] Verify saved and unsaved states on mobile and desktop, re-run validation, and save a checkpoint.
 - [x] Toggle the preview Save/Favorite control and document both unsaved and saved states at mobile and desktop widths.
 - [x] Save a new checkpoint specifically for the Save/Favorite artwork-card update after state verification.
+- [x] Add an accessible Share button beside Save, with native sharing when supported and a copy-link fallback.
+- [x] Verify native-share and copy-link fallback behavior without sharing registry or patient data, then save a checkpoint.
