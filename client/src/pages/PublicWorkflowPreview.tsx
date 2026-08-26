@@ -23,7 +23,7 @@ const workflows = [
   { icon: HeartPulse, title: "Myasthenia Gravis", tone: "bg-[#fbf4e9] text-[#9a6e36]", fields: ["MGFA class and MG-ADL / QMG", "Ocular, bulbar, and respiratory evaluation", "Antibody / thymoma pathway", "Treatment response"] },
   { icon: BrainCircuit, title: "Myelopathy", tone: "bg-[#f0f5eb] text-[#5f7b4e]", fields: ["Functional disability and gait / mobility", "UMN / LMN signs and sensory level", "Bladder / bowel function", "Spine MRI and CSF pathway"] },
   { icon: Eye, title: "Neuro-ophthalmology", tone: "bg-[#fbf1e8] text-[#9c6b3c]", fields: ["Visual acuity, fields, and OCT", "Fundus / optic disc and RAPD", "NMOSD, MOGAD, and GCA classification", "AQP4/MOG and GCA pathway"] },
-  { icon: Microscope, title: "CIDP & inflammatory neuropathy", tone: "bg-[#eff8f1] text-[#4d7d5c]", fields: ["INCAT / ONLS disability and MRC sum score", "Sensory ataxia and EMG / NCS evidence", "Typical CIDP, MADSAM, mononeuritis, and vasculitic pathway", "CSF, targeted testing, and immune-therapy safety"] },
+  { icon: Microscope, title: "CIDP & inflammatory neuropathy", tone: "bg-[#eff8f1] text-[#4d7d5c]", fields: ["Explicit CIDP variant: typical, MADSAM, distal, focal, motor, or sensory", "CIDP variant-pattern evaluation plus INCAT / ONLS and MRC sum score", "Sensory ataxia and EMG / NCS evidence", "Mononeuritis / vasculitic pathway, CSF, and immune-therapy safety"] },
 ] as const;
 
 export default function PublicWorkflowPreview() {

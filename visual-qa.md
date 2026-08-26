@@ -34,6 +34,10 @@ After the disease-exclusive refinement, the Stroke editor renderer was recapture
 
 The public workflow desktop view now explicitly states: **“There is no standard evaluation checklist shared across diseases.”** The message is fully visible next to the research-safe record flow and reinforces that the displayed eight-cohort pathways are disease-specific.
 
+The public workflow was rechecked after the CIDP variant update. The CIDP card visibly lists the explicit variants—typical, MADSAM, distal, focal, motor, and sensory—and separately identifies CIDP variant-pattern evaluation with the CIDP disability and strength assessments. The page remains a data-free demonstration.
+
+The restarted CIDP-selected editor preview at `/records/new?cohort=cidp` visibly renders the **CIDP variant** selector alongside diagnostic pathway, EMG/NCS evidence, and CSF protein status. The CIDP evaluation card directly beneath it begins with **CIDP variant pattern**, followed by CIDP INCAT/ONLS, MRC sum score, sensory ataxia, EMG/NCS evidence, and vasculitic features. This confirms the requested field and disease-specific variant evaluation in the editor renderer.
+
 The project preview renderer captured desktop layouts for `/records/new` and `/`, visibly showing the active **Stroke** pathway, the history / examination / discharge-treatment card, the brain-imaging overview visual, and the clinical workflow board. These renderer captures are useful layout evidence but are not treated as a replacement for a real browser-session authentication check.
 
 The code-level update was validated with TypeScript, Vitest, and a production build. The unprotected server startup and the protected access gate both loaded after the latest clinical workflow changes.

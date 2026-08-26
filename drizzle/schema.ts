@@ -103,7 +103,7 @@ export type NeuroOphthalmologyClinicalData = EvaluationChecklist & {
 
 export type CIDPClinicalData = EvaluationChecklist & {
   cohort: "cidp";
-  phenotype: "typical" | "madsam" | "distal" | "focal" | "motor" | "sensory" | "other" | "unknown";
+  variant: "typical" | "madsam" | "distal" | "focal" | "motor" | "sensory" | "other" | "unknown";
   diagnosticPathway: "cidp" | "mononeuritis_multiplex" | "vasculitic_neuropathy" | "other" | "unknown";
   disabilityLevel: "mild" | "moderate" | "severe" | "unknown";
   emgNcsEvidence: "demyelinating" | "axonal_multifocal" | "equivocal" | "not_done" | "unknown";

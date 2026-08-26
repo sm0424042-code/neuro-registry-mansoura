@@ -104,6 +104,8 @@
 - [x] Add a single immune-therapy fieldset that is visible only where relevant to the selected cohort.
 - [x] Add Neuro-ophthalmology disease classification for NMOSD, MOGAD, and other conditions, and remove unrelated neuro-ophthalmology fields.
 - [x] Add CIDP variant selection including typical CIDP and MADSAM.
+- [x] Add an explicit CIDP variant field with disease-specific variant evaluation details in the editor, validation, and public workflow demonstration.
+- [x] Add a CIDP variant-pattern evaluation item inside the protected CIDP editor checklist and capture visible rendering evidence.
 - [x] Add structured diagnosis pathways for mononeuritis multiplex, vasculitic neuropathy, and giant cell arteritis, with relevant evaluation and immune-therapy documentation.
 - [x] Replace generic evaluation fields with cohort-specific evaluation sections and recommendations.
 - [x] Add and visibly label explicit evaluation items under every disease cohort in the record editor and public workflow demonstration.
