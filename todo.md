@@ -292,3 +292,5 @@
 - [x] Test auto-complete filtering, keyboard selection, and exclusion of user, record, and clinical data suggestions; then publish the update.
 - [x] Highlight only the case-insensitive matching text inside fixed safe task-search suggestions without changing the suggestion data contract.
 - [x] Test highlighted suggestion segments and accessibility semantics, then verify the protected route boundary and publish the update.
+- [x] Verify and strengthen keyboard navigation for task-search suggestions with ArrowUp, ArrowDown, Enter, and Escape while keeping focus and selected values coherent.
+- [x] Add regression coverage for keyboard navigation edge cases and publish the verified accessibility update.

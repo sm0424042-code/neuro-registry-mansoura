@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterAndSortCompletionTasks, getCompletionTaskPage, getCompletionTaskPagination, getNextTaskSearchSuggestionIndex, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskSearchSuggestions, getTaskSearchValidation, getTaskStatusLabel, splitTaskSearchSuggestionHighlight } from "./CompletionTasks";
+import { filterAndSortCompletionTasks, getActiveTaskSearchSuggestion, getCompletionTaskPage, getCompletionTaskPagination, getNextTaskSearchSuggestionIndex, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskSearchSuggestions, getTaskSearchValidation, getTaskStatusLabel, splitTaskSearchSuggestionHighlight } from "./CompletionTasks";
 
 describe("completion-task labels", () => {
   it("uses clear controlled labels for task state", () => {
@@ -66,6 +66,14 @@ describe("completion-task labels", () => {
     expect(getNextTaskSearchSuggestionIndex(2, "ArrowDown", 3)).toBe(0);
     expect(getNextTaskSearchSuggestionIndex(0, "ArrowUp", 3)).toBe(2);
     expect(getNextTaskSearchSuggestionIndex(-1, "ArrowDown", 0)).toBe(-1);
+  });
+
+  it("selects only the active suggested value when Enter is used", () => {
+    const suggestions = getTaskSearchSuggestions("acc", new Date("2026-08-27T10:30:00.000Z"));
+    expect(getActiveTaskSearchSuggestion(suggestions, 0)).toMatchObject({ value: "accepted" });
+    expect(getActiveTaskSearchSuggestion(suggestions, 1)).toMatchObject({ value: "awaiting acceptance" });
+    expect(getActiveTaskSearchSuggestion(suggestions, -1)).toBeNull();
+    expect(getActiveTaskSearchSuggestion(suggestions, 3)).toBeNull();
   });
 
   it("highlights only the case-insensitive matching text within a safe suggestion label", () => {

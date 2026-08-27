@@ -124,6 +124,10 @@ export function getNextTaskSearchSuggestionIndex(currentIndex: number, key: "Arr
   return currentIndex <= 0 ? count - 1 : currentIndex - 1;
 }
 
+export function getActiveTaskSearchSuggestion(suggestions: TaskSearchSuggestion[], activeIndex: number) {
+  return Number.isInteger(activeIndex) && activeIndex >= 0 && activeIndex < suggestions.length ? suggestions[activeIndex] : null;
+}
+
 export function getTaskExportInput(statusFilter: TaskStatusFilter, sortOption: TaskSortOption, search?: string) {
   return { status: statusFilter === "all" ? undefined : statusFilter, search, sort: sortOption };
 }
@@ -169,15 +173,15 @@ function TaskSearchBox({ value, disabled, error, onValueChange }: { value: strin
       event.preventDefault();
       setOpen(true);
       setActiveIndex(current => getNextTaskSearchSuggestionIndex(current, event.key as "ArrowDown" | "ArrowUp", suggestions.length));
-    } else if (event.key === "Enter" && open && activeIndex >= 0 && suggestions[activeIndex]) {
+    } else if (event.key === "Enter" && open && getActiveTaskSearchSuggestion(suggestions, activeIndex)) {
       event.preventDefault();
-      chooseSuggestion(suggestions[activeIndex]);
+      chooseSuggestion(getActiveTaskSearchSuggestion(suggestions, activeIndex)!);
     } else if (event.key === "Escape") {
       setOpen(false);
       setActiveIndex(-1);
     }
   };
-  return <div className="relative"><label htmlFor="task-quick-search" className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-[#45616a]"><Search className="h-3.5 w-3.5" />Quick search</label><Input id="task-quick-search" value={value} disabled={disabled} onChange={event => { onValueChange(event.target.value); setOpen(true); setActiveIndex(-1); }} onFocus={() => setOpen(true)} onBlur={() => window.setTimeout(() => setOpen(false), 120)} onKeyDown={onKeyDown} placeholder="Status or UTC date" role="combobox" aria-autocomplete="list" aria-expanded={open && suggestions.length > 0} aria-controls={listboxId} aria-activedescendant={activeIndex >= 0 ? `${listboxId}-${activeIndex}` : undefined} aria-describedby="task-search-help" aria-invalid={Boolean(error)} />{open && suggestions.length > 0 && <div id={listboxId} role="listbox" aria-label="Safe task search suggestions" className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-[#cfe1dc] bg-white p-1 shadow-lg"><p className="px-2 py-1 text-[11px] font-medium text-slate-500">Safe search suggestions</p>{suggestions.map((suggestion, index) => <button key={suggestion.value} id={`${listboxId}-${index}`} type="button" role="option" aria-selected={index === activeIndex} className={`flex w-full items-center rounded-md px-2.5 py-2 text-left text-sm transition-colors ${index === activeIndex ? "bg-[#e9f6f2] text-[#18565f]" : "text-[#36535a] hover:bg-[#f4faf8]"}`} onMouseDown={event => event.preventDefault()} onClick={() => chooseSuggestion(suggestion)}>{splitTaskSearchSuggestionHighlight(suggestion.label, value).map((segment, segmentIndex) => segment.matched ? <mark key={`${suggestion.value}-${segmentIndex}`} className="rounded-sm bg-amber-100 px-0.5 font-semibold text-[#704b05]">{segment.text}</mark> : <span key={`${suggestion.value}-${segmentIndex}`}>{segment.text}</span>)}</button>)}</div>}</div>;
+  return <div className="relative"><label htmlFor="task-quick-search" className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-[#45616a]"><Search className="h-3.5 w-3.5" />Quick search</label><Input id="task-quick-search" value={value} disabled={disabled} onChange={event => { onValueChange(event.target.value); setOpen(true); setActiveIndex(-1); }} onFocus={() => setOpen(true)} onBlur={() => window.setTimeout(() => setOpen(false), 120)} onKeyDown={onKeyDown} placeholder="Status or UTC date" role="combobox" aria-autocomplete="list" aria-keyshortcuts="ArrowUp ArrowDown Enter Escape" aria-expanded={open && suggestions.length > 0} aria-controls={listboxId} aria-activedescendant={activeIndex >= 0 ? `${listboxId}-${activeIndex}` : undefined} aria-describedby="task-search-help" aria-invalid={Boolean(error)} />{open && suggestions.length > 0 && <div id={listboxId} role="listbox" aria-label="Safe task search suggestions" className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-[#cfe1dc] bg-white p-1 shadow-lg"><p className="px-2 py-1 text-[11px] font-medium text-slate-500">Safe search suggestions</p>{suggestions.map((suggestion, index) => <button key={suggestion.value} id={`${listboxId}-${index}`} type="button" role="option" aria-selected={index === activeIndex} className={`flex w-full items-center rounded-md px-2.5 py-2 text-left text-sm transition-colors ${index === activeIndex ? "bg-[#e9f6f2] text-[#18565f]" : "text-[#36535a] hover:bg-[#f4faf8]"}`} onMouseDown={event => event.preventDefault()} onClick={() => chooseSuggestion(suggestion)}>{splitTaskSearchSuggestionHighlight(suggestion.label, value).map((segment, segmentIndex) => segment.matched ? <mark key={`${suggestion.value}-${segmentIndex}`} className="rounded-sm bg-amber-100 px-0.5 font-semibold text-[#704b05]">{segment.text}</mark> : <span key={`${suggestion.value}-${segmentIndex}`}>{segment.text}</span>)}</button>)}</div>}</div>;
 }
 
 export default function CompletionTasks() {
