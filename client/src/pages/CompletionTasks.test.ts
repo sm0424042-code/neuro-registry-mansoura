@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addRecentTaskSearch, filterAndSortCompletionTasks, getActiveTaskSearchSuggestion, getClearedTaskSearchState, getCompletionTaskPage, getCompletionTaskPagination, getNextTaskSearchSuggestionIndex, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskSearchSuggestions, getTaskSearchValidation, getTaskStatusLabel, MAX_RECENT_TASK_SEARCHES, normaliseRecentTaskSearches, splitTaskSearchSuggestionHighlight } from "./CompletionTasks";
+import { addRecentTaskSearch, filterAndSortCompletionTasks, getActiveTaskSearchSuggestion, getClearedTaskSearchState, getCompletionTaskPage, getCompletionTaskPagination, getNextTaskSearchSuggestionIndex, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskSearchSuggestionPresentation, getTaskSearchSuggestions, getTaskSearchValidation, getTaskStatusLabel, MAX_RECENT_TASK_SEARCHES, normaliseRecentTaskSearches, splitTaskSearchSuggestionHighlight } from "./CompletionTasks";
 
 describe("completion-task labels", () => {
   it("uses clear controlled labels for task state", () => {
@@ -87,6 +87,11 @@ describe("completion-task labels", () => {
     expect(addRecentTaskSearch(recent, "2026-08-28")).toEqual(["2026-08-28", "accepted", "2026-08-27", "completed", "assigned"]);
     expect(addRecentTaskSearch(recent, "person name")).toEqual(recent);
     expect(JSON.stringify(recent)).not.toMatch(/MUNR|person|record|patient|clinical|email/i);
+  });
+
+  it("labels only device-local recent searches with the visual history metadata", () => {
+    expect(getTaskSearchSuggestionPresentation(true)).toEqual({ accessibleLabel: "Recent safe search", showsHistoryIcon: true });
+    expect(getTaskSearchSuggestionPresentation(false)).toEqual({ accessibleLabel: "Safe search suggestion", showsHistoryIcon: false });
   });
 
   it("highlights only the case-insensitive matching text within a safe suggestion label", () => {

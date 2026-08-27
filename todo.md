@@ -298,3 +298,5 @@
 - [x] Test clearing search state, restoring full matching results, and preserving status and sort controls; then publish the update.
 - [x] Add a bounded device-local recent-search list for only validated task-status and UTC-date terms, shown when Completion Tasks search is empty and focused.
 - [x] Test de-duplication, recency order, invalid-term exclusion, and the absence of record, user, and clinical data from local recent-search storage; then publish the update.
+- [x] Add a small decorative recent-history icon and accessible label to recent safe-search items only, distinct from ordinary auto-complete suggestions.
+- [x] Test recent-search visual metadata and confirm ordinary suggestions receive no recent-history label; then publish the update.

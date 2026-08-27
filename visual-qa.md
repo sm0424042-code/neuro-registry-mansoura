@@ -239,3 +239,9 @@ The search-state test confirms that clearing produces an empty query and page on
 When Quick search is empty and receives focus, it now displays a **Recent safe searches on this device** list. The list is stored only in that browser’s local storage under a versioned preference key; it is not written to the registry database, sent to the server as history, included in exports, or shared with another account or device. Before storage, every value is revalidated against the same strict operational contract used by the search procedure. The list admits only allowed task states or valid UTC dates, removes duplicates, retains the newest value first, and is limited to five entries.
 
 Automated coverage verifies ordering, de-duplication, the five-item bound, and rejection of an invalid person-like value and a Research ID-like value. The current sandbox identity is suspended and the protected `/tasks` route displayed no search UI or task data. Choosing a recent entry interactively remains deferred until a legitimate approved OAuth session is available.
+
+## Completion-task recent-search icon
+
+Each item in the **Recent safe searches on this device** list now includes a small History icon before its label. Ordinary auto-complete suggestions do not display this icon, making the distinction visible without changing any search term, local-storage contract, or server query. The icon is decorative and marked hidden from assistive technology, while the item receives an explicit accessible label indicating whether it is a recent safe search or a standard safe suggestion.
+
+Automated coverage verifies the recent-search presentation metadata and confirms that ordinary suggestions do not receive the history label. The available browser session is suspended and the `/tasks` capture revealed no task, search, or history content. Visual interaction in an approved account remains deferred honestly.
