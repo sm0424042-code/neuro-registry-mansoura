@@ -80,6 +80,12 @@ When a comparison period is selected, the existing aggregate CSV is named as a *
 
 All comparison bar charts now pair the coloured bars with a textual **Increase**, **Decrease**, or **No change** badge, an arrow or minus icon, and the signed difference. This makes the direction understandable without relying on colour alone. Keyboard-focusable help buttons describe how to read every donut, regular bar, and comparison bar chart; the underlying chart hover cards continue to show only aggregate count, share, period, or percentage values. The suspended sandbox account still correctly receives only the access gate at `/statistics`, so live approved-session hover and export interaction remains deferred.
 
+## Local view saving and PDF/Word comparison reports
+
+The Statistics workspace now offers **Save view**, which retains only the selected cohort/status filters and UTC current/comparison-date controls in the user's current browser. It does not save query results, charts, CSV data, records, Research IDs, clinical details, account information, or files; unrecognised local-storage keys are ignored when restoring a view.
+
+When both periods are selected, approved users can export the complete aggregate comparison report to **PDF** or **Word (.docx)** in addition to the comparison CSV and per-chart PNGs. The documents are generated locally in the browser and contain the two date windows, aggregate totals, cohort-indicator rates, a deterministic descriptive summary, and an explicit statement that the observed differences do not establish clinical, operational, or causal reasons. Report libraries load only after the chosen export action to avoid adding their full weight to the initial Statistics screen. The current capture still contains only the suspended-access gate; real export and persistence interaction remains unverified until a legitimate approved OAuth session is available.
+
 ## Deferred verification
 
 The sandbox browser does not hold an approved OAuth session, and the user explicitly asked to bypass the sign-in step and live interaction check for now. A later approved browser-session review remains required for interactive checks of all cohort selectors and messaging flows. The renderer captures and contract tests evidence implementation and layout only; they do not constitute authenticated browser verification.

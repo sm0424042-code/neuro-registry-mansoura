@@ -318,3 +318,8 @@
 - [x] Add accessible visual rise, decline, and unchanged indicators to comparison charts and metric cards without relying on color alone.
 - [x] Add keyboard-accessible explanatory tooltips to comparison charts and cohort indicator charts.
 - [x] Test report contents, export exclusions, visual-indicator semantics, tooltip accessibility, and protected Statistics access; then publish the update.
+- [x] Add local-only saving and restoration of approved-user Statistics filter and comparison settings without storing registry data.
+- [x] Add a deterministic descriptive comparison summary that reports aggregate observed changes and explicitly avoids causal or clinical explanations.
+- [x] Add client-local PDF and Word exports for the aggregate Statistics comparison report with no individual records or identifiers.
+- [x] Package and validate a reusable skill for safe aggregate statistics comparison, summaries, and report exports.
+- [x] Test local preferences, summaries, PDF/Word contracts, export exclusions, protected route behavior, and publish the update.
