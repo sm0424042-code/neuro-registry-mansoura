@@ -314,3 +314,7 @@
 - [x] Test indicator numerators, denominators, period comparison differences, chart/CSV/PNG export exclusions, and protected Statistics access; then publish the update.
 - [x] Generalize cohort-specific aggregate indicator cards to Stroke, MS, Abnormal Movements, GBS, MG, Myelopathy, Neuro-ophthalmology, and CIDP using only controlled clinical fields.
 - [x] Test cohort-indicator eligibility, denominators, comparison differences, aggregate-only exports, and protected route behavior; then publish the update.
+- [x] Add a complete aggregate comparison report export for the selected current and comparison periods.
+- [x] Add accessible visual rise, decline, and unchanged indicators to comparison charts and metric cards without relying on color alone.
+- [x] Add keyboard-accessible explanatory tooltips to comparison charts and cohort indicator charts.
+- [x] Test report contents, export exclusions, visual-indicator semantics, tooltip accessibility, and protected Statistics access; then publish the update.

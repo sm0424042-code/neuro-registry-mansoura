@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createAggregateStatisticsCsv, getPercentagePointDifferenceLabel, getStatisticDifferenceLabel, getStatisticShare, getStatisticsChartPngFileName, getStatisticsDateRangeLabel, statisticLabel, toAggregateChartData, toAggregateComparisonChartData, toCohortIndicatorDistributionComparison, type AggregateStatistics } from "./RegistryStatistics";
+import { createAggregateStatisticsCsv, getComparisonSignal, getPercentagePointDifferenceLabel, getStatisticDifferenceLabel, getStatisticShare, getStatisticsChartPngFileName, getStatisticsDateRangeLabel, statisticLabel, toAggregateChartData, toAggregateComparisonChartData, toComparisonReportRows, toCohortIndicatorDistributionComparison, type AggregateStatistics } from "./RegistryStatistics";
 
 const aggregate: AggregateStatistics = { totalRecords: 10, byCohort: [{ cohort: "stroke", total: 6 }, { cohort: "cidp", total: 4 }], byEnrollment: [{ status: "enrolled", total: 8 }, { status: "screened", total: 2 }], byCompleteness: [{ status: "complete", total: 7 }, { status: "incomplete", total: 3 }], byDataQuality: [{ status: "complete", total: 7 }, { status: "draft", total: 3 }], investigationCoverage: { radiologyRecorded: 8, laboratoryRecorded: 9, neurologicalRecorded: 7, protocolChecklistComplete: 6 }, cohortIndicators: [{ id: "stroke_iv_thrombolysis", cohort: "stroke", title: "IV thrombolysis use", numeratorLabel: "IV thrombolysis or combined reperfusion", denominatorLabel: "All Stroke records", numerator: 3, denominator: 6, percentage: 50, distribution: [{ key: "iv_thrombolysis", label: "IV thrombolysis", total: 2, percentage: 33 }, { key: "none", label: "none", total: 3, percentage: 50 }, { key: "both", label: "Combined reperfusion", total: 1, percentage: 17 }] }] };
 
@@ -55,5 +55,15 @@ describe("RegistryStatistics", () => {
     expect(toCohortIndicatorDistributionComparison(current, comparison)).toEqual(expect.arrayContaining([expect.objectContaining({ key: "iv_thrombolysis", current: 2, comparison: 1, currentPercentage: 33, comparisonPercentage: 33, difference: 0 })]));
     expect(getPercentagePointDifferenceLabel(50, 33)).toBe("+17 percentage points");
     expect(JSON.stringify(toCohortIndicatorDistributionComparison(current, comparison))).not.toMatch(/MUNR|research.?id|patient|diagnosis|clinical|email|recorded.?by/i);
+  });
+
+  it("labels comparison direction without relying on colour and builds aggregate-only report rows", () => {
+    const current = aggregate.cohortIndicators[0];
+    const comparison = { ...current, numerator: 1, denominator: 3, percentage: 33 };
+    expect(getComparisonSignal(5, 2)).toMatchObject({ label: "Increase", difference: 3 });
+    expect(getComparisonSignal(2, 5)).toMatchObject({ label: "Decrease", difference: -3 });
+    expect(getComparisonSignal(5, 5)).toMatchObject({ label: "No change", difference: 0 });
+    expect(toComparisonReportRows([current], [comparison])).toEqual([expect.objectContaining({ cohort: "Stroke", indicator: "IV thrombolysis use", currentPercentage: 50, comparisonPercentage: 33, percentagePointDifference: 17 })]);
+    expect(JSON.stringify(toComparisonReportRows([current], [comparison]))).not.toMatch(/MUNR|research.?id|patient|diagnosis|clinical|narrative|email|recorded.?by/i);
   });
 });

@@ -74,6 +74,12 @@ The protected Statistics response now contains a fixed, research-oriented indica
 
 When two periods are selected, every cohort indicator adds a paired rate chart and the percentage-point change between periods, along with controlled-option distribution changes. The aggregate CSV includes the indicator numerators and denominators; each card's PNG contains only its aggregate rate, distribution, and selected period labels. No direct identifiers, Research IDs, individual values, free text, dates per record, account information, or file metadata are returned or exported. Automated tests cover Stroke, GBS, and CIDP indicator counts and controlled distributions, while every indicator uses the same fixed aggregation mechanism. The current browser session remains suspended, so no interactive approved-session claims are made.
 
+## Comparison report, direction signals, and chart help
+
+When a comparison period is selected, the existing aggregate CSV is named as a **comparison report** and contains the complete current-versus-comparison aggregate data used by the workspace: totals, cohort, completion, enrolment, data quality, investigation coverage, and cohort-indicator numerators and denominators. The unchanged per-chart PNG option remains available for visual sharing. Neither export includes individual record content or identity information.
+
+All comparison bar charts now pair the coloured bars with a textual **Increase**, **Decrease**, or **No change** badge, an arrow or minus icon, and the signed difference. This makes the direction understandable without relying on colour alone. Keyboard-focusable help buttons describe how to read every donut, regular bar, and comparison bar chart; the underlying chart hover cards continue to show only aggregate count, share, period, or percentage values. The suspended sandbox account still correctly receives only the access gate at `/statistics`, so live approved-session hover and export interaction remains deferred.
+
 ## Deferred verification
 
 The sandbox browser does not hold an approved OAuth session, and the user explicitly asked to bypass the sign-in step and live interaction check for now. A later approved browser-session review remains required for interactive checks of all cohort selectors and messaging flows. The renderer captures and contract tests evidence implementation and layout only; they do not constitute authenticated browser verification.
