@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, like, lte, sql, type SQL } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { and as sqlAnd, isNull, or as sqlOr } from "drizzle-orm";
-import { InsertUser, patientRecords, registryAuditLogs, userMessages, userProfiles, users } from "../drizzle/schema";
+import { administratorNotifications, InsertUser, patientRecords, recordCompletionTasks, registryAuditLogs, userMessages, userProfiles, users } from "../drizzle/schema";
 import type { CohortClinicalData, ImmuneTherapy, LaboratoryInvestigation, MultipleSclerosisDoseAdherence, NeurologicalInvestigation, PatientFollowUp, ProtocolInvestigation, RadiologicalInvestigation, ResearchFile } from "../drizzle/schema";
 import { storageGetSignedUrl, storagePut } from "./storage";
 import { ENV } from "./_core/env";
@@ -215,6 +215,83 @@ export async function appendResearchFile(patientRecordId: number, actorUserId: n
 }
 
 export async function getResearchFileUrl(patientRecordId: number, storageKey: string) { const db = requireDb(await getDb()); const result = await db.select({ researchFiles: patientRecords.researchFiles }).from(patientRecords).where(eq(patientRecords.id, patientRecordId)).limit(1); const file = ((result[0]?.researchFiles as ResearchFile[] | null | undefined) ?? []).find(item => item.storageKey === storageKey); if (!file) throw new Error("Research file not found for this record"); return { fileName: file.fileName, url: await storageGetSignedUrl(file.storageKey) }; }
+
+type TaskEvent = "assigned" | "accepted" | "completed" | "reassigned";
+const activeTaskStatuses = ["assigned", "accepted", "reassigned"] as const;
+
+export function getTaskTransitionError(currentStatus: string, assignedToUserId: number, actorUserId: number, nextStatus: "accepted" | "completed") {
+  if (assignedToUserId !== actorUserId) return "Only the assigned approved member can change this task.";
+  if (nextStatus === "accepted" && !["assigned", "reassigned"].includes(currentStatus)) return "Only an assigned task can be accepted.";
+  if (nextStatus === "completed" && currentStatus !== "accepted") return "Accept the task before marking it complete.";
+  return null;
+}
+
+async function ensureApprovedTaskAssignee(db: any, userId: number) {
+  const assignee = await db.select({ id: users.id }).from(users).where(sqlAnd(eq(users.id, userId), eq(users.accessStatus, "approved"), isNull(users.removedAt))).limit(1);
+  if (!assignee[0]) throw new Error("Tasks can be assigned only to an approved active registry member.");
+}
+
+async function createAdministratorTaskNotifications(db: any, taskId: number, eventType: TaskEvent) {
+  const administrators = await db.select({ id: users.id }).from(users).where(sqlAnd(eq(users.role, "admin"), eq(users.accessStatus, "approved"), isNull(users.removedAt)));
+  if (administrators.length) await db.insert(administratorNotifications).values(administrators.map((administrator: { id: number }) => ({ recipientUserId: administrator.id, taskId, eventType })));
+}
+
+export async function assignRecordCompletionTask(patientRecordId: number, assignedToUserId: number, assignedByAdminId: number) {
+  const db = requireDb(await getDb());
+  const record = await db.select({ id: patientRecords.id }).from(patientRecords).where(eq(patientRecords.id, patientRecordId)).limit(1);
+  if (!record[0]) throw new Error("Research record not found.");
+  await ensureApprovedTaskAssignee(db, assignedToUserId);
+  const active = await db.select().from(recordCompletionTasks).where(sqlAnd(eq(recordCompletionTasks.patientRecordId, patientRecordId), sqlOr(...activeTaskStatuses.map(status => eq(recordCompletionTasks.status, status))))).orderBy(desc(recordCompletionTasks.updatedAt)).limit(1);
+  let eventType: TaskEvent = "assigned";
+  if (active[0]) {
+    eventType = "reassigned";
+    await db.update(recordCompletionTasks).set({ assignedToUserId, assignedByAdminId, status: "reassigned", acceptedAt: null, completedAt: null }).where(eq(recordCompletionTasks.id, active[0].id));
+  } else {
+    await db.insert(recordCompletionTasks).values({ patientRecordId, assignedToUserId, assignedByAdminId, status: "assigned" });
+  }
+  await db.update(patientRecords).set({ completionOwnerUserId: assignedToUserId }).where(eq(patientRecords.id, patientRecordId));
+  const task = (await db.select().from(recordCompletionTasks).where(eq(recordCompletionTasks.patientRecordId, patientRecordId)).orderBy(desc(recordCompletionTasks.updatedAt)).limit(1))[0];
+  await db.insert(registryAuditLogs).values({ patientRecordId, actorUserId: assignedByAdminId, action: "updated", fieldSummary: eventType === "assigned" ? "Record-completion task assigned" : "Record-completion task reassigned" });
+  await createAdministratorTaskNotifications(db, task.id, eventType);
+  return task;
+}
+
+export async function listMyRecordCompletionTasks(userId: number) {
+  const db = requireDb(await getDb());
+  return db.select({ id: recordCompletionTasks.id, patientRecordId: recordCompletionTasks.patientRecordId, cohort: patientRecords.cohort, status: recordCompletionTasks.status, assignedToUserId: recordCompletionTasks.assignedToUserId, createdAt: recordCompletionTasks.createdAt, acceptedAt: recordCompletionTasks.acceptedAt, completedAt: recordCompletionTasks.completedAt, updatedAt: recordCompletionTasks.updatedAt }).from(recordCompletionTasks).innerJoin(patientRecords, eq(recordCompletionTasks.patientRecordId, patientRecords.id)).where(eq(recordCompletionTasks.assignedToUserId, userId)).orderBy(desc(recordCompletionTasks.updatedAt));
+}
+
+export async function listAllRecordCompletionTasks() {
+  const db = requireDb(await getDb());
+  return db.select({ id: recordCompletionTasks.id, patientRecordId: recordCompletionTasks.patientRecordId, cohort: patientRecords.cohort, status: recordCompletionTasks.status, assignedToUserId: recordCompletionTasks.assignedToUserId, assigneeName: users.name, createdAt: recordCompletionTasks.createdAt, acceptedAt: recordCompletionTasks.acceptedAt, completedAt: recordCompletionTasks.completedAt, updatedAt: recordCompletionTasks.updatedAt }).from(recordCompletionTasks).innerJoin(patientRecords, eq(recordCompletionTasks.patientRecordId, patientRecords.id)).leftJoin(users, eq(recordCompletionTasks.assignedToUserId, users.id)).orderBy(desc(recordCompletionTasks.updatedAt));
+}
+
+async function changeTaskStatus(taskId: number, actorUserId: number, status: "accepted" | "completed") {
+  const db = requireDb(await getDb());
+  const task = (await db.select().from(recordCompletionTasks).where(eq(recordCompletionTasks.id, taskId)).limit(1))[0];
+  if (!task) throw new Error("Completion task not found.");
+  const transitionError = getTaskTransitionError(task.status, task.assignedToUserId, actorUserId, status);
+  if (transitionError) throw new Error(transitionError);
+  const now = new Date();
+  await db.update(recordCompletionTasks).set(status === "accepted" ? { status, acceptedAt: now } : { status, completedAt: now }).where(eq(recordCompletionTasks.id, taskId));
+  await db.insert(registryAuditLogs).values({ patientRecordId: task.patientRecordId, actorUserId, action: "updated", fieldSummary: status === "accepted" ? "Record-completion task accepted" : "Record-completion task completed" });
+  await createAdministratorTaskNotifications(db, taskId, status);
+  return (await db.select().from(recordCompletionTasks).where(eq(recordCompletionTasks.id, taskId)).limit(1))[0];
+}
+
+export function acceptRecordCompletionTask(taskId: number, actorUserId: number) { return changeTaskStatus(taskId, actorUserId, "accepted"); }
+export function completeRecordCompletionTask(taskId: number, actorUserId: number) { return changeTaskStatus(taskId, actorUserId, "completed"); }
+
+export async function listAdministratorTaskNotifications(userId: number) {
+  const db = requireDb(await getDb());
+  return db.select({ id: administratorNotifications.id, eventType: administratorNotifications.eventType, createdAt: administratorNotifications.createdAt, readAt: administratorNotifications.readAt }).from(administratorNotifications).where(eq(administratorNotifications.recipientUserId, userId)).orderBy(desc(administratorNotifications.createdAt)).limit(50);
+}
+
+export async function markAdministratorTaskNotificationsRead(userId: number) {
+  const db = requireDb(await getDb());
+  await db.update(administratorNotifications).set({ readAt: new Date() }).where(sqlAnd(eq(administratorNotifications.recipientUserId, userId), isNull(administratorNotifications.readAt)));
+  return { success: true } as const;
+}
 
 export async function listResearchFiles(patientRecordId: number) {
   const db = requireDb(await getDb());

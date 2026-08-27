@@ -85,6 +85,13 @@
       "when": 1787801867905,
       "tag": "0011_rich_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1787805718458,
+      "tag": "0012_flaky_shocker",
+      "breakpoints": true
     }
   ]
 }

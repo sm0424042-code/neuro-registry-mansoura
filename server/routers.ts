@@ -10,7 +10,7 @@ import { ENV } from "./_core/env";
 import { getCompleteRecordThresholdError, patientInputSchema, patientUpdateSchema, registryFiltersSchema, researchFileInputSchema, toDeidentifiedExportRow } from "./registry";
 
 const approvedProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.user.accessStatus !== "approved") {
+  if (ctx.user.accessStatus !== "approved" || ctx.user.removedAt) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Your registry access has not been approved." });
   }
   return next({ ctx });
@@ -35,6 +35,21 @@ const homepageImageReportTimes = new Map<number, number>();
 const HOMEPAGE_IMAGE_REPORT_TITLE = "Broken homepage image reported";
 const HOMEPAGE_IMAGE_REPORT_CONTENT = "A registered user reported that the static abstract homepage hero image could not be loaded. No patient, record, user, or clinical data was included.";
 const PROFILE_AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+const TASK_OWNER_ALERTS = {
+  assigned: { title: "Registry task assigned", content: "A protected record-completion task was assigned. No patient, record, or clinical information is included." },
+  reassigned: { title: "Registry task reassigned", content: "A protected record-completion task was reassigned. No patient, record, or clinical information is included." },
+  accepted: { title: "Registry task accepted", content: "A protected record-completion task was accepted by its assigned member. No patient, record, or clinical information is included." },
+  completed: { title: "Registry task completed", content: "A protected record-completion task was marked complete by its assigned member. No patient, record, or clinical information is included." },
+} as const;
+
+async function notifyOwnerOfTaskEvent(eventType: keyof typeof TASK_OWNER_ALERTS) {
+  try {
+    return await notifications.notifyOwner(TASK_OWNER_ALERTS[eventType]);
+  } catch {
+    console.warn(`Owner alert delivery did not complete for task event: ${eventType}`);
+    return false;
+  }
+}
 const profileAvatarInputSchema = z.object({
   mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
   sizeBytes: z.number().int().positive().max(PROFILE_AVATAR_MAX_BYTES),
@@ -86,6 +101,29 @@ export const appRouter = router({
       if (content.byteLength !== input.sizeBytes) throw new TRPCError({ code: "BAD_REQUEST", message: "The uploaded file size could not be verified." });
       return db.appendResearchFile(input.patientRecordId, ctx.user.id, { fileName: input.fileName, mimeType: input.mimeType, sizeBytes: input.sizeBytes, category: input.category, content });
     }),
+  }),
+  completionTasks: router({
+    mine: approvedProcedure.query(({ ctx }) => db.listMyRecordCompletionTasks(ctx.user.id)),
+    all: adminProcedure.query(() => db.listAllRecordCompletionTasks()),
+    assign: adminProcedure.input(z.object({ patientRecordId: z.number().int().positive(), assignedToUserId: z.number().int().positive() })).mutation(async ({ input, ctx }) => {
+      const assignee = await db.getUserAdministrationState(input.assignedToUserId);
+      if (!assignee || assignee.removedAt || assignee.accessStatus !== "approved") throw new TRPCError({ code: "BAD_REQUEST", message: "Choose an approved active registry member." });
+      const task = await db.assignRecordCompletionTask(input.patientRecordId, input.assignedToUserId, ctx.user.id);
+      await notifyOwnerOfTaskEvent(task.status === "reassigned" ? "reassigned" : "assigned");
+      return task;
+    }),
+    accept: approvedProcedure.input(z.object({ taskId: z.number().int().positive() })).mutation(async ({ input, ctx }) => {
+      const task = await db.acceptRecordCompletionTask(input.taskId, ctx.user.id);
+      await notifyOwnerOfTaskEvent("accepted");
+      return task;
+    }),
+    complete: approvedProcedure.input(z.object({ taskId: z.number().int().positive() })).mutation(async ({ input, ctx }) => {
+      const task = await db.completeRecordCompletionTask(input.taskId, ctx.user.id);
+      await notifyOwnerOfTaskEvent("completed");
+      return task;
+    }),
+    notifications: adminProcedure.query(({ ctx }) => db.listAdministratorTaskNotifications(ctx.user.id)),
+    markNotificationsRead: adminProcedure.mutation(({ ctx }) => db.markAdministratorTaskNotificationsRead(ctx.user.id)),
   }),
   messages: router({
     recipients: approvedProcedure.query(({ ctx }) => db.listApprovedMessageRecipients(ctx.user.id)),

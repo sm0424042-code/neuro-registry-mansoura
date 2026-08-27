@@ -121,4 +121,62 @@ describe("Mansoura University registry validation", () => {
   it("blocks message content containing patient-name, phone-number, or national-ID references and rejects unapproved recipients", async () => { const recipientIsApproved = vi.spyOn(db, "isApprovedMessageRecipient").mockResolvedValue(true); const send = vi.spyOn(db, "sendDirectMessage").mockResolvedValue({ id: 2, senderUserId: 14, recipientUserId: 22, body: "Protocol meeting at 10:00.", createdAt: new Date() }); try { const caller = appRouter.createCaller(context("user", "approved")); await expect(caller.messages.send({ recipientUserId: 22, body: "Patient name is withheld" })).rejects.toMatchObject({ code: "BAD_REQUEST" }); await expect(caller.messages.send({ recipientUserId: 22, body: "Use the patient phone number" })).rejects.toMatchObject({ code: "BAD_REQUEST" }); await expect(caller.messages.send({ recipientUserId: 22, body: "National ID review" })).rejects.toMatchObject({ code: "BAD_REQUEST" }); recipientIsApproved.mockResolvedValue(false); await expect(caller.messages.send({ recipientUserId: 22, body: "Protocol meeting at 10:00." })).rejects.toMatchObject({ code: "FORBIDDEN" }); expect(send).not.toHaveBeenCalled(); } finally { recipientIsApproved.mockRestore(); send.mockRestore(); } });
   it("does not reveal a direct-message thread when the recipient is not approved", async () => { const recipientIsApproved = vi.spyOn(db, "isApprovedMessageRecipient").mockResolvedValue(false); const listThread = vi.spyOn(db, "listDirectMessages").mockResolvedValue([]); try { await expect(appRouter.createCaller(context("user", "approved")).messages.thread({ recipientUserId: 22 })).rejects.toMatchObject({ code: "FORBIDDEN" }); expect(listThread).not.toHaveBeenCalled(); } finally { recipientIsApproved.mockRestore(); listThread.mockRestore(); } });
   it("blocks additional direct identifiers in English and Arabic message content", async () => { const recipientIsApproved = vi.spyOn(db, "isApprovedMessageRecipient").mockResolvedValue(true); const send = vi.spyOn(db, "sendDirectMessage").mockResolvedValue({ id: 3, senderUserId: 14, recipientUserId: 22, body: "Protocol meeting at 10:00.", createdAt: new Date() }); try { const caller = appRouter.createCaller(context("user", "approved")); for (const body of ["Address is on file", "Home address is on file", "Date of birth is documented", "MRN 14572", "Contact me at name@example.org", "National number 12345678901234", "رقم الهاتف 01012345678", "تاريخ الميلاد مسجل"]) await expect(caller.messages.send({ recipientUserId: 22, body })).rejects.toMatchObject({ code: "BAD_REQUEST" }); expect(send).not.toHaveBeenCalled(); } finally { recipientIsApproved.mockRestore(); send.mockRestore(); } });
+  it("limits task administration to approved administrators and sends only fixed privacy-safe owner alerts", async () => {
+    const state = vi.spyOn(db, "getUserAdministrationState").mockResolvedValue({ id: 22, openId: "approved-member", role: "user", accessStatus: "approved", removedAt: null });
+    const assign = vi.spyOn(db, "assignRecordCompletionTask").mockResolvedValue({ id: 31, patientRecordId: 7, assignedToUserId: 22, assignedByAdminId: 14, status: "assigned", createdAt: new Date(), acceptedAt: null, completedAt: null, updatedAt: new Date() } as any);
+    const notify = vi.spyOn(notifications, "notifyOwner").mockResolvedValue(true);
+    try {
+      await expect(appRouter.createCaller(context("user", "approved")).completionTasks.assign({ patientRecordId: 7, assignedToUserId: 22 })).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(appRouter.createCaller(context("admin", "pending")).completionTasks.assign({ patientRecordId: 7, assignedToUserId: 22 })).rejects.toMatchObject({ code: "FORBIDDEN" });
+      const removedAdmin = { ...context("admin", "approved"), user: { ...context("admin", "approved").user!, removedAt: new Date() } };
+      await expect(appRouter.createCaller(removedAdmin).completionTasks.assign({ patientRecordId: 7, assignedToUserId: 22 })).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(appRouter.createCaller(context("admin", "approved")).completionTasks.assign({ patientRecordId: 7, assignedToUserId: 22 })).resolves.toMatchObject({ id: 31, status: "assigned" });
+      expect(assign).toHaveBeenCalledWith(7, 22, 14);
+      expect(notify).toHaveBeenCalledWith(expect.objectContaining({ title: "Registry task assigned", content: expect.stringContaining("No patient, record, or clinical information") }));
+      expect(notify.mock.calls[0][0].content).not.toMatch(/MUNR|patientRecordId|researchId/i);
+    } finally { state.mockRestore(); assign.mockRestore(); notify.mockRestore(); }
+  });
+  it("rejects a non-approved task recipient and reports reassignment with generic operational wording", async () => {
+    const state = vi.spyOn(db, "getUserAdministrationState").mockResolvedValue({ id: 22, openId: "pending-member", role: "user", accessStatus: "pending", removedAt: null });
+    const assign = vi.spyOn(db, "assignRecordCompletionTask").mockResolvedValue({ id: 33, patientRecordId: 7, assignedToUserId: 22, assignedByAdminId: 14, status: "reassigned", createdAt: new Date(), acceptedAt: null, completedAt: null, updatedAt: new Date() } as any);
+    const notify = vi.spyOn(notifications, "notifyOwner").mockResolvedValue(true);
+    try {
+      const caller = appRouter.createCaller(context("admin", "approved"));
+      await expect(caller.completionTasks.assign({ patientRecordId: 7, assignedToUserId: 22 })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      expect(assign).not.toHaveBeenCalled();
+      state.mockResolvedValueOnce({ id: 22, openId: "approved-member", role: "user", accessStatus: "approved", removedAt: null });
+      await expect(caller.completionTasks.assign({ patientRecordId: 7, assignedToUserId: 22 })).resolves.toMatchObject({ status: "reassigned" });
+      expect(notify).toHaveBeenCalledWith(expect.objectContaining({ title: "Registry task reassigned", content: expect.not.stringMatching(/MUNR|research ID|diagnosis|cohort/i) }));
+    } finally { state.mockRestore(); assign.mockRestore(); notify.mockRestore(); }
+  });
+  it("enforces assigned-member ownership and valid task-status order before accepting or completing", () => {
+    expect(db.getTaskTransitionError("assigned", 22, 23, "accepted")).toBe("Only the assigned approved member can change this task.");
+    expect(db.getTaskTransitionError("completed", 22, 22, "accepted")).toBe("Only an assigned task can be accepted.");
+    expect(db.getTaskTransitionError("assigned", 22, 22, "completed")).toBe("Accept the task before marking it complete.");
+    expect(db.getTaskTransitionError("reassigned", 22, 22, "accepted")).toBeNull();
+    expect(db.getTaskTransitionError("accepted", 22, 22, "completed")).toBeNull();
+  });
+  it("lets only the assigned approved member accept or complete a task through the protected task procedures", async () => {
+    const accept = vi.spyOn(db, "acceptRecordCompletionTask").mockResolvedValue({ id: 31, status: "accepted" } as any);
+    const complete = vi.spyOn(db, "completeRecordCompletionTask").mockResolvedValue({ id: 31, status: "completed" } as any);
+    const notify = vi.spyOn(notifications, "notifyOwner").mockResolvedValue(true);
+    try {
+      const caller = appRouter.createCaller(context("user", "approved"));
+      await expect(caller.completionTasks.accept({ taskId: 31 })).resolves.toMatchObject({ status: "accepted" });
+      await expect(caller.completionTasks.complete({ taskId: 31 })).resolves.toMatchObject({ status: "completed" });
+      expect(accept).toHaveBeenCalledWith(31, 14);
+      expect(complete).toHaveBeenCalledWith(31, 14);
+      expect(notify).toHaveBeenNthCalledWith(1, expect.objectContaining({ title: "Registry task accepted" }));
+      expect(notify).toHaveBeenNthCalledWith(2, expect.objectContaining({ title: "Registry task completed" }));
+    } finally { accept.mockRestore(); complete.mockRestore(); notify.mockRestore(); }
+  });
+  it("preserves a task event when the immediate owner alert cannot be delivered", async () => {
+    const state = vi.spyOn(db, "getUserAdministrationState").mockResolvedValue({ id: 22, openId: "approved-member", role: "user", accessStatus: "approved", removedAt: null });
+    const assign = vi.spyOn(db, "assignRecordCompletionTask").mockResolvedValue({ id: 32, patientRecordId: 8, assignedToUserId: 22, assignedByAdminId: 14, status: "assigned", createdAt: new Date(), acceptedAt: null, completedAt: null, updatedAt: new Date() } as any);
+    const notify = vi.spyOn(notifications, "notifyOwner").mockRejectedValue(new Error("delivery unavailable"));
+    try {
+      await expect(appRouter.createCaller(context("admin", "approved")).completionTasks.assign({ patientRecordId: 8, assignedToUserId: 22 })).resolves.toMatchObject({ id: 32 });
+      expect(assign).toHaveBeenCalledOnce();
+    } finally { state.mockRestore(); assign.mockRestore(); notify.mockRestore(); }
+  });
 });

@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 
 const DashboardLayout = lazy(() => import("@/components/DashboardLayout"));
 const AccessManagement = lazy(() => import("@/pages/AccessManagement"));
+const CompletionTasks = lazy(() => import("@/pages/CompletionTasks"));
 const Home = lazy(() => import("@/pages/Home"));
 const Messages = lazy(() => import("@/pages/Messages"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/">{() => <ProtectedPage><Home /></ProtectedPage>}</Route>
       <Route path="/registry">{() => <ProtectedPage><PatientRegistry /></ProtectedPage>}</Route>
       <Route path="/messages">{() => <ProtectedPage><Messages /></ProtectedPage>}</Route>
+      <Route path="/tasks">{() => <ProtectedPage><CompletionTasks /></ProtectedPage>}</Route>
       <Route path="/records/new">{() => <ProtectedPage><PatientEditor mode="create" /></ProtectedPage>}</Route>
       <Route path="/records/:id">{({ id }) => <ProtectedPage><PatientEditor mode="edit" recordId={Number(id)} /></ProtectedPage>}</Route>
       <Route path="/access">{() => <ProtectedPage><AccessManagement /></ProtectedPage>}</Route>

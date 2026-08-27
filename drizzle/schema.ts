@@ -166,8 +166,34 @@ export const userMessages = mysqlTable("user_messages", { id: int("id").autoincr
   index("user_messages_sender_recipient_created_idx").on(table.senderUserId, table.recipientUserId, table.createdAt),
   index("user_messages_recipient_sender_created_idx").on(table.recipientUserId, table.senderUserId, table.createdAt),
 ]);
+export const recordCompletionTasks = mysqlTable("record_completion_tasks", {
+  id: int("id").autoincrement().primaryKey(),
+  patientRecordId: int("patientRecordId").notNull(),
+  assignedToUserId: int("assignedToUserId").notNull(),
+  assignedByAdminId: int("assignedByAdminId").notNull(),
+  status: mysqlEnum("status", ["assigned", "accepted", "completed", "reassigned"]).default("assigned").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  acceptedAt: timestamp("acceptedAt"),
+  completedAt: timestamp("completedAt"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  index("record_completion_tasks_assignee_status_idx").on(table.assignedToUserId, table.status),
+  index("record_completion_tasks_record_status_idx").on(table.patientRecordId, table.status),
+]);
+export const administratorNotifications = mysqlTable("administrator_notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  recipientUserId: int("recipientUserId").notNull(),
+  taskId: int("taskId").notNull(),
+  eventType: mysqlEnum("eventType", ["assigned", "accepted", "completed", "reassigned"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  readAt: timestamp("readAt"),
+}, table => [
+  index("administrator_notifications_recipient_read_created_idx").on(table.recipientUserId, table.readAt, table.createdAt),
+]);
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type PatientRecord = typeof patientRecords.$inferSelect;
 export type InsertPatientRecord = typeof patientRecords.$inferInsert;
 export type UserMessage = typeof userMessages.$inferSelect;
+export type RecordCompletionTask = typeof recordCompletionTasks.$inferSelect;
+export type AdministratorNotification = typeof administratorNotifications.$inferSelect;

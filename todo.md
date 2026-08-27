@@ -274,3 +274,7 @@
 - [x] Restrict every displayed cohort-specific selector to clinically appropriate options for its field, while preserving existing historic values without offering them as new choices.
 - [x] Expand each cohort-specific clinical selector with medically appropriate, guideline-informed choices while preserving strict field relevance and safe historic-value display.
 - [x] Add a transparent 85% research-field completeness threshold: allow protected draft saving below it and require the threshold before a record can be marked complete in Patient Registry.
+- [x] Add protected record-completion tasks that administrators can assign to approved members through an assignment icon, with member acceptance and completion states.
+- [x] Send privacy-safe administrator notifications for task assignment, acceptance, completion, reassignment, and completion-status changes without patient details or Research IDs.
+- [x] Add authorization, transition, notification-content, and protected-interface tests for the record-completion task workflow.
+- [x] Provide in-site notifications to every approved administrator and a privacy-safe immediate alert to the project owner for record-task assignment and every accepted, completed, or reassigned status event.

@@ -1,13 +1,16 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
-import { Filter, Plus, Search, SlidersHorizontal } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { Filter, Plus, Search, SlidersHorizontal, UserRoundPlus } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { useLocation } from "wouter";
 
 type Filters = {
@@ -53,6 +56,7 @@ export function getRecordedByLabel(name?: string | null) {
 }
 
 export default function PatientRegistry() {
+  const { user } = useAuth();
   const [location, navigate] = useLocation();
   const [draft, setDraft] = useState<Filters>(() => getInitialRegistryFilters(location));
   const [applied, setApplied] = useState<Filters>(() => getInitialRegistryFilters(location));
@@ -67,6 +71,12 @@ export default function PatientRegistry() {
     ageMax: applied.ageMax ? Number(applied.ageMax) : undefined,
   }), [applied]);
   const { data, isLoading, error } = trpc.registry.list.useQuery(input);
+  const isAdmin = user?.role === "admin";
+  const assignableUsers = trpc.registry.assignableUsers.useQuery(undefined, { enabled: isAdmin });
+  const utils = trpc.useUtils();
+  const [assignmentRecord, setAssignmentRecord] = useState<{ id: number; researchId: string } | null>(null);
+  const [assignedToUserId, setAssignedToUserId] = useState<string>("");
+  const assignTask = trpc.completionTasks.assign.useMutation({ onSuccess: async () => { setAssignmentRecord(null); setAssignedToUserId(""); await Promise.all([utils.completionTasks.all.invalidate(), utils.completionTasks.mine.invalidate(), utils.completionTasks.notifications.invalidate()]); toast.success("Completion task assigned."); }, onError: problem => toast.error(problem.message) });
   const set = (key: keyof Filters, value: string) => setDraft(current => ({ ...current, [key]: value }));
 
   return (
@@ -104,12 +114,13 @@ export default function PatientRegistry() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1120px] text-left text-sm">
                 <thead className="bg-[#f4f8f6] text-xs font-semibold uppercase tracking-[0.08em] text-[#64807e]"><tr><th className="px-6 py-4">Research ID</th><th className="px-4 py-4">Cohort</th><th className="px-4 py-4">Recorded by</th><th className="px-4 py-4">Demographics</th><th className="px-4 py-4">Enrolment</th><th className="px-4 py-4">Completion</th><th className="px-4 py-4">Missing items</th><th className="px-6 py-4 text-right">Action</th></tr></thead>
-                <tbody>{data.map(record => <tr key={record.id} className="border-t border-[#edf1ef] hover:bg-[#f9fcfb]"><td className="px-6 py-4 font-semibold text-[#245961]">{record.researchId}</td><td className="px-4 py-4"><p className="font-medium text-[#30434c]">{cohortLabels[record.cohort]}</p><p className="mt-0.5 max-w-44 truncate text-xs text-slate-500">{record.primaryDiagnosis}</p></td><td className="px-4 py-4 text-xs font-medium text-[#45616a]">{getRecordedByLabel(record.recordedBy)}</td><td className="px-4 py-4 text-slate-600">{record.sex.replace("_", " ")} · {record.ageAtEnrollment} yrs</td><td className="px-4 py-4"><Badge variant="outline" className="capitalize">{record.enrollmentStatus}</Badge></td><td className="px-4 py-4"><Status value={record.completenessStatus} /></td><td className="px-4 py-4 text-xs text-slate-500">{(record.missingItems as string[]).length ? (record.missingItems as string[]).map(item => item.replace(/_/g, " ")).join(", ") : "—"}</td><td className="px-6 py-4 text-right"><Button size="sm" variant="outline" onClick={() => navigate(`/records/${record.id}`)}>Review</Button></td></tr>)}</tbody>
+                <tbody>{data.map(record => <tr key={record.id} className="border-t border-[#edf1ef] hover:bg-[#f9fcfb]"><td className="px-6 py-4 font-semibold text-[#245961]">{record.researchId}</td><td className="px-4 py-4"><p className="font-medium text-[#30434c]">{cohortLabels[record.cohort]}</p><p className="mt-0.5 max-w-44 truncate text-xs text-slate-500">{record.primaryDiagnosis}</p></td><td className="px-4 py-4 text-xs font-medium text-[#45616a]">{getRecordedByLabel(record.recordedBy)}</td><td className="px-4 py-4 text-slate-600">{record.sex.replace("_", " ")} · {record.ageAtEnrollment} yrs</td><td className="px-4 py-4"><Badge variant="outline" className="capitalize">{record.enrollmentStatus}</Badge></td><td className="px-4 py-4"><Status value={record.completenessStatus} /></td><td className="px-4 py-4 text-xs text-slate-500">{(record.missingItems as string[]).length ? (record.missingItems as string[]).map(item => item.replace(/_/g, " ")).join(", ") : "—"}</td><td className="px-6 py-4 text-right"><div className="flex justify-end gap-2"><Button size="sm" variant="outline" onClick={() => navigate(`/records/${record.id}`)}>Review</Button>{isAdmin ? <Button size="icon" variant="outline" aria-label="Assign completion task for protected record" title="Assign completion task" onClick={() => { setAssignmentRecord({ id: record.id, researchId: record.researchId }); setAssignedToUserId(""); }}><UserRoundPlus className="h-4 w-4" /></Button> : null}</div></td></tr>)}</tbody>
               </table>
             </div>
           )}
         </CardContent>
       </Card>
+      <Dialog open={Boolean(assignmentRecord)} onOpenChange={open => { if (!open) setAssignmentRecord(null); }}><DialogContent><DialogHeader><DialogTitle>Assign completion task</DialogTitle><DialogDescription>Choose an approved active member. The resulting administrator notifications use only generic operational wording and do not include this record's Research ID or clinical details.</DialogDescription></DialogHeader><div className="space-y-2"><Label htmlFor="completion-assignee">Approved registry member</Label><Select value={assignedToUserId} onValueChange={setAssignedToUserId}><SelectTrigger id="completion-assignee"><SelectValue placeholder="Choose an approved member" /></SelectTrigger><SelectContent>{assignableUsers.data?.map(member => <SelectItem key={member.id} value={String(member.id)}>{member.name?.trim() || "OAuth display name unavailable"}</SelectItem>)}</SelectContent></Select>{assignableUsers.error ? <p className="text-xs text-rose-700">Approved members could not be loaded.</p> : null}</div><DialogFooter><Button variant="outline" onClick={() => setAssignmentRecord(null)}>Cancel</Button><Button disabled={!assignmentRecord || !assignedToUserId || assignTask.isPending} onClick={() => assignmentRecord && assignTask.mutate({ patientRecordId: assignmentRecord.id, assignedToUserId: Number(assignedToUserId) })} className="bg-[#125d69] hover:bg-[#0d4b55]">{assignTask.isPending ? "Assigning…" : "Assign task"}</Button></DialogFooter></DialogContent></Dialog>
     </div>
   );
 }
