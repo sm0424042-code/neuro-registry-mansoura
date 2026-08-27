@@ -282,3 +282,5 @@
 - [x] Add unit tests for task filtering and sort ordering, then verify the protected task interface and publish the update.
 - [x] Add accessible client-side pagination for filtered and sorted Completion Tasks with a bounded page size and page controls.
 - [x] Test task-page pagination with filtering and sorting, verify the protected route boundary, and publish the update.
+- [x] Add reduced-motion-safe skeleton loading feedback and disabled page controls while a new Completion Tasks page is being fetched.
+- [x] Test task-page loading feedback, preserve filtering and pagination behavior, and publish the update.

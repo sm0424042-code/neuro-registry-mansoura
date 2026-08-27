@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterAndSortCompletionTasks, getCompletionTaskPage, getCompletionTaskPagination, getTaskNotificationLabel, getTaskStatusLabel } from "./CompletionTasks";
+import { filterAndSortCompletionTasks, getCompletionTaskPage, getCompletionTaskPagination, getTaskLoadingMode, getTaskNotificationLabel, getTaskStatusLabel } from "./CompletionTasks";
 
 describe("completion-task labels", () => {
   it("uses clear controlled labels for task state", () => {
@@ -36,5 +36,12 @@ describe("completion-task labels", () => {
     expect(getCompletionTaskPage(tasks, 9)).toMatchObject({ page: 3, firstItem: 21, lastItem: 23 });
     expect(getCompletionTaskPage([], 1)).toMatchObject({ page: 1, pageCount: 0, totalItems: 0, firstItem: 0, lastItem: 0, items: [] });
     expect(getCompletionTaskPagination(23, 9)).toMatchObject({ page: 3, pageCount: 3, firstItem: 21, lastItem: 23 });
+  });
+
+  it("shows a skeleton only during the initial load or a retained-page transition", () => {
+    expect(getTaskLoadingMode(true, true, false)).toBe("initial");
+    expect(getTaskLoadingMode(false, true, true)).toBe("transition");
+    expect(getTaskLoadingMode(false, false, true)).toBe("idle");
+    expect(getTaskLoadingMode(false, true, false)).toBe("idle");
   });
 });
