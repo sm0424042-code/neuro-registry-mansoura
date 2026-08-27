@@ -218,13 +218,38 @@ export type RegistryAggregateStatisticsResult = {
 export type CohortClinicalIndicatorRow = {
   cohort: string;
   strokeReperfusion?: string | null;
+  strokeType?: string | null;
+  strokeTerritory?: string | null;
+  strokeComplication?: string | null;
   msDiseaseModifyingTherapy?: string | null;
+  msDiseaseCourse?: string | null;
+  msRelapseActivity?: string | null;
+  msMsfcAssessed?: string | null;
   movementPhenotype?: string | null;
+  movementSeverity?: string | null;
+  movementFunctionalImpact?: string | null;
+  movementTreatmentResponse?: string | null;
   gbsVariant?: string | null;
+  gbsTreatment?: string | null;
+  gbsVentilatorySupport?: string | null;
+  gbsDisabilityScore?: string | null;
   mgAntibodyStatus?: string | null;
+  mgMgfaClass?: string | null;
+  mgCrisisHistory?: string | null;
+  mgTreatmentResponse?: string | null;
   myelopathyCause?: string | null;
+  myelopathyLevel?: string | null;
+  myelopathyUpperMotorNeuronSigns?: string | null;
+  myelopathyBladderInvolvement?: string | null;
   neuroOphDiseaseClassification?: string | null;
+  neuroOphAntibodyProfile?: string | null;
+  neuroOphVisualSyndrome?: string | null;
+  neuroOphAcuityChange?: string | null;
   cidpVariant?: string | null;
+  cidpDiagnosticPathway?: string | null;
+  cidpEmgNcsEvidence?: string | null;
+  cidpCsfProteinStatus?: string | null;
+  cidpDisabilityLevel?: string | null;
 };
 export type CohortClinicalIndicator = {
   id: string;
@@ -244,26 +269,51 @@ type CohortClinicalIndicatorDefinition = {
   numeratorLabel: string;
   denominatorLabel: string;
   field: Exclude<keyof CohortClinicalIndicatorRow, "cohort">;
-  numeratorMatches: (value: string) => boolean;
+  numeratorMatches: (value: string, row: CohortClinicalIndicatorRow) => boolean;
+  denominatorMatches?: (row: CohortClinicalIndicatorRow) => boolean;
 };
 const cohortClinicalIndicatorDefinitions: CohortClinicalIndicatorDefinition[] = [
   { id: "stroke_iv_thrombolysis", cohort: "stroke", title: "IV thrombolysis use", numeratorLabel: "IV thrombolysis or combined reperfusion", denominatorLabel: "All Stroke records", field: "strokeReperfusion", numeratorMatches: value => value === "iv_thrombolysis" || value === "both" },
+  { id: "stroke_ischemic_type", cohort: "stroke", title: "Ischaemic stroke type", numeratorLabel: "Ischaemic stroke", denominatorLabel: "All Stroke records", field: "strokeType", numeratorMatches: value => value === "ischemic" },
+  { id: "stroke_mca_territory", cohort: "stroke", title: "MCA territory", numeratorLabel: "MCA territory", denominatorLabel: "All Stroke records", field: "strokeTerritory", numeratorMatches: value => value === "mca_complete" || value === "mca_incomplete" },
+  { id: "stroke_major_complication", cohort: "stroke", title: "Major complication recorded", numeratorLabel: "Complication other than none or unknown", denominatorLabel: "All Stroke records", field: "strokeComplication", numeratorMatches: value => !["none", "unknown", "not_recorded"].includes(value) },
   { id: "ms_disease_modifying_therapy", cohort: "multiple_sclerosis", title: "Disease-modifying therapy use", numeratorLabel: "Disease-modifying therapy recorded", denominatorLabel: "All Multiple Sclerosis records", field: "msDiseaseModifyingTherapy", numeratorMatches: value => !["none", "unknown", "not_recorded"].includes(value) },
+  { id: "ms_relapsing_remitting", cohort: "multiple_sclerosis", title: "Relapsing–remitting disease course", numeratorLabel: "Relapsing–remitting course", denominatorLabel: "All Multiple Sclerosis records", field: "msDiseaseCourse", numeratorMatches: value => value === "relapsing_remitting" },
+  { id: "ms_active_relapse", cohort: "multiple_sclerosis", title: "Active relapse activity", numeratorLabel: "Active relapse", denominatorLabel: "All Multiple Sclerosis records", field: "msRelapseActivity", numeratorMatches: value => value === "active" },
+  { id: "ms_msfc_assessed", cohort: "multiple_sclerosis", title: "MSFC assessment recorded", numeratorLabel: "MSFC assessed", denominatorLabel: "All Multiple Sclerosis records", field: "msMsfcAssessed", numeratorMatches: value => value === "yes" },
   { id: "abnormal_movements_parkinsonism", cohort: "abnormal_movements", title: "Parkinsonism phenotype", numeratorLabel: "Parkinsonism phenotype", denominatorLabel: "All Abnormal Movements records", field: "movementPhenotype", numeratorMatches: value => value === "parkinsonism" },
+  { id: "abnormal_movements_severe", cohort: "abnormal_movements", title: "Severe movement symptoms", numeratorLabel: "Severe symptom severity", denominatorLabel: "All Abnormal Movements records", field: "movementSeverity", numeratorMatches: value => value === "severe" },
+  { id: "abnormal_movements_functional_impact", cohort: "abnormal_movements", title: "Moderate or severe functional impact", numeratorLabel: "Moderate or severe functional impact", denominatorLabel: "All Abnormal Movements records", field: "movementFunctionalImpact", numeratorMatches: value => value === "moderate" || value === "severe" },
+  { id: "abnormal_movements_treatment_response", cohort: "abnormal_movements", title: "Treatment response recorded", numeratorLabel: "Responsive or partial response", denominatorLabel: "All Abnormal Movements records", field: "movementTreatmentResponse", numeratorMatches: value => value === "responsive" || value === "partial" },
   { id: "gbs_aidp_variant", cohort: "guillain_barre", title: "AIDP variant", numeratorLabel: "AIDP variant", denominatorLabel: "All Guillain–Barré records", field: "gbsVariant", numeratorMatches: value => value === "aidp" },
+  { id: "gbs_immunotherapy", cohort: "guillain_barre", title: "GBS immunotherapy", numeratorLabel: "IVIG or plasma exchange", denominatorLabel: "All Guillain–Barré records", field: "gbsTreatment", numeratorMatches: value => value === "ivig" || value === "plasma_exchange" },
+  { id: "gbs_ventilatory_support", cohort: "guillain_barre", title: "Ventilatory support", numeratorLabel: "Any ventilatory support", denominatorLabel: "All Guillain–Barré records", field: "gbsVentilatorySupport", numeratorMatches: value => !["none", "not_recorded"].includes(value) },
+  { id: "gbs_disability_three_or_more", cohort: "guillain_barre", title: "GBS disability score 3 or higher", numeratorLabel: "Disability score 3–6", denominatorLabel: "All Guillain–Barré records", field: "gbsDisabilityScore", numeratorMatches: value => ["3", "4", "5", "6"].includes(value) },
   { id: "mg_seropositive", cohort: "myasthenia_gravis", title: "Seropositive antibody profile", numeratorLabel: "AChR, MuSK, LRP4, titin, or agrin", denominatorLabel: "All Myasthenia Gravis records", field: "mgAntibodyStatus", numeratorMatches: value => ["achr", "musk", "lrp4", "titin", "agrin"].includes(value) },
+  { id: "mg_mgfa_generalized", cohort: "myasthenia_gravis", title: "Generalized MGFA class", numeratorLabel: "MGFA class II–V", denominatorLabel: "All Myasthenia Gravis records", field: "mgMgfaClass", numeratorMatches: value => /^II|^III|^IV|^V/.test(value) },
+  { id: "mg_crisis_history", cohort: "myasthenia_gravis", title: "Myasthenic crisis history", numeratorLabel: "Impending or previous crisis", denominatorLabel: "All Myasthenia Gravis records", field: "mgCrisisHistory", numeratorMatches: value => value === "impending" || value === "previous" },
+  { id: "mg_treatment_response", cohort: "myasthenia_gravis", title: "MG treatment response", numeratorLabel: "Responsive or partial response", denominatorLabel: "All Myasthenia Gravis records", field: "mgTreatmentResponse", numeratorMatches: value => value === "responsive" || value === "partial" },
   { id: "myelopathy_compressive_cause", cohort: "myelopathy", title: "Compressive myelopathy cause", numeratorLabel: "Compressive cause", denominatorLabel: "All Myelopathy records", field: "myelopathyCause", numeratorMatches: value => value === "compressive" },
+  { id: "myelopathy_cervical_level", cohort: "myelopathy", title: "Cervical myelopathy level", numeratorLabel: "Cervical level", denominatorLabel: "All Myelopathy records", field: "myelopathyLevel", numeratorMatches: value => value === "cervical" },
+  { id: "myelopathy_umn_signs", cohort: "myelopathy", title: "Upper motor neuron signs", numeratorLabel: "UMN signs present", denominatorLabel: "All Myelopathy records", field: "myelopathyUpperMotorNeuronSigns", numeratorMatches: value => value === "present" },
+  { id: "myelopathy_bladder_involvement", cohort: "myelopathy", title: "Bladder involvement", numeratorLabel: "Bladder involvement recorded", denominatorLabel: "All Myelopathy records", field: "myelopathyBladderInvolvement", numeratorMatches: value => !["no", "none", "not_recorded"].includes(value) },
   { id: "neurooph_nmosd_mogad", cohort: "neuro_ophthalmology", title: "NMOSD or MOGAD classification", numeratorLabel: "NMOSD or MOGAD classification", denominatorLabel: "All Neuro-ophthalmology records", field: "neuroOphDiseaseClassification", numeratorMatches: value => value === "nmosd" || value === "mogad" },
+  { id: "neurooph_nmosd_seropositive", cohort: "neuro_ophthalmology", title: "Seropositive NMOSD", numeratorLabel: "AQP4-positive NMOSD", denominatorLabel: "All NMOSD-classified Neuro-ophthalmology records", field: "neuroOphAntibodyProfile", denominatorMatches: row => row.neuroOphDiseaseClassification === "nmosd", numeratorMatches: value => value === "aqp4_positive" || value === "both_positive" },
+  { id: "neurooph_optic_neuritis", cohort: "neuro_ophthalmology", title: "Optic neuritis syndrome", numeratorLabel: "Optic neuritis", denominatorLabel: "All Neuro-ophthalmology records", field: "neuroOphVisualSyndrome", numeratorMatches: value => value === "optic_neuritis" },
+  { id: "neurooph_severe_acuity_change", cohort: "neuro_ophthalmology", title: "Severe acuity reduction", numeratorLabel: "Severely reduced acuity", denominatorLabel: "All Neuro-ophthalmology records", field: "neuroOphAcuityChange", numeratorMatches: value => value === "severely_reduced" },
   { id: "cidp_typical_madsam", cohort: "cidp", title: "Typical or MADSAM CIDP phenotype", numeratorLabel: "Typical or MADSAM variant", denominatorLabel: "All CIDP records", field: "cidpVariant", numeratorMatches: value => value === "typical" || value === "madsam" },
+  { id: "cidp_electrodiagnostic_evidence", cohort: "cidp", title: "Electrodiagnostic evidence", numeratorLabel: "Demyelinating or conduction-block evidence", denominatorLabel: "All CIDP records", field: "cidpEmgNcsEvidence", numeratorMatches: value => value === "demyelinating" || value === "conduction_block" },
+  { id: "cidp_csf_protein_elevated", cohort: "cidp", title: "Elevated CSF protein", numeratorLabel: "Elevated or markedly elevated CSF protein", denominatorLabel: "All CIDP records", field: "cidpCsfProteinStatus", numeratorMatches: value => value === "elevated" || value === "markedly_elevated" },
+  { id: "cidp_moderate_severe_disability", cohort: "cidp", title: "Moderate or severe CIDP disability", numeratorLabel: "Moderate or severe disability", denominatorLabel: "All CIDP records", field: "cidpDisabilityLevel", numeratorMatches: value => value === "moderate" || value === "severe" },
 ];
 const cohortIndicatorValueLabels: Record<string, string> = { iv_thrombolysis: "IV thrombolysis", mechanical_thrombectomy: "Mechanical thrombectomy", both: "Combined reperfusion", relapsing_remitting: "Relapsing–remitting", primary_progressive: "Primary progressive", secondary_progressive: "Secondary progressive", clinically_isolated_syndrome: "Clinically isolated syndrome", achr: "AChR", musk: "MuSK", lrp4: "LRP4", aidp: "AIDP", aman: "AMAN", amsan: "AMSAN", miller_fisher: "Miller Fisher", pharyngeal_cervical_brachial: "Pharyngeal–cervical–brachial", nmosd: "NMOSD", mogad: "MOGAD", cidp: "CIDP", madsam: "MADSAM", not_recorded: "Not recorded" };
 export function getCohortIndicatorValueLabel(value: string) { return cohortIndicatorValueLabels[value] ?? value.replaceAll("_", " "); }
 export function getCohortClinicalIndicators(rows: CohortClinicalIndicatorRow[]): CohortClinicalIndicator[] {
   return cohortClinicalIndicatorDefinitions.map(definition => {
-    const cohortRows = rows.filter(row => row.cohort === definition.cohort);
+    const cohortRows = rows.filter(row => row.cohort === definition.cohort && (definition.denominatorMatches?.(row) ?? true));
     const values = cohortRows.map(row => row[definition.field] ?? "not_recorded");
     const distribution = Array.from(values.reduce((counts, value) => counts.set(value, (counts.get(value) ?? 0) + 1), new Map<string, number>()).entries()).map(([key, total]) => ({ key, label: getCohortIndicatorValueLabel(key), total, percentage: cohortRows.length ? Math.round((total / cohortRows.length) * 100) : 0 })).sort((left, right) => right.total - left.total || left.label.localeCompare(right.label));
-    const numerator = values.filter(definition.numeratorMatches).length;
+    const numerator = cohortRows.filter(row => definition.numeratorMatches(row[definition.field] ?? "not_recorded", row)).length;
     return { id: definition.id, cohort: definition.cohort, title: definition.title, numeratorLabel: definition.numeratorLabel, denominatorLabel: definition.denominatorLabel, numerator, denominator: cohortRows.length, percentage: cohortRows.length ? Math.round((numerator / cohortRows.length) * 100) : 0, distribution };
   });
 }
@@ -277,7 +327,7 @@ async function getRegistryAggregateStatisticsForPeriod(db: any, filters?: Regist
   const byCompleteness = await runRegistryStatisticsQuery<{ status: string; total: number }>(db.select({ status: patientRecords.completenessStatus, total: count() }).from(patientRecords).groupBy(patientRecords.completenessStatus), conditions);
   const byDataQuality = await runRegistryStatisticsQuery<{ status: string; total: number }>(db.select({ status: patientRecords.dataQualityStatus, total: count() }).from(patientRecords).groupBy(patientRecords.dataQualityStatus), conditions);
   const investigationRows = await runRegistryStatisticsQuery<{ radiologicalInvestigations: unknown[] | null; laboratoryInvestigations: unknown[] | null; neurologicalInvestigations: unknown[] | null; protocolInvestigations: Array<{ status?: string }> | null }>(db.select({ radiologicalInvestigations: patientRecords.radiologicalInvestigations, laboratoryInvestigations: patientRecords.laboratoryInvestigations, neurologicalInvestigations: patientRecords.neurologicalInvestigations, protocolInvestigations: patientRecords.protocolInvestigations }).from(patientRecords), conditions);
-  const indicatorRows = await runRegistryStatisticsQuery<CohortClinicalIndicatorRow>(db.select({ cohort: patientRecords.cohort, strokeReperfusion: clinicalJsonValue("$.reperfusionTherapy"), msDiseaseModifyingTherapy: clinicalJsonValue("$.diseaseModifyingTherapy"), movementPhenotype: clinicalJsonValue("$.movementPhenotype"), gbsVariant: clinicalJsonValue("$.variant"), mgAntibodyStatus: clinicalJsonValue("$.antibodyStatus"), myelopathyCause: clinicalJsonValue("$.cause"), neuroOphDiseaseClassification: clinicalJsonValue("$.diseaseClassification"), cidpVariant: clinicalJsonValue("$.variant") }).from(patientRecords), conditions);
+  const indicatorRows = await runRegistryStatisticsQuery<CohortClinicalIndicatorRow>(db.select({ cohort: patientRecords.cohort, strokeReperfusion: clinicalJsonValue("$.reperfusionTherapy"), strokeType: clinicalJsonValue("$.strokeType"), strokeTerritory: clinicalJsonValue("$.vascularTerritory"), strokeComplication: clinicalJsonValue("$.majorComplication"), msDiseaseModifyingTherapy: clinicalJsonValue("$.diseaseModifyingTherapy"), msDiseaseCourse: clinicalJsonValue("$.diseaseCourse"), msRelapseActivity: clinicalJsonValue("$.relapseActivity"), msMsfcAssessed: clinicalJsonValue("$.msfcAssessed"), movementPhenotype: clinicalJsonValue("$.movementPhenotype"), movementSeverity: clinicalJsonValue("$.severity"), movementFunctionalImpact: clinicalJsonValue("$.functionalImpact"), movementTreatmentResponse: clinicalJsonValue("$.treatmentResponse"), gbsVariant: clinicalJsonValue("$.variant"), gbsTreatment: clinicalJsonValue("$.treatment"), gbsVentilatorySupport: clinicalJsonValue("$.ventilatorySupport"), gbsDisabilityScore: clinicalJsonValue("$.disabilityScore"), mgAntibodyStatus: clinicalJsonValue("$.antibodyStatus"), mgMgfaClass: clinicalJsonValue("$.mgfaClass"), mgCrisisHistory: clinicalJsonValue("$.crisisHistory"), mgTreatmentResponse: clinicalJsonValue("$.treatmentResponse"), myelopathyCause: clinicalJsonValue("$.cause"), myelopathyLevel: clinicalJsonValue("$.level"), myelopathyUpperMotorNeuronSigns: clinicalJsonValue("$.upperMotorNeuronSigns"), myelopathyBladderInvolvement: clinicalJsonValue("$.bladderInvolvement"), neuroOphDiseaseClassification: clinicalJsonValue("$.diseaseClassification"), neuroOphAntibodyProfile: clinicalJsonValue("$.antibodyProfile"), neuroOphVisualSyndrome: clinicalJsonValue("$.visualSyndrome"), neuroOphAcuityChange: clinicalJsonValue("$.acuityChange"), cidpVariant: clinicalJsonValue("$.variant"), cidpDiagnosticPathway: clinicalJsonValue("$.diagnosticPathway"), cidpEmgNcsEvidence: clinicalJsonValue("$.emgNcsEvidence"), cidpCsfProteinStatus: clinicalJsonValue("$.csfProteinStatus"), cidpDisabilityLevel: clinicalJsonValue("$.disabilityLevel") }).from(patientRecords), conditions);
   return { totalRecords: total?.total ?? 0, byCohort, byEnrollment, byCompleteness, byDataQuality, investigationCoverage: getInvestigationCoverage(investigationRows), cohortIndicators: getCohortClinicalIndicators(indicatorRows) };
 }
 

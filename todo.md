@@ -331,3 +331,10 @@
 - [x] Add bounded local-only saving, naming, loading, and deletion of custom-statistic query definitions without storing results or individual data.
 - [x] Add deterministic smart interpretation charts that explain aggregate magnitude, direction, and denominator context without making causal or clinical claims.
 - [x] Test view transforms, saved-query validation, interpretation content, export exclusions, and protected Statistics behavior; then publish the update.
+- [x] Add an approved-user aggregate seropositive NMOSD indicator using only the controlled Neuro-ophthalmology disease classification and antibody profile fields.
+- [x] Expose the NMO seropositive indicator through custom statistics, period comparison, and aggregate-only exports alongside Stroke thrombolysis and GBS AIDP.
+- [x] Test NMO eligibility, numerator and denominator calculation, period comparison, and exclusion of individual data; then publish the update.
+- [x] Research guideline-supported aggregate indicator families for all eight registry cohorts and document the sources used.
+- [x] Expand the approved custom-statistic library with controlled cohort-specific numerator and denominator definitions from the research evidence.
+- [x] Add a flexible researcher question composer that combines approved structured conditions only, enforces aggregate-only results, and suppresses unsafe small groups.
+- [x] Test research-definition validation, small-group protection, export exclusions, access control, and protected route behavior; then publish the update.

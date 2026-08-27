@@ -78,22 +78,28 @@ describe("RegistryStatistics", () => {
   });
 
   it("offers only aggregate custom-statistic definitions and exports the selected proportion without individual content", () => {
-    const comparison = { ...aggregate, totalRecords: 7, byCohort: [{ cohort: "stroke", total: 3 }, { cohort: "multiple_sclerosis", total: 4 }], cohortIndicators: [{ ...aggregate.cohortIndicators[0], numerator: 1, denominator: 3, percentage: 33 }] };
+    const comparison = { ...aggregate, totalRecords: 7, byCohort: [{ cohort: "stroke", total: 3 }, { cohort: "multiple_sclerosis", total: 4 }], cohortIndicators: [{ ...aggregate.cohortIndicators[0], numerator: 2, denominator: 5, percentage: 40 }] };
     const options = getCustomStatisticOptions(aggregate, comparison);
     const strokeShare = options.find(option => option.key === "cohort:stroke");
     const thrombolysis = options.find(option => option.key === "clinical_indicator:stroke_iv_thrombolysis");
     expect(strokeShare).toMatchObject({ currentNumerator: 6, currentDenominator: 10, comparisonNumerator: 3, comparisonDenominator: 7 });
-    expect(thrombolysis).toMatchObject({ currentNumerator: 3, currentDenominator: 6, comparisonNumerator: 1, comparisonDenominator: 3 });
+    expect(thrombolysis).toMatchObject({ currentNumerator: 3, currentDenominator: 6, comparisonNumerator: 2, comparisonDenominator: 5 });
     expect(options.every(option => ["cohort", "completion", "enrollment", "data_quality", "clinical_indicator"].includes(option.family))).toBe(true);
     const csv = createCustomStatisticCsv(thrombolysis!, "2026-01-01 to 2026-01-31", "2025-01-01 to 2025-01-31");
     expect(csv).toContain('"Current share","50%"');
-    expect(csv).toContain('"Comparison share","33%"');
+    expect(csv).toContain('"Comparison share","40%"');
     expect(buildCustomStatisticSummary(thrombolysis!, "2026-01-01 to 2026-01-31", "2025-01-01 to 2025-01-31").join(" ")).toContain("not a clinical, operational, or causal explanation");
     expect(`${JSON.stringify(options)}${csv}`).not.toMatch(/MUNR|research.?id|patient|diagnosis|clinical narrative|email|recorded by/i);
   });
 
+  it("suppresses custom statistic definitions when a selected period has fewer than five matching records", () => {
+    const small = { ...aggregate, totalRecords: 4, byCohort: [{ cohort: "stroke", total: 4 }], cohortIndicators: [{ ...aggregate.cohortIndicators[0], numerator: 2, denominator: 4, percentage: 50 }] };
+    expect(getCustomStatisticOptions(small)).toEqual([]);
+    expect(getCustomStatisticOptions(aggregate, small)).toEqual([]);
+  });
+
   it("builds allowed chart views, bounded saved-query definitions, and a non-causal smart interpretation", () => {
-    const comparison = { ...aggregate, totalRecords: 7, byCohort: [{ cohort: "stroke", total: 3 }, { cohort: "multiple_sclerosis", total: 4 }], cohortIndicators: [{ ...aggregate.cohortIndicators[0], numerator: 1, denominator: 3, percentage: 33 }] };
+    const comparison = { ...aggregate, totalRecords: 7, byCohort: [{ cohort: "stroke", total: 3 }, { cohort: "multiple_sclerosis", total: 4 }], cohortIndicators: [{ ...aggregate.cohortIndicators[0], numerator: 2, denominator: 5, percentage: 40 }] };
     const strokeShare = getCustomStatisticOptions(aggregate, comparison).find(option => option.key === "cohort:stroke")!;
     expect(getCustomStatisticViewData(strokeShare, "proportion")).toEqual([expect.objectContaining({ current: 60, comparison: 43 })]);
     expect(getCustomStatisticViewData(strokeShare, "counts")).toEqual([expect.objectContaining({ numerator: 6, denominator: 10 }), expect.objectContaining({ numerator: 3, denominator: 7 })]);
