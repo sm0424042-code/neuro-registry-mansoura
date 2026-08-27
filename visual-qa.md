@@ -179,3 +179,9 @@ The assignment control is implemented as an administrator-only accessible person
 The task-notification contract also includes an operational **record-completion status changed** event when a protected record transitions between completion states. Its in-site and owner-alert text are fixed general wording, and omit the record identifier, cohort, diagnosis, clinical narrative, and account email. This event is contract-tested; no live record status was changed for verification.
 
 After the removed-account guard was added, the current project preview displayed the **Access is suspended** gate for the locally retained removed account. It did not show the dashboard, registry, tasks, or notifications. This is visible confirmation of the client-side protective state; the matching server guard is covered by the task authorization test.
+
+## Completion-task filtering and sorting
+
+The protected task workspace now provides a status selector for **All statuses**, **Awaiting acceptance**, **Accepted**, and **Completed**. It also provides deterministic sort controls for attention-required work first, recently updated, oldest updated, and status order, plus a live count and an explicit no-matching-tasks state. The implementation displays only the task state, generic protected-record label, cohort label, timestamp, and permitted assignment metadata; it does not add a Research ID, clinical narrative, diagnosis, or email to this task-management surface.
+
+The available browser session is a removed account, so the `/tasks` route correctly rendered the **Access is suspended** gate and revealed no task controls or task data. Type checking, unit coverage for the filtering and ordering rules, full test execution, and production build verify the implementation contract. A future legitimate approved OAuth session is still required before claiming hands-on filter or sort interaction verification.

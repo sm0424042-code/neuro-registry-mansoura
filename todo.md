@@ -278,3 +278,5 @@
 - [x] Send privacy-safe administrator notifications for task assignment, acceptance, completion, reassignment, and completion-status changes without patient details or Research IDs.
 - [x] Add authorization, transition, notification-content, and protected-interface tests for the record-completion task workflow.
 - [x] Provide in-site notifications to every approved administrator and a privacy-safe immediate alert to the project owner for record-task assignment and every accepted, completed, or reassigned status event.
+- [x] Add protected task-status filters and deterministic sort controls to Completion Tasks without exposing research identifiers or clinical details.
+- [x] Add unit tests for task filtering and sort ordering, then verify the protected task interface and publish the update.
