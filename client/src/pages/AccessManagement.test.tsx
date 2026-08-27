@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ADMINISTRATOR_DISPLAY_NAME, ADMINISTRATOR_INDICATOR_DESCRIPTION, ADMINISTRATOR_INDICATOR_LABEL, filterManagedAccounts, getApplicantDisplayName, getApplicantOAuthStatus, UPGRADE_ACCESS_LABEL, UPGRADE_ADMIN_LABEL } from "./AccessManagement";
+import { ADMINISTRATOR_DISPLAY_NAME, ADMINISTRATOR_INDICATOR_DESCRIPTION, ADMINISTRATOR_INDICATOR_LABEL, filterManagedAccounts, getApplicantDisplayName, getApplicantOAuthStatus, OAUTH_ONBOARDING_GUIDANCE, UPGRADE_ACCESS_LABEL, UPGRADE_ADMIN_LABEL } from "./AccessManagement";
 
 describe("AccessManagement applicant display name", () => {
   it("uses the configured administrator display label for a missing or blank name", () => {
@@ -33,5 +33,11 @@ describe("AccessManagement applicant display name", () => {
   it("uses explicit labels for icon-based access and administrator upgrades", () => {
     expect(UPGRADE_ACCESS_LABEL).toBe("Upgrade access");
     expect(UPGRADE_ADMIN_LABEL).toBe("Upgrade to administrator");
+  });
+
+  it("explains that account name and email are supplied through OAuth without local passwords", () => {
+    expect(OAUTH_ONBOARDING_GUIDANCE).toContain("OAuth account");
+    expect(OAUTH_ONBOARDING_GUIDANCE).toContain("name and email");
+    expect(OAUTH_ONBOARDING_GUIDANCE).toContain("not in this registry");
   });
 });
