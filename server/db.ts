@@ -23,6 +23,11 @@ export async function getDb() {
   return _db;
 }
 
+export function getRemovedAccountReapplicationReset(isOwner: boolean, removedAt: Date | null | undefined) {
+  if (isOwner || !removedAt) return null;
+  return { role: "user" as const, accessStatus: "pending" as const, removedAt: null, removedByAdminId: null };
+}
+
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) throw new Error("User openId is required for upsert");
   const db = await getDb();
@@ -46,6 +51,12 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   if (isOwner) {
     updateSet.role = "admin";
     updateSet.accessStatus = "approved";
+  }
+  const existing = await db.select({ removedAt: users.removedAt }).from(users).where(eq(users.openId, user.openId)).limit(1);
+  const reapplicationReset = getRemovedAccountReapplicationReset(isOwner, existing[0]?.removedAt);
+  if (reapplicationReset) {
+    await db.update(users).set({ ...updateSet, ...reapplicationReset }).where(eq(users.openId, user.openId));
+    return;
   }
   await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
 }

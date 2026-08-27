@@ -253,3 +253,5 @@
 - [x] Review the protected record editor for shared sections that should be cohort-specific across Stroke, MS, Abnormal Movements, GBS, MG, Myelopathy, Neuro-ophthalmology, and CIDP.
 - [x] Restrict cohort-specific evaluation and protocol-investigation choices to the selected cohort while retaining only research-wide core metadata.
 - [x] Add isolation tests for cohort-specific recording options, then run type checking, tests, production build, and visual verification.
+- [x] Allow a removed non-owner OAuth account to reapply on later sign-in as a pending applicant, without automatically restoring access or administrator role.
+- [x] Add tests confirming reapplication resets access to pending/user, preserves primary-owner protection, and does not alter research records.
