@@ -304,3 +304,5 @@
 - [x] Test statistics authorization, aggregate-only response contract, and the absence of Research IDs, clinical narratives, free text, contact data, and user identity; then publish the update.
 - [x] Add interactive aggregate-only donut and bar charts for cohort composition and record-completion status to the protected Statistics workspace.
 - [x] Test chart data transformation, interaction accessibility, and the exclusion of individual registry data; then verify the protected route and publish the update.
+- [x] Add per-chart PNG export controls for aggregate Statistics visualizations and preserve the existing aggregate CSV download.
+- [x] Test PNG export labeling and the aggregate-only export boundary, verify the protected route, and publish the update.

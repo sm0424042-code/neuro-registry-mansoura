@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createAggregateStatisticsCsv, getStatisticShare, statisticLabel, toAggregateChartData, type AggregateStatistics } from "./RegistryStatistics";
+import { createAggregateStatisticsCsv, getStatisticShare, getStatisticsChartPngFileName, statisticLabel, toAggregateChartData, type AggregateStatistics } from "./RegistryStatistics";
 
 const aggregate: AggregateStatistics = { totalRecords: 10, byCohort: [{ cohort: "stroke", total: 6 }, { cohort: "cidp", total: 4 }], byEnrollment: [{ status: "enrolled", total: 8 }, { status: "screened", total: 2 }], byCompleteness: [{ status: "complete", total: 7 }, { status: "incomplete", total: 3 }], byDataQuality: [{ status: "complete", total: 7 }, { status: "draft", total: 3 }], investigationCoverage: { radiologyRecorded: 8, laboratoryRecorded: 9, neurologicalRecorded: 7, protocolChecklistComplete: 6 } };
 
@@ -23,5 +23,10 @@ describe("RegistryStatistics", () => {
     expect(cohorts).toEqual(expect.arrayContaining([expect.objectContaining({ key: "stroke", label: "stroke", total: 6, color: expect.any(String) })]));
     expect(completion).toEqual(expect.arrayContaining([expect.objectContaining({ key: "complete", label: "Complete", total: 7, color: expect.any(String) })]));
     expect(JSON.stringify([...cohorts, ...completion])).not.toMatch(/MUNR|research.?id|patient|diagnosis|clinical|email|recorded.?by/i);
+  });
+
+  it("uses a stable aggregate-only PNG filename for a chart export", () => {
+    expect(getStatisticsChartPngFileName("Completion status", new Date("2026-08-27T12:00:00.000Z"))).toBe("registry-statistics-completion-status-2026-08-27.png");
+    expect(getStatisticsChartPngFileName("Cohort distribution", new Date("2026-08-27T12:00:00.000Z"))).not.toMatch(/MUNR|research.?id|patient|clinical|email/i);
   });
 });
