@@ -297,6 +297,13 @@ export async function listAllRecordCompletionTasks(input: CompletionTaskListInpu
   return { items, totalItems, page, pageSize: input.pageSize };
 }
 
+export async function listRecordCompletionTaskExportRows(userId: number, isAdmin: boolean, input: Pick<CompletionTaskListInput, "status" | "sort">) {
+  const db = requireDb(await getDb());
+  const conditions = [isAdmin ? undefined : eq(recordCompletionTasks.assignedToUserId, userId), taskListStatusCondition(input.status)].filter(Boolean);
+  const where = conditions.length ? sqlAnd(...conditions) : undefined;
+  return db.select({ status: recordCompletionTasks.status, updatedAt: recordCompletionTasks.updatedAt }).from(recordCompletionTasks).where(where).orderBy(...taskListOrder(input.sort)).limit(10_000);
+}
+
 async function changeTaskStatus(taskId: number, actorUserId: number, status: "accepted" | "completed") {
   const db = requireDb(await getDb());
   const task = (await db.select().from(recordCompletionTasks).where(eq(recordCompletionTasks.id, taskId)).limit(1))[0];

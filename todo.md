@@ -284,3 +284,5 @@
 - [x] Test task-page pagination with filtering and sorting, verify the protected route boundary, and publish the update.
 - [x] Add reduced-motion-safe skeleton loading feedback and disabled page controls while a new Completion Tasks page is being fetched.
 - [x] Test task-page loading feedback, preserve filtering and pagination behavior, and publish the update.
+- [x] Add an approved-user CSV export for the currently filtered and sorted completion-task list, with a strict de-identified column contract.
+- [x] Test export authorization, CSV escaping, and exclusion of Research IDs, record references, clinical content, emails, and assignment identities; then publish the update.

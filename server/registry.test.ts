@@ -166,6 +166,19 @@ describe("Mansoura University registry validation", () => {
       await expect(caller.completionTasks.all({ pageSize: 51 } as any)).rejects.toMatchObject({ code: "BAD_REQUEST" });
     } finally { listAll.mockRestore(); }
   });
+  it("allows an approved user to export only their filtered task status and timestamp rows", async () => {
+    const exportRows = vi.spyOn(db, "listRecordCompletionTaskExportRows").mockResolvedValue([{ status: "accepted", updatedAt: new Date("2026-08-27T09:15:00.000Z") }] as any);
+    try {
+      const caller = appRouter.createCaller(context("user", "approved"));
+      const result = await caller.completionTasks.exportCsv({ status: "accepted", sort: "updated_desc" });
+      expect(exportRows).toHaveBeenCalledWith(14, false, { status: "accepted", sort: "updated_desc" });
+      expect(result).toMatchObject({ exportedRows: 1, isTruncated: false });
+      expect(result.filename).toMatch(/^completion-tasks-\d{4}-\d{2}-\d{2}\.csv$/);
+      expect(result.csv).toContain('"Accepted","2026-08-27T09:15:00.000Z"');
+      expect(result.csv).not.toMatch(/MUNR|patientRecordId|researchId|diagnosis|cohort|clinical|email|assignedTo/i);
+      await expect(appRouter.createCaller(context("user", "pending")).completionTasks.exportCsv()).rejects.toMatchObject({ code: "FORBIDDEN" });
+    } finally { exportRows.mockRestore(); }
+  });
   it("alerts the owner with fixed generic text when a protected record completion status changes", async () => {
     const previous = vi.spyOn(db, "getPatientRecord").mockResolvedValue({ id: 7, completenessStatus: "incomplete" } as any);
     const update = vi.spyOn(db, "updatePatientRecord").mockResolvedValue({ id: 7, completenessStatus: "complete" } as any);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterAndSortCompletionTasks, getCompletionTaskPage, getCompletionTaskPagination, getTaskLoadingMode, getTaskNotificationLabel, getTaskStatusLabel } from "./CompletionTasks";
+import { filterAndSortCompletionTasks, getCompletionTaskPage, getCompletionTaskPagination, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskStatusLabel } from "./CompletionTasks";
 
 describe("completion-task labels", () => {
   it("uses clear controlled labels for task state", () => {
@@ -43,5 +43,10 @@ describe("completion-task labels", () => {
     expect(getTaskLoadingMode(false, true, true)).toBe("transition");
     expect(getTaskLoadingMode(false, false, true)).toBe("idle");
     expect(getTaskLoadingMode(false, true, false)).toBe("idle");
+  });
+
+  it("sends only the current controlled status and sort options to the CSV export", () => {
+    expect(getTaskExportInput("all", "attention_first")).toEqual({ status: undefined, sort: "attention_first" });
+    expect(getTaskExportInput("accepted", "updated_desc")).toEqual({ status: "accepted", sort: "updated_desc" });
   });
 });
