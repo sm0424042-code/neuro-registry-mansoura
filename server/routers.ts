@@ -116,6 +116,9 @@ export const appRouter = router({
     setAccess: adminProcedure.input(z.object({ userId: z.number().int().positive(), accessStatus: z.enum(["pending", "approved", "suspended"]) })).mutation(async ({ input, ctx }) => {
       const target = await db.getUserAdministrationState(input.userId);
       if (!target || target.removedAt) throw new TRPCError({ code: "NOT_FOUND", message: "The selected active project account no longer exists." });
+      if (target.openId === ENV.ownerOpenId) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "The configured owner account cannot have its registry access changed here." });
+      }
       if (input.userId === ctx.user.id && input.accessStatus !== "approved") {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Administrators cannot remove their own access." });
       }
@@ -127,6 +130,9 @@ export const appRouter = router({
       const target = await db.getUserAdministrationState(input.userId);
       if (!target) throw new TRPCError({ code: "NOT_FOUND", message: "The selected user no longer exists." });
       if (target.removedAt) throw new TRPCError({ code: "NOT_FOUND", message: "The selected active project account no longer exists." });
+      if (target.openId === ENV.ownerOpenId) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "The configured owner account cannot have its role changed here." });
+      }
       if (input.role === "admin" && target.accessStatus !== "approved") {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Approve an OAuth account before granting administrator access." });
       }

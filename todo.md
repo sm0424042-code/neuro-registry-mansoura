@@ -256,3 +256,5 @@
 - [x] Allow a removed non-owner OAuth account to reapply on later sign-in as a pending applicant, without automatically restoring access or administrator role.
 - [x] Add tests confirming reapplication resets access to pending/user, preserves primary-owner protection, and does not alter research records.
 - [x] Clarify applicant onboarding in the protected access guidance: OAuth supplies the account name and email, while password creation and storage remain outside the registry.
+- [x] Enforce server-side immutable-owner protection: reject every attempt to delete, suspend, approve, or change the role of the configured current owner.
+- [x] Add regression tests proving that another approved administrator cannot modify the configured owner through access, role, or removal procedures.
