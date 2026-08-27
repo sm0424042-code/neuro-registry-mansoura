@@ -152,8 +152,8 @@ export async function updatePatientRecordWithDb(db: any, id: number, input: Pati
 
 export async function getPatientRecord(id: number) {
   const db = requireDb(await getDb());
-  const result = await db.select().from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
-  return result[0];
+  const result = await db.select({ record: patientRecords, recordedBy: users.name }).from(patientRecords).leftJoin(users, eq(patientRecords.createdByUserId, users.id)).where(eq(patientRecords.id, id)).limit(1);
+  return result[0] ? { ...result[0].record, recordedBy: result[0].recordedBy } : undefined;
 }
 
 export async function listPatientRecords(filters?: RegistryFilters) {
@@ -169,7 +169,7 @@ export async function listPatientRecords(filters?: RegistryFilters) {
   if (filters?.search) conditions.push(like(patientRecords.researchId, `%${filters.search.toUpperCase()}%`));
   if (filters?.ageMin !== undefined) conditions.push(gte(patientRecords.ageAtEnrollment, filters.ageMin));
   if (filters?.ageMax !== undefined) conditions.push(lte(patientRecords.ageAtEnrollment, filters.ageMax));
-  const query = db.select({ id: patientRecords.id, researchId: patientRecords.researchId, cohort: patientRecords.cohort, sex: patientRecords.sex, ageAtEnrollment: patientRecords.ageAtEnrollment, consentStatus: patientRecords.consentStatus, enrollmentStatus: patientRecords.enrollmentStatus, clinicalStatus: patientRecords.clinicalStatus, primaryDiagnosis: patientRecords.primaryDiagnosis, dataQualityStatus: patientRecords.dataQualityStatus, completenessStatus: patientRecords.completenessStatus, missingItems: patientRecords.missingItems, completionOwnerUserId: patientRecords.completionOwnerUserId, updatedAt: patientRecords.updatedAt }).from(patientRecords);
+  const query = db.select({ id: patientRecords.id, researchId: patientRecords.researchId, cohort: patientRecords.cohort, sex: patientRecords.sex, ageAtEnrollment: patientRecords.ageAtEnrollment, consentStatus: patientRecords.consentStatus, enrollmentStatus: patientRecords.enrollmentStatus, clinicalStatus: patientRecords.clinicalStatus, primaryDiagnosis: patientRecords.primaryDiagnosis, dataQualityStatus: patientRecords.dataQualityStatus, completenessStatus: patientRecords.completenessStatus, missingItems: patientRecords.missingItems, completionOwnerUserId: patientRecords.completionOwnerUserId, recordedBy: users.name, updatedAt: patientRecords.updatedAt }).from(patientRecords).leftJoin(users, eq(patientRecords.createdByUserId, users.id));
   return conditions.length ? query.where(and(...conditions)).orderBy(desc(patientRecords.updatedAt)) : query.orderBy(desc(patientRecords.updatedAt));
 }
 

@@ -261,3 +261,4 @@
 - [x] Investigate why a protected research record reported as saved does not appear in Patient Registry, without reading or generating clinical data.
 - [x] Fix the validated save-to-registry-list flow and add regression coverage for the save result, cache refresh, and protected navigation behavior.
 - [x] Require every new Research ID to use the pseudonymised format MUNR followed by exactly 14 digits, with matching client and server validation.
+- [x] Display the approved OAuth account that recorded each research record only on protected registry surfaces, while excluding it from clinical data, public previews, and exports.

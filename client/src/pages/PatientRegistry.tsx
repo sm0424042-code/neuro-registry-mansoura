@@ -10,23 +10,127 @@ import { Filter, Plus, Search, SlidersHorizontal } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 
-type Filters = { search: string; cohort: string; enrollmentStatus: string; clinicalStatus: string; dataQualityStatus: string; completenessStatus: string; ageMin: string; ageMax: string };
-const initial: Filters = { search: "", cohort: "all", enrollmentStatus: "all", clinicalStatus: "all", dataQualityStatus: "all", completenessStatus: "all", ageMin: "", ageMax: "" };
-const cohortLabels: Record<string, string> = { stroke: "Stroke", multiple_sclerosis: "Multiple Sclerosis (MS)", abnormal_movements: "Abnormal Movements", guillain_barre: "Guillain–Barré Syndrome (GBS)", myasthenia_gravis: "Myasthenia Gravis (MG)", myelopathy: "Myelopathy", neuro_ophthalmology: "Neuro-ophthalmology", cidp: "CIDP" };
+type Filters = {
+  search: string;
+  cohort: string;
+  enrollmentStatus: string;
+  clinicalStatus: string;
+  dataQualityStatus: string;
+  completenessStatus: string;
+  ageMin: string;
+  ageMax: string;
+};
+
+const initial: Filters = {
+  search: "",
+  cohort: "all",
+  enrollmentStatus: "all",
+  clinicalStatus: "all",
+  dataQualityStatus: "all",
+  completenessStatus: "all",
+  ageMin: "",
+  ageMax: "",
+};
+
+const cohortLabels: Record<string, string> = {
+  stroke: "Stroke",
+  multiple_sclerosis: "Multiple Sclerosis (MS)",
+  abnormal_movements: "Abnormal Movements",
+  guillain_barre: "Guillain–Barré Syndrome (GBS)",
+  myasthenia_gravis: "Myasthenia Gravis (MG)",
+  myelopathy: "Myelopathy",
+  neuro_ophthalmology: "Neuro-ophthalmology",
+  cidp: "CIDP",
+};
 
 export function getInitialRegistryFilters(location: string): Filters {
   const search = new URLSearchParams(location.split("?")[1] ?? "").get("search")?.trim().toUpperCase() ?? "";
   return { ...initial, search: search.slice(0, 24) };
 }
 
-export default function PatientRegistry() {
-  const [location, navigate] = useLocation(); const [draft, setDraft] = useState<Filters>(() => getInitialRegistryFilters(location)); const [applied, setApplied] = useState<Filters>(() => getInitialRegistryFilters(location));
-  const input = useMemo(() => ({ search: applied.search || undefined, cohort: applied.cohort === "all" ? undefined : applied.cohort as any, enrollmentStatus: applied.enrollmentStatus === "all" ? undefined : applied.enrollmentStatus as any, clinicalStatus: applied.clinicalStatus === "all" ? undefined : applied.clinicalStatus as any, dataQualityStatus: applied.dataQualityStatus === "all" ? undefined : applied.dataQualityStatus as any, completenessStatus: applied.completenessStatus === "all" ? undefined : applied.completenessStatus as any, ageMin: applied.ageMin ? Number(applied.ageMin) : undefined, ageMax: applied.ageMax ? Number(applied.ageMax) : undefined }), [applied]);
-  const { data, isLoading, error } = trpc.registry.list.useQuery(input); const set = (key: keyof Filters, value: string) => setDraft(current => ({ ...current, [key]: value }));
-  return <div className="mx-auto max-w-7xl space-y-6 fade-rise"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-sm text-slate-500">Mansoura University Neurology Research Registry</p><h1 className="mt-1 font-display text-3xl text-[#172b38]">Patient Registry</h1></div><Button onClick={() => navigate("/records/new")} className="bg-[#125d69] hover:bg-[#0d4b55]"><Plus className="mr-2 h-4 w-4" />New research record</Button></div><Card className="border-[#e1e9e5] shadow-sm"><CardContent className="p-5"><div className="mb-4 flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-lg bg-[#edf7f4] text-[#2e716b]"><SlidersHorizontal className="h-4 w-4" /></span><div><p className="text-sm font-semibold text-[#263c46]">Registry filters</p><p className="text-xs text-slate-500">Prioritise records with missing data or an outstanding review.</p></div></div><div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"><div className="relative xl:col-span-2"><Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" /><Input value={draft.search} onChange={event => set("search", event.target.value)} placeholder="Search MUNR Research ID" className="pl-9" /></div><FilterSelect value={draft.cohort} onChange={value => set("cohort", value)} label="All cohorts" options={Object.entries(cohortLabels)} /><FilterSelect value={draft.completenessStatus} onChange={value => set("completenessStatus", value)} label="All completion states" options={[["incomplete", "Incomplete"], ["needs_review", "Needs review"], ["complete", "Complete"]]} /><FilterSelect value={draft.enrollmentStatus} onChange={value => set("enrollmentStatus", value)} label="All enrolment states" options={[["screened", "Screened"], ["enrolled", "Enrolled"], ["completed", "Completed"], ["withdrawn", "Withdrawn"], ["ineligible", "Ineligible"]]} /><FilterSelect value={draft.clinicalStatus} onChange={value => set("clinicalStatus", value)} label="All clinical states" options={[["active", "Active"], ["follow_up", "Follow-up"], ["completed", "Completed"], ["deceased", "Deceased"], ["unknown", "Unknown"]]} /><FilterSelect value={draft.dataQualityStatus} onChange={value => set("dataQualityStatus", value)} label="All data quality states" options={[["draft", "Draft"], ["complete", "Complete"], ["query", "Query"]]} /><div className="flex gap-2"><TextField label="Age from"><Input type="number" value={draft.ageMin} onChange={event => set("ageMin", event.target.value)} /></TextField><TextField label="Age to"><Input type="number" value={draft.ageMax} onChange={event => set("ageMax", event.target.value)} /></TextField></div><div className="flex items-end gap-2"><Button onClick={() => setApplied(draft)} className="flex-1 bg-[#125d69] hover:bg-[#0d4b55]"><Filter className="mr-2 h-4 w-4" />Apply</Button><Button variant="outline" onClick={() => { setDraft(initial); setApplied(initial); }}>Reset</Button></div></div></CardContent></Card><Card className="overflow-hidden border-[#e1e9e5] shadow-sm"><CardContent className="p-0">{error ? <div className="p-6 text-sm text-rose-700">The registry could not be loaded. {error.message}</div> : isLoading ? <Loading /> : !data?.length ? <Empty onCreate={() => navigate("/records/new")} /> : <div className="overflow-x-auto"><table className="w-full min-w-[970px] text-left text-sm"><thead className="bg-[#f4f8f6] text-xs font-semibold uppercase tracking-[0.08em] text-[#64807e]"><tr><th className="px-6 py-4">Research ID</th><th className="px-4 py-4">Cohort</th><th className="px-4 py-4">Demographics</th><th className="px-4 py-4">Enrolment</th><th className="px-4 py-4">Completion</th><th className="px-4 py-4">Missing items</th><th className="px-6 py-4 text-right">Action</th></tr></thead><tbody>{data.map(record => <tr key={record.id} className="border-t border-[#edf1ef] hover:bg-[#f9fcfb]"><td className="px-6 py-4 font-semibold text-[#245961]">{record.researchId}</td><td className="px-4 py-4"><p className="font-medium text-[#30434c]">{cohortLabels[record.cohort]}</p><p className="mt-0.5 max-w-44 truncate text-xs text-slate-500">{record.primaryDiagnosis}</p></td><td className="px-4 py-4 text-slate-600">{record.sex.replace("_", " ")} · {record.ageAtEnrollment} yrs</td><td className="px-4 py-4"><Badge variant="outline" className="capitalize">{record.enrollmentStatus}</Badge></td><td className="px-4 py-4"><Status value={record.completenessStatus} /></td><td className="px-4 py-4 text-xs text-slate-500">{(record.missingItems as string[]).length ? (record.missingItems as string[]).map(item => item.replace(/_/g, " ")).join(", ") : "—"}</td><td className="px-6 py-4 text-right"><Button size="sm" variant="outline" onClick={() => navigate(`/records/${record.id}`)}>Review</Button></td></tr>)}</tbody></table></div>}</CardContent></Card></div>;
+export function getRecordedByLabel(name?: string | null) {
+  return name?.trim() || "Approved registry user";
 }
-function FilterSelect({ value, onChange, label, options }: { value: string; onChange: (value: string) => void; label: string; options: [string, string][] }) { return <Select value={value} onValueChange={onChange}><SelectTrigger><SelectValue placeholder={label} /></SelectTrigger><SelectContent><SelectItem value="all">{label}</SelectItem>{options.map(([value, text]) => <SelectItem key={value} value={value}>{text}</SelectItem>)}</SelectContent></Select>; }
-function TextField({ label, children }: { label: string; children: React.ReactNode }) { return <div className="min-w-0 flex-1"><Label className="mb-1 block text-xs text-slate-500">{label}</Label>{children}</div>; }
-function Status({ value }: { value: string }) { const tone = value === "complete" ? "border-emerald-100 bg-emerald-50 text-emerald-700" : value === "needs_review" ? "border-amber-100 bg-amber-50 text-amber-700" : "border-rose-100 bg-rose-50 text-rose-700"; return <Badge variant="outline" className={`${tone} capitalize`}>{value.replace(/_/g, " ")}</Badge>; }
-function Loading() { return <div className="space-y-3 p-6">{[1, 2, 3].map(item => <Skeleton key={item} className="h-14 w-full" />)}</div>; }
-function Empty({ onCreate }: { onCreate: () => void }) { return <div className="px-6 py-16 text-center"><Search className="mx-auto h-7 w-7 text-[#2e716b]" /><h3 className="mt-4 font-display text-xl text-[#243b44]">No matching records</h3><p className="mt-2 text-sm text-slate-500">Create a pseudonymised neurology research record or adjust the filters.</p><Button className="mt-5 bg-[#125d69]" onClick={onCreate}><Plus className="mr-2 h-4 w-4" />Create record</Button></div>; }
+
+export default function PatientRegistry() {
+  const [location, navigate] = useLocation();
+  const [draft, setDraft] = useState<Filters>(() => getInitialRegistryFilters(location));
+  const [applied, setApplied] = useState<Filters>(() => getInitialRegistryFilters(location));
+  const input = useMemo(() => ({
+    search: applied.search || undefined,
+    cohort: applied.cohort === "all" ? undefined : applied.cohort as any,
+    enrollmentStatus: applied.enrollmentStatus === "all" ? undefined : applied.enrollmentStatus as any,
+    clinicalStatus: applied.clinicalStatus === "all" ? undefined : applied.clinicalStatus as any,
+    dataQualityStatus: applied.dataQualityStatus === "all" ? undefined : applied.dataQualityStatus as any,
+    completenessStatus: applied.completenessStatus === "all" ? undefined : applied.completenessStatus as any,
+    ageMin: applied.ageMin ? Number(applied.ageMin) : undefined,
+    ageMax: applied.ageMax ? Number(applied.ageMax) : undefined,
+  }), [applied]);
+  const { data, isLoading, error } = trpc.registry.list.useQuery(input);
+  const set = (key: keyof Filters, value: string) => setDraft(current => ({ ...current, [key]: value }));
+
+  return (
+    <div className="mx-auto max-w-7xl space-y-6 fade-rise">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <p className="text-sm text-slate-500">Mansoura University Neurology Research Registry</p>
+          <h1 className="mt-1 font-display text-3xl text-[#172b38]">Patient Registry</h1>
+        </div>
+        <Button onClick={() => navigate("/records/new")} className="bg-[#125d69] hover:bg-[#0d4b55]"><Plus className="mr-2 h-4 w-4" />New research record</Button>
+      </div>
+
+      <Card className="border-[#e1e9e5] shadow-sm">
+        <CardContent className="p-5">
+          <div className="mb-4 flex items-center gap-2">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#edf7f4] text-[#2e716b]"><SlidersHorizontal className="h-4 w-4" /></span>
+            <div><p className="text-sm font-semibold text-[#263c46]">Registry filters</p><p className="text-xs text-slate-500">Prioritise records with missing data or an outstanding review.</p></div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="relative xl:col-span-2"><Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" /><Input value={draft.search} onChange={event => set("search", event.target.value)} placeholder="Search MUNR Research ID" className="pl-9" /></div>
+            <FilterSelect value={draft.cohort} onChange={value => set("cohort", value)} label="All cohorts" options={Object.entries(cohortLabels)} />
+            <FilterSelect value={draft.completenessStatus} onChange={value => set("completenessStatus", value)} label="All completion states" options={[["incomplete", "Incomplete"], ["needs_review", "Needs review"], ["complete", "Complete"]]} />
+            <FilterSelect value={draft.enrollmentStatus} onChange={value => set("enrollmentStatus", value)} label="All enrolment states" options={[["screened", "Screened"], ["enrolled", "Enrolled"], ["completed", "Completed"], ["withdrawn", "Withdrawn"], ["ineligible", "Ineligible"]]} />
+            <FilterSelect value={draft.clinicalStatus} onChange={value => set("clinicalStatus", value)} label="All clinical states" options={[["active", "Active"], ["follow_up", "Follow-up"], ["completed", "Completed"], ["deceased", "Deceased"], ["unknown", "Unknown"]]} />
+            <FilterSelect value={draft.dataQualityStatus} onChange={value => set("dataQualityStatus", value)} label="All data quality states" options={[["draft", "Draft"], ["complete", "Complete"], ["query", "Query"]]} />
+            <div className="flex gap-2"><TextField label="Age from"><Input type="number" value={draft.ageMin} onChange={event => set("ageMin", event.target.value)} /></TextField><TextField label="Age to"><Input type="number" value={draft.ageMax} onChange={event => set("ageMax", event.target.value)} /></TextField></div>
+            <div className="flex items-end gap-2"><Button onClick={() => setApplied(draft)} className="flex-1 bg-[#125d69] hover:bg-[#0d4b55]"><Filter className="mr-2 h-4 w-4" />Apply</Button><Button variant="outline" onClick={() => { setDraft(initial); setApplied(initial); }}>Reset</Button></div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="overflow-hidden border-[#e1e9e5] shadow-sm">
+        <CardContent className="p-0">
+          {error ? <div className="p-6 text-sm text-rose-700">The registry could not be loaded. {error.message}</div> : isLoading ? <Loading /> : !data?.length ? <Empty onCreate={() => navigate("/records/new")} /> : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1120px] text-left text-sm">
+                <thead className="bg-[#f4f8f6] text-xs font-semibold uppercase tracking-[0.08em] text-[#64807e]"><tr><th className="px-6 py-4">Research ID</th><th className="px-4 py-4">Cohort</th><th className="px-4 py-4">Recorded by</th><th className="px-4 py-4">Demographics</th><th className="px-4 py-4">Enrolment</th><th className="px-4 py-4">Completion</th><th className="px-4 py-4">Missing items</th><th className="px-6 py-4 text-right">Action</th></tr></thead>
+                <tbody>{data.map(record => <tr key={record.id} className="border-t border-[#edf1ef] hover:bg-[#f9fcfb]"><td className="px-6 py-4 font-semibold text-[#245961]">{record.researchId}</td><td className="px-4 py-4"><p className="font-medium text-[#30434c]">{cohortLabels[record.cohort]}</p><p className="mt-0.5 max-w-44 truncate text-xs text-slate-500">{record.primaryDiagnosis}</p></td><td className="px-4 py-4 text-xs font-medium text-[#45616a]">{getRecordedByLabel(record.recordedBy)}</td><td className="px-4 py-4 text-slate-600">{record.sex.replace("_", " ")} · {record.ageAtEnrollment} yrs</td><td className="px-4 py-4"><Badge variant="outline" className="capitalize">{record.enrollmentStatus}</Badge></td><td className="px-4 py-4"><Status value={record.completenessStatus} /></td><td className="px-4 py-4 text-xs text-slate-500">{(record.missingItems as string[]).length ? (record.missingItems as string[]).map(item => item.replace(/_/g, " ")).join(", ") : "—"}</td><td className="px-6 py-4 text-right"><Button size="sm" variant="outline" onClick={() => navigate(`/records/${record.id}`)}>Review</Button></td></tr>)}</tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function FilterSelect({ value, onChange, label, options }: { value: string; onChange: (value: string) => void; label: string; options: [string, string][] }) {
+  return <Select value={value} onValueChange={onChange}><SelectTrigger><SelectValue placeholder={label} /></SelectTrigger><SelectContent><SelectItem value="all">{label}</SelectItem>{options.map(([value, text]) => <SelectItem key={value} value={value}>{text}</SelectItem>)}</SelectContent></Select>;
+}
+
+function TextField({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className="min-w-0 flex-1"><Label className="mb-1 block text-xs text-slate-500">{label}</Label>{children}</div>;
+}
+
+function Status({ value }: { value: string }) {
+  const tone = value === "complete" ? "border-emerald-100 bg-emerald-50 text-emerald-700" : value === "needs_review" ? "border-amber-100 bg-amber-50 text-amber-700" : "border-rose-100 bg-rose-50 text-rose-700";
+  return <Badge variant="outline" className={`${tone} capitalize`}>{value.replace(/_/g, " ")}</Badge>;
+}
+
+function Loading() {
+  return <div className="space-y-3 p-6">{[1, 2, 3].map(item => <Skeleton key={item} className="h-14 w-full" />)}</div>;
+}
+
+function Empty({ onCreate }: { onCreate: () => void }) {
+  return <div className="px-6 py-16 text-center"><Search className="mx-auto h-7 w-7 text-[#2e716b]" /><h3 className="mt-4 font-display text-xl text-[#243b44]">No matching records</h3><p className="mt-2 text-sm text-slate-500">Create a pseudonymised neurology research record or adjust the filters.</p><Button className="mt-5 bg-[#125d69]" onClick={onCreate}><Plus className="mr-2 h-4 w-4" />Create record</Button></div>;
+}

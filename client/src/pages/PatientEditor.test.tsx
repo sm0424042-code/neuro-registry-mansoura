@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cohortImmuneTherapyOptions, getCohortInvestigationOptions, getRecordSaveValidationError, getSavedRecordDestination } from "./PatientEditor";
+import { cohortImmuneTherapyOptions, getCohortInvestigationOptions, getRecordSaveValidationError, getRecordedByLabel, getSavedRecordDestination } from "./PatientEditor";
 
 describe("PatientEditor cohort-specific options", () => {
   it("keeps stroke laboratory choices distinct from MS treatment-screening choices", () => {
@@ -42,5 +42,10 @@ describe("PatientEditor cohort-specific options", () => {
 
   it("routes a successfully saved research record to its pseudonymised registry search", () => {
     expect(getSavedRecordDestination("munr-00000000000001")).toBe("/registry?search=MUNR-00000000000001");
+  });
+
+  it("shows only the OAuth display name for protected record attribution and uses a non-identifying fallback", () => {
+    expect(getRecordedByLabel("Approved Researcher")).toBe("Approved Researcher");
+    expect(getRecordedByLabel(null)).toBe("Approved registry user");
   });
 });
