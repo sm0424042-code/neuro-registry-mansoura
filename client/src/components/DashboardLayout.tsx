@@ -7,7 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { Activity, Bell, BrainCircuit, Camera, ClipboardCheck, ClipboardList, Eye, HeartPulse, LayoutDashboard, Loader2, LogOut, MessageSquare, Microscope, PanelLeft, Plus, ShieldCheck, UsersRound } from "lucide-react";
+import { Activity, BarChart3, Bell, BrainCircuit, Camera, ClipboardCheck, ClipboardList, Eye, HeartPulse, LayoutDashboard, Loader2, LogOut, MessageSquare, Microscope, PanelLeft, Plus, ShieldCheck, UsersRound } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -15,6 +15,7 @@ import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 
 const baseMenuItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/" },
+  { icon: BarChart3, label: "Statistics", path: "/statistics" },
   { icon: ClipboardList, label: "Patient Registry", path: "/registry" },
   { icon: ClipboardCheck, label: "Completion Tasks", path: "/tasks" },
   { icon: MessageSquare, label: "Messages", path: "/messages" },

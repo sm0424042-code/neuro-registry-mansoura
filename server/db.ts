@@ -7,7 +7,7 @@ import { storageGetSignedUrl, storagePut } from "./storage";
 import { ENV } from "./_core/env";
 import type { z } from "zod";
 import { getInvestigationCoverage, getPatientUpdateAuditSummary } from "./registry";
-import type { patientInputSchema, registryFiltersSchema } from "./registry";
+import type { patientInputSchema, registryFiltersSchema, registryStatisticsFiltersSchema } from "./registry";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -123,6 +123,7 @@ export async function replaceOwnProfileAvatar(userId: number, upload: { content:
 
 type PatientInput = z.infer<typeof patientInputSchema>;
 type RegistryFilters = z.infer<typeof registryFiltersSchema>;
+type RegistryStatisticsFilters = z.infer<typeof registryStatisticsFiltersSchema>;
 
 function requireDb(db: Awaited<ReturnType<typeof getDb>>) {
   if (!db) throw new Error("Database is unavailable");
@@ -186,6 +187,32 @@ export async function getRegistryOverview() {
   const byCompleteness = await db.select({ status: patientRecords.completenessStatus, total: count() }).from(patientRecords).groupBy(patientRecords.completenessStatus);
   const investigationRows = await db.select({ radiologicalInvestigations: patientRecords.radiologicalInvestigations, laboratoryInvestigations: patientRecords.laboratoryInvestigations, neurologicalInvestigations: patientRecords.neurologicalInvestigations, protocolInvestigations: patientRecords.protocolInvestigations }).from(patientRecords);
   return { total: total?.total ?? 0, byCohort, byEnrollment, byCompleteness, investigationCoverage: getInvestigationCoverage(investigationRows) };
+}
+
+function getRegistryStatisticsConditions(filters?: RegistryStatisticsFilters) {
+  const conditions: SQL[] = [];
+  if (filters?.cohort) conditions.push(eq(patientRecords.cohort, filters.cohort));
+  if (filters?.enrollmentStatus) conditions.push(eq(patientRecords.enrollmentStatus, filters.enrollmentStatus));
+  if (filters?.dataQualityStatus) conditions.push(eq(patientRecords.dataQualityStatus, filters.dataQualityStatus));
+  if (filters?.completenessStatus) conditions.push(eq(patientRecords.completenessStatus, filters.completenessStatus));
+  return conditions;
+}
+
+async function runRegistryStatisticsQuery<T>(query: any, conditions: SQL[]): Promise<T[]> {
+  return conditions.length ? query.where(and(...conditions)) : query;
+}
+
+/** Returns aggregate research-operation metrics only. Never return individual record columns from this contract. */
+export async function getRegistryAggregateStatistics(filters?: RegistryStatisticsFilters) {
+  const db = requireDb(await getDb());
+  const conditions = getRegistryStatisticsConditions(filters);
+  const [total] = await runRegistryStatisticsQuery<{ total: number }>(db.select({ total: count() }).from(patientRecords), conditions);
+  const byCohort = await runRegistryStatisticsQuery<{ cohort: string; total: number }>(db.select({ cohort: patientRecords.cohort, total: count() }).from(patientRecords).groupBy(patientRecords.cohort), conditions);
+  const byEnrollment = await runRegistryStatisticsQuery<{ status: string; total: number }>(db.select({ status: patientRecords.enrollmentStatus, total: count() }).from(patientRecords).groupBy(patientRecords.enrollmentStatus), conditions);
+  const byCompleteness = await runRegistryStatisticsQuery<{ status: string; total: number }>(db.select({ status: patientRecords.completenessStatus, total: count() }).from(patientRecords).groupBy(patientRecords.completenessStatus), conditions);
+  const byDataQuality = await runRegistryStatisticsQuery<{ status: string; total: number }>(db.select({ status: patientRecords.dataQualityStatus, total: count() }).from(patientRecords).groupBy(patientRecords.dataQualityStatus), conditions);
+  const investigationRows = await runRegistryStatisticsQuery<{ radiologicalInvestigations: unknown[] | null; laboratoryInvestigations: unknown[] | null; neurologicalInvestigations: unknown[] | null; protocolInvestigations: Array<{ status?: string }> | null }>(db.select({ radiologicalInvestigations: patientRecords.radiologicalInvestigations, laboratoryInvestigations: patientRecords.laboratoryInvestigations, neurologicalInvestigations: patientRecords.neurologicalInvestigations, protocolInvestigations: patientRecords.protocolInvestigations }).from(patientRecords), conditions);
+  return { totalRecords: total?.total ?? 0, byCohort, byEnrollment, byCompleteness, byDataQuality, investigationCoverage: getInvestigationCoverage(investigationRows) };
 }
 
 export async function getPatientAuditTrail(patientRecordId: number) {

@@ -14,6 +14,7 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const PatientEditor = lazy(() => import("@/pages/PatientEditor"));
 const PatientRegistry = lazy(() => import("@/pages/PatientRegistry"));
 const PublicWorkflowPreview = lazy(() => import("@/pages/PublicWorkflowPreview"));
+const RegistryStatistics = lazy(() => import("@/pages/RegistryStatistics"));
 
 function RouteLoading() {
   return <main className="grid min-h-screen place-items-center bg-[#f6faf8] px-5 text-[#24434b]" role="status" aria-live="polite"><div className="flex items-center gap-3 rounded-2xl border border-[#d5e8e3] bg-white px-5 py-4 shadow-sm"><span className="h-4 w-4 animate-spin rounded-full border-2 border-[#61b4a7] border-t-transparent motion-reduce:animate-none" /><span className="text-sm font-medium">Loading workspace…</span></div></main>;
@@ -32,6 +33,7 @@ function Router() {
     <Switch>
       <Route path="/workflow-preview">{() => <RouteBoundary><PublicWorkflowPreview /></RouteBoundary>}</Route>
       <Route path="/">{() => <ProtectedPage><Home /></ProtectedPage>}</Route>
+      <Route path="/statistics">{() => <ProtectedPage><RegistryStatistics /></ProtectedPage>}</Route>
       <Route path="/registry">{() => <ProtectedPage><PatientRegistry /></ProtectedPage>}</Route>
       <Route path="/messages">{() => <ProtectedPage><Messages /></ProtectedPage>}</Route>
       <Route path="/tasks">{() => <ProtectedPage><CompletionTasks /></ProtectedPage>}</Route>

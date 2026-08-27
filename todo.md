@@ -300,3 +300,5 @@
 - [x] Test de-duplication, recency order, invalid-term exclusion, and the absence of record, user, and clinical data from local recent-search storage; then publish the update.
 - [x] Add a small decorative recent-history icon and accessible label to recent safe-search items only, distinct from ordinary auto-complete suggestions.
 - [x] Test recent-search visual metadata and confirm ordinary suggestions receive no recent-history label; then publish the update.
+- [x] Add approved-user aggregate registry statistics for total records, cohort distribution, completion state, and assessed-field completeness without exposing individual record data.
+- [x] Test statistics authorization, aggregate-only response contract, and the absence of Research IDs, clinical narratives, free text, contact data, and user identity; then publish the update.
