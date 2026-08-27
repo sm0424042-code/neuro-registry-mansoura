@@ -294,3 +294,5 @@
 - [x] Test highlighted suggestion segments and accessibility semantics, then verify the protected route boundary and publish the update.
 - [x] Verify and strengthen keyboard navigation for task-search suggestions with ArrowUp, ArrowDown, Enter, and Escape while keeping focus and selected values coherent.
 - [x] Add regression coverage for keyboard navigation edge cases and publish the verified accessibility update.
+- [x] Add an accessible X clear button inside Completion Tasks quick search that resets only the safe search value and returns to the first filtered page.
+- [x] Test clearing search state, restoring full matching results, and preserving status and sort controls; then publish the update.

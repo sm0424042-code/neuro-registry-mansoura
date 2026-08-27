@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterAndSortCompletionTasks, getActiveTaskSearchSuggestion, getCompletionTaskPage, getCompletionTaskPagination, getNextTaskSearchSuggestionIndex, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskSearchSuggestions, getTaskSearchValidation, getTaskStatusLabel, splitTaskSearchSuggestionHighlight } from "./CompletionTasks";
+import { filterAndSortCompletionTasks, getActiveTaskSearchSuggestion, getClearedTaskSearchState, getCompletionTaskPage, getCompletionTaskPagination, getNextTaskSearchSuggestionIndex, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskSearchSuggestions, getTaskSearchValidation, getTaskStatusLabel, splitTaskSearchSuggestionHighlight } from "./CompletionTasks";
 
 describe("completion-task labels", () => {
   it("uses clear controlled labels for task state", () => {
@@ -74,6 +74,10 @@ describe("completion-task labels", () => {
     expect(getActiveTaskSearchSuggestion(suggestions, 1)).toMatchObject({ value: "awaiting acceptance" });
     expect(getActiveTaskSearchSuggestion(suggestions, -1)).toBeNull();
     expect(getActiveTaskSearchSuggestion(suggestions, 3)).toBeNull();
+  });
+
+  it("clears only the safe search state and returns to the first result page", () => {
+    expect(getClearedTaskSearchState()).toEqual({ taskSearch: "", currentPage: 1 });
   });
 
   it("highlights only the case-insensitive matching text within a safe suggestion label", () => {

@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
-import { ArrowDownAZ, Bell, ChevronLeft, ChevronRight, ClipboardCheck, Download, ListFilter, Search, ShieldCheck } from "lucide-react";
-import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
+import { ArrowDownAZ, Bell, ChevronLeft, ChevronRight, ClipboardCheck, Download, ListFilter, Search, ShieldCheck, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 
@@ -128,6 +128,10 @@ export function getActiveTaskSearchSuggestion(suggestions: TaskSearchSuggestion[
   return Number.isInteger(activeIndex) && activeIndex >= 0 && activeIndex < suggestions.length ? suggestions[activeIndex] : null;
 }
 
+export function getClearedTaskSearchState() {
+  return { taskSearch: "", currentPage: 1 };
+}
+
 export function getTaskExportInput(statusFilter: TaskStatusFilter, sortOption: TaskSortOption, search?: string) {
   return { status: statusFilter === "all" ? undefined : statusFilter, search, sort: sortOption };
 }
@@ -161,6 +165,7 @@ function TaskStatus({ status }: { status: string }) {
 function TaskSearchBox({ value, disabled, error, onValueChange }: { value: string; disabled: boolean; error: string | null; onValueChange: (value: string) => void }) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const suggestions = useMemo(() => getTaskSearchSuggestions(value), [value]);
   const listboxId = "task-search-suggestions";
   const chooseSuggestion = (suggestion: TaskSearchSuggestion) => {
@@ -181,7 +186,13 @@ function TaskSearchBox({ value, disabled, error, onValueChange }: { value: strin
       setActiveIndex(-1);
     }
   };
-  return <div className="relative"><label htmlFor="task-quick-search" className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-[#45616a]"><Search className="h-3.5 w-3.5" />Quick search</label><Input id="task-quick-search" value={value} disabled={disabled} onChange={event => { onValueChange(event.target.value); setOpen(true); setActiveIndex(-1); }} onFocus={() => setOpen(true)} onBlur={() => window.setTimeout(() => setOpen(false), 120)} onKeyDown={onKeyDown} placeholder="Status or UTC date" role="combobox" aria-autocomplete="list" aria-keyshortcuts="ArrowUp ArrowDown Enter Escape" aria-expanded={open && suggestions.length > 0} aria-controls={listboxId} aria-activedescendant={activeIndex >= 0 ? `${listboxId}-${activeIndex}` : undefined} aria-describedby="task-search-help" aria-invalid={Boolean(error)} />{open && suggestions.length > 0 && <div id={listboxId} role="listbox" aria-label="Safe task search suggestions" className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-[#cfe1dc] bg-white p-1 shadow-lg"><p className="px-2 py-1 text-[11px] font-medium text-slate-500">Safe search suggestions</p>{suggestions.map((suggestion, index) => <button key={suggestion.value} id={`${listboxId}-${index}`} type="button" role="option" aria-selected={index === activeIndex} className={`flex w-full items-center rounded-md px-2.5 py-2 text-left text-sm transition-colors ${index === activeIndex ? "bg-[#e9f6f2] text-[#18565f]" : "text-[#36535a] hover:bg-[#f4faf8]"}`} onMouseDown={event => event.preventDefault()} onClick={() => chooseSuggestion(suggestion)}>{splitTaskSearchSuggestionHighlight(suggestion.label, value).map((segment, segmentIndex) => segment.matched ? <mark key={`${suggestion.value}-${segmentIndex}`} className="rounded-sm bg-amber-100 px-0.5 font-semibold text-[#704b05]">{segment.text}</mark> : <span key={`${suggestion.value}-${segmentIndex}`}>{segment.text}</span>)}</button>)}</div>}</div>;
+  const clearSearch = () => {
+    onValueChange("");
+    setOpen(false);
+    setActiveIndex(-1);
+    searchInputRef.current?.focus();
+  };
+  return <div className="relative"><label htmlFor="task-quick-search" className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-[#45616a]"><Search className="h-3.5 w-3.5" />Quick search</label><div className="relative"><Input ref={searchInputRef} id="task-quick-search" className={value ? "pr-10" : undefined} value={value} disabled={disabled} onChange={event => { onValueChange(event.target.value); setOpen(true); setActiveIndex(-1); }} onFocus={() => setOpen(true)} onBlur={() => window.setTimeout(() => setOpen(false), 120)} onKeyDown={onKeyDown} placeholder="Status or UTC date" role="combobox" aria-autocomplete="list" aria-keyshortcuts="ArrowUp ArrowDown Enter Escape" aria-expanded={open && suggestions.length > 0} aria-controls={listboxId} aria-activedescendant={activeIndex >= 0 ? `${listboxId}-${activeIndex}` : undefined} aria-describedby="task-search-help" aria-invalid={Boolean(error)} />{value && <button type="button" className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#245961] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#246c6e] disabled:pointer-events-none disabled:opacity-50" aria-label="Clear task search and restore the full filtered list" title="Clear search" disabled={disabled} onMouseDown={event => event.preventDefault()} onClick={clearSearch}><X className="h-4 w-4" aria-hidden="true" /></button>}</div>{open && suggestions.length > 0 && <div id={listboxId} role="listbox" aria-label="Safe task search suggestions" className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-[#cfe1dc] bg-white p-1 shadow-lg"><p className="px-2 py-1 text-[11px] font-medium text-slate-500">Safe search suggestions</p>{suggestions.map((suggestion, index) => <button key={suggestion.value} id={`${listboxId}-${index}`} type="button" role="option" aria-selected={index === activeIndex} className={`flex w-full items-center rounded-md px-2.5 py-2 text-left text-sm transition-colors ${index === activeIndex ? "bg-[#e9f6f2] text-[#18565f]" : "text-[#36535a] hover:bg-[#f4faf8]"}`} onMouseDown={event => event.preventDefault()} onClick={() => chooseSuggestion(suggestion)}>{splitTaskSearchSuggestionHighlight(suggestion.label, value).map((segment, segmentIndex) => segment.matched ? <mark key={`${suggestion.value}-${segmentIndex}`} className="rounded-sm bg-amber-100 px-0.5 font-semibold text-[#704b05]">{segment.text}</mark> : <span key={`${suggestion.value}-${segmentIndex}`}>{segment.text}</span>)}</button>)}</div>}</div>;
 }
 
 export default function CompletionTasks() {

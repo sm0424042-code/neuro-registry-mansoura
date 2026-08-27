@@ -227,3 +227,9 @@ Tests cover status and date-fragment highlights, no-query behavior, and the cont
 The task-search combobox now explicitly advertises the supported **ArrowUp**, **ArrowDown**, **Enter**, and **Escape** keys. ArrowDown moves to the first item and wraps after the final suggestion; ArrowUp moves to the final item when none is active and wraps backwards. Enter applies only a valid currently active suggestion, closes the list, and resets active state; Escape closes it without changing the search value. A bounded helper prevents any stale or out-of-range active index from selecting an unintended item. These interactions continue to operate exclusively over the fixed operational suggestion set.
 
 Automated tests cover forward/backward wraparound, an empty list, valid active-item selection, and invalid index rejection. The current sandbox identity remains suspended, so the protected route shows only the suspension state. A real keyboard interaction check remains deferred to a legitimate approved OAuth session.
+
+## Completion-task quick-search clear control
+
+Quick search now shows a compact **X** clear control only when a query is present. Selecting it clears only the safe operational search value, closes the suggestion list, resets selection state, restores keyboard focus to the search input, and requests the first page of the complete current status-filter/sort view. It does not alter the active task-status filter, sort selection, role, records, task state, or any persisted data. The control has a descriptive accessible name, visible focus treatment, and is unavailable while the page transition is loading.
+
+The search-state test confirms that clearing produces an empty query and page one. The current `/tasks` capture shows the access-suspension gate only for the removed sandbox account and exposes no protected search or task content. A live clear-button interaction remains deferred to a legitimate approved OAuth session.
