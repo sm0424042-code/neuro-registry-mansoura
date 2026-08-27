@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cohortImmuneTherapyOptions, getCohortInvestigationOptions, getRecordSaveValidationError, getRecordedByLabel, getSavedRecordDestination } from "./PatientEditor";
+import { clinicalSelectorOptions, cohortImmuneTherapyOptions, getClinicalSelectorOptions, getCohortInvestigationOptions, getRecordSaveValidationError, getRecordedByLabel, getSavedRecordDestination } from "./PatientEditor";
 
 describe("PatientEditor cohort-specific options", () => {
   it("keeps stroke laboratory choices distinct from MS treatment-screening choices", () => {
@@ -29,6 +29,29 @@ describe("PatientEditor cohort-specific options", () => {
     expect(gbsTherapies).toEqual(expect.arrayContaining(["ivig", "plasma_exchange"]));
     expect(gbsTherapies).not.toContain("b_cell_depleting");
     expect(msTherapies).toContain("b_cell_depleting");
+  });
+
+  it("limits clinical selectors to the relevant choices and preserves historic values only during review", () => {
+    const codes = (options: Array<[string, string]>) => options.map(([code]) => code);
+    expect(codes(getClinicalSelectorOptions("Stroke type", [["ischemic", "Ischaemic"], ["hemorrhagic", "Haemorrhagic"], ["tia", "TIA"], ["aidp", "AIDP"]], "unknown"))).toEqual(["ischemic", "hemorrhagic", "tia", "unknown"]);
+    expect(codes(getClinicalSelectorOptions("GBS variant", [["aidp", "AIDP"], ["aman", "AMAN"]], "madsam"))).toEqual(["madsam", "aidp", "aman", "amsan", "miller_fisher", "other", "unknown"]);
+    expect(codes(getClinicalSelectorOptions("CIDP variant", [["typical", "Typical CIDP"], ["madsam", "MADSAM"]], "typical"))).not.toContain("aidp");
+  });
+
+  it("gives every cohort-specific clinical field a dedicated option set instead of the former generic catalogue", () => {
+    const fields = [
+      "Stroke type", "Vascular territory", "Reperfusion therapy", "TOAST aetiology", "Stroke complication", "Stroke evaluation",
+      "Disease course", "Disability level", "Relapse activity", "Disease-modifying therapy", "MSFC assessed", "Tuberculin / IGRA screen", "Chest tuberculosis screen", "MS evaluation",
+      "Movement phenotype", "Distribution", "Severity", "Functional impact", "Treatment response", "Movement evaluation",
+      "GBS variant", "Disability score", "Ventilatory support", "Treatment", "GBS evaluation",
+      "MGFA class", "Antibody status", "Thymoma status", "Crisis history", "MG evaluation",
+      "Spinal level", "Likely cause", "UMN signs", "LMN features", "Bladder involvement", "Myelopathy evaluation",
+      "Visual syndrome", "Laterality", "Acuity change", "Afferent defect", "Disease classification", "AQP4 / MOG profile", "Linked systemic disease", "Neuro-ophthalmology evaluation",
+      "CIDP variant", "Diagnostic pathway", "EMG/NCS evidence", "CSF protein status", "CIDP / neuropathy evaluation",
+    ];
+    expect(fields).toHaveLength(49);
+    expect(Object.keys(clinicalSelectorOptions)).toEqual(expect.arrayContaining(fields));
+    expect(Object.keys(clinicalSelectorOptions)).toHaveLength(49);
   });
 
   it("explains why a record was not submitted before a create request is attempted", () => {

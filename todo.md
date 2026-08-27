@@ -271,3 +271,4 @@
 - [x] Complete the genuine Manus OAuth creator-name attribution flow for protected record views, without exposing account email alongside research records.
 - [x] Expand the stored Research ID column to hold the 30-character MUNR-plus-25-digit format, then verify legacy identifiers remain intact.
 - [x] Clarify in the protected Research ID form that the approved data recorder manually selects the 25-digit suffix; do not auto-generate or alter existing identifiers.
+- [x] Restrict every displayed cohort-specific selector to clinically appropriate options for its field, while preserving existing historic values without offering them as new choices.
