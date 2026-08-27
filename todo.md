@@ -240,3 +240,6 @@
 - [x] Add a derived OAuth-identity verification state and clear manual access-decision context to the applicant review table.
 - [x] Change the sidebar account-card display fallback to Abdelrahman Ibrahim Rashad above the Administrator role without changing OAuth authorization.
 - [x] Refine the sidebar account-card layout so the complete administrator display name remains legible.
+- [x] Design multi-administrator onboarding through separate OAuth identities, with no local passwords or administrator self-registration.
+- [x] Add server-side administrator role management restricted to existing approved administrators, including protection against removing the configured owner’s administrator role.
+- [x] Add a clear Access Management control for promoting or demoting eligible approved OAuth users, with audit coverage and denied-caller tests.

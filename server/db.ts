@@ -75,6 +75,19 @@ export async function setUserAccessStatus(userId: number, accessStatus: "pending
   await db.update(users).set({ accessStatus }).where(eq(users.id, userId));
 }
 
+export async function getUserAdministrationState(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select({ id: users.id, openId: users.openId, role: users.role, accessStatus: users.accessStatus }).from(users).where(eq(users.id, userId)).limit(1);
+  return result[0];
+}
+
+export async function setUserRole(userId: number, role: "user" | "admin") {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable");
+  await db.update(users).set({ role }).where(eq(users.id, userId));
+}
+
 export async function getOwnProfileAvatar(userId: number) {
   const db = requireDb(await getDb());
   const result = await db.select({ storageKey: userProfiles.avatarStorageKey, mimeType: userProfiles.avatarMimeType, updatedAt: userProfiles.avatarUpdatedAt }).from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
@@ -191,6 +204,11 @@ export async function listResearchFiles(patientRecordId: number) {
 export async function logAccessChange(actorUserId: number, targetUserId: number, accessStatus: string) {
   const db = requireDb(await getDb());
   await db.insert(registryAuditLogs).values({ actorUserId, action: "access_changed", fieldSummary: `Access status for user ${targetUserId} changed to ${accessStatus}` });
+}
+
+export async function logRoleChange(actorUserId: number, targetUserId: number, role: "user" | "admin") {
+  const db = requireDb(await getDb());
+  await db.insert(registryAuditLogs).values({ actorUserId, action: "access_changed", fieldSummary: `Administrator role for user ${targetUserId} changed to ${role}` });
 }
 
 async function requireApprovedMessageRecipient(db: any, recipientUserId: number) {

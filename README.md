@@ -74,6 +74,12 @@ The owner configuration is intentionally small and explicit. It should not be ex
 
 Access control is enforced in the server router through separate public, protected, approved-user, and administrator procedures. User-interface disabling or hidden controls are explanatory safeguards only; they are not authorization controls.
 
+### Multiple administrators
+
+The registry can have more than one administrator, but each administrator must have a **separate, real OAuth identity**. An existing approved administrator first reviews the new OAuth account, approves its access, and then grants its `admin` role through Access Management. The server rejects promotion of a pending or suspended account and records every role change in the audit trail. It also prevents an administrator from demoting their own active account and protects the configured owner identity from demotion in this interface.
+
+No administrator creates, assigns, stores, sees, or resets a local password for another user. The email displayed during review is only the address supplied by the authenticated OAuth provider when available; it is not a new local login mechanism.
+
 ## Technical settings and secret handling
 
 | Configuration key | Purpose | Handling rule |
