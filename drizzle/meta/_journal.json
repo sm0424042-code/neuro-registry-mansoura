@@ -71,6 +71,13 @@
       "when": 1787792402359,
       "tag": "0009_majestic_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1787794300416,
+      "tag": "0010_vengeful_risque",
+      "breakpoints": true
     }
   ]
 }

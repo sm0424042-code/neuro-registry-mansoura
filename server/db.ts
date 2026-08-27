@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, gte, like, lte, sql, type SQL } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { and as sqlAnd, or as sqlOr } from "drizzle-orm";
+import { and as sqlAnd, isNull, or as sqlOr } from "drizzle-orm";
 import { InsertUser, patientRecords, registryAuditLogs, userMessages, userProfiles, users } from "../drizzle/schema";
 import type { CohortClinicalData, ImmuneTherapy, LaboratoryInvestigation, MultipleSclerosisDoseAdherence, NeurologicalInvestigation, PatientFollowUp, ProtocolInvestigation, RadiologicalInvestigation, ResearchFile } from "../drizzle/schema";
 import { storageGetSignedUrl, storagePut } from "./storage";
@@ -60,13 +60,13 @@ export async function getUserByOpenId(openId: string) {
 export async function listUsersForAdmin() {
   const db = await getDb();
   if (!db) return [];
-  return db.select({ id: users.id, name: users.name, email: users.email, role: users.role, accessStatus: users.accessStatus, oauthIdentityLinked: sql<boolean>`${users.openId} <> ''`, lastSignedIn: users.lastSignedIn, updatedAt: users.updatedAt }).from(users).orderBy(asc(users.name));
+  return db.select({ id: users.id, name: users.name, email: users.email, role: users.role, accessStatus: users.accessStatus, oauthIdentityLinked: sql<boolean>`${users.openId} <> ''`, isPrimaryOwner: sql<boolean>`${users.openId} = ${ENV.ownerOpenId ?? ""}`, lastSignedIn: users.lastSignedIn, updatedAt: users.updatedAt }).from(users).where(isNull(users.removedAt)).orderBy(asc(users.name));
 }
 
 export async function listAssignableUsers() {
   const db = await getDb();
   if (!db) return [];
-  return db.select({ id: users.id, name: users.name, role: users.role }).from(users).where(eq(users.accessStatus, "approved")).orderBy(asc(users.name));
+  return db.select({ id: users.id, name: users.name, role: users.role }).from(users).where(sqlAnd(eq(users.accessStatus, "approved"), isNull(users.removedAt))).orderBy(asc(users.name));
 }
 
 export async function setUserAccessStatus(userId: number, accessStatus: "pending" | "approved" | "suspended") {
@@ -78,7 +78,7 @@ export async function setUserAccessStatus(userId: number, accessStatus: "pending
 export async function getUserAdministrationState(userId: number) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select({ id: users.id, openId: users.openId, role: users.role, accessStatus: users.accessStatus }).from(users).where(eq(users.id, userId)).limit(1);
+  const result = await db.select({ id: users.id, openId: users.openId, role: users.role, accessStatus: users.accessStatus, removedAt: users.removedAt }).from(users).where(eq(users.id, userId)).limit(1);
   return result[0];
 }
 
@@ -86,6 +86,12 @@ export async function setUserRole(userId: number, role: "user" | "admin") {
   const db = await getDb();
   if (!db) throw new Error("Database is unavailable");
   await db.update(users).set({ role }).where(eq(users.id, userId));
+}
+
+export async function removeUserFromRegistry(userId: number, removedByAdminId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable");
+  await db.update(users).set({ accessStatus: "suspended", role: "user", removedAt: new Date(), removedByAdminId }).where(eq(users.id, userId));
 }
 
 export async function getOwnProfileAvatar(userId: number) {
@@ -209,6 +215,11 @@ export async function logAccessChange(actorUserId: number, targetUserId: number,
 export async function logRoleChange(actorUserId: number, targetUserId: number, role: "user" | "admin") {
   const db = requireDb(await getDb());
   await db.insert(registryAuditLogs).values({ actorUserId, action: "access_changed", fieldSummary: `Administrator role for user ${targetUserId} changed to ${role}` });
+}
+
+export async function logProjectAccountRemoval(actorUserId: number, targetUserId: number) {
+  const db = requireDb(await getDb());
+  await db.insert(registryAuditLogs).values({ actorUserId, action: "access_changed", fieldSummary: `Project account ${targetUserId} removed from active access list` });
 }
 
 async function requireApprovedMessageRecipient(db: any, recipientUserId: number) {

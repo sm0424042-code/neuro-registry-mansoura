@@ -1,4 +1,6 @@
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
@@ -45,6 +47,7 @@ function downloadCsv(rows: object[]) {
 
 export default function AccessManagement() {
   const utils = trpc.useUtils();
+  const [removalTarget, setRemovalTarget] = useState<{ id: number; name: string } | null>(null);
   const { data: users, isLoading, error } = trpc.administration.users.useQuery();
   const setAccess = trpc.administration.setAccess.useMutation({
     onSuccess: () => {
@@ -57,6 +60,14 @@ export default function AccessManagement() {
     onSuccess: () => {
       utils.administration.users.invalidate();
       toast.success("Administrator role updated");
+    },
+    onError: problem => toast.error(problem.message),
+  });
+  const removeProjectAccount = trpc.administration.removeProjectAccount.useMutation({
+    onSuccess: () => {
+      utils.administration.users.invalidate();
+      setRemovalTarget(null);
+      toast.success("Account removed from the active project list");
     },
     onError: problem => toast.error(problem.message),
   });
@@ -108,15 +119,22 @@ export default function AccessManagement() {
               <tbody>{users?.map(user => <tr key={user.id} className="border-t border-[#edf1ef]">
                 <td className="px-6 py-4"><p className="font-medium text-[#30434c]">{getApplicantDisplayName(user.name)}</p><p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500"><Mail className="h-3.5 w-3.5 text-[#4a8a82]" aria-hidden="true" />{user.email || "No provider email available"}</p></td>
                 <td className="px-4 py-4"><Badge variant="outline" className={user.oauthIdentityLinked ? "border-teal-200 bg-teal-50 text-teal-700" : "border-slate-200 bg-slate-50 text-slate-600"}><ShieldCheck className="mr-1 h-3.5 w-3.5" />{getApplicantOAuthStatus(user.oauthIdentityLinked)}</Badge><p className="mt-1 text-[11px] text-slate-500">Provider identity only</p></td>
-                <td className="px-4 py-4"><Badge variant="outline" className="capitalize">{user.role}</Badge><Button size="sm" variant="ghost" className="mt-1 h-7 px-2 text-xs text-[#286069] hover:bg-[#edf7f4]" disabled={setRole.isPending || user.accessStatus !== "approved"} onClick={() => setRole.mutate({ userId: user.id, role: user.role === "admin" ? "user" : "admin" })}>{user.role === "admin" ? "Make user" : "Make admin"}</Button></td>
+                <td className="px-4 py-4"><Badge variant="outline" className="capitalize">{user.role}</Badge><Button size="sm" variant="ghost" className="mt-1 h-7 px-2 text-xs text-[#286069] hover:bg-[#edf7f4]" disabled={setRole.isPending || user.accessStatus !== "approved" || user.isPrimaryOwner} onClick={() => setRole.mutate({ userId: user.id, role: user.role === "admin" ? "user" : "admin" })}>{user.isPrimaryOwner ? "Owner protected" : user.role === "admin" ? "Revoke admin" : "Make admin"}</Button></td>
                 <td className="px-4 py-4"><AccessBadge value={user.accessStatus} /></td>
-                <td className="px-6 py-4 text-right"><p className="mb-2 text-xs text-slate-500">{user.accessStatus === "pending" ? "Awaiting administrator review" : user.accessStatus === "approved" ? "Approved by manual review" : "Access suspended"}</p>{user.accessStatus === "approved" ? <Button size="sm" variant="outline" disabled={setAccess.isPending} onClick={() => setAccess.mutate({ userId: user.id, accessStatus: "suspended" })}>Suspend</Button> : <Button size="sm" disabled={setAccess.isPending} className="bg-[#125d69] hover:bg-[#0d4b55]" onClick={() => setAccess.mutate({ userId: user.id, accessStatus: "approved" })}><Check className="mr-1.5 h-3.5 w-3.5" />Approve</Button>}</td>
+                <td className="px-6 py-4 text-right"><p className="mb-2 text-xs text-slate-500">{user.accessStatus === "pending" ? "Awaiting administrator review" : user.accessStatus === "approved" ? "Approved by manual review" : "Access suspended"}</p><div className="flex justify-end gap-2">{user.accessStatus === "approved" ? <Button size="sm" variant="outline" disabled={setAccess.isPending || user.isPrimaryOwner} onClick={() => setAccess.mutate({ userId: user.id, accessStatus: "suspended" })}>Suspend</Button> : <Button size="sm" disabled={setAccess.isPending || user.isPrimaryOwner} className="bg-[#125d69] hover:bg-[#0d4b55]" onClick={() => setAccess.mutate({ userId: user.id, accessStatus: "approved" })}><Check className="mr-1.5 h-3.5 w-3.5" />Approve</Button>}<Button size="sm" variant="ghost" className="text-rose-700 hover:bg-rose-50 hover:text-rose-800" disabled={user.isPrimaryOwner} onClick={() => setRemovalTarget({ id: user.id, name: getApplicantDisplayName(user.name) })}>{user.isPrimaryOwner ? "Owner protected" : "Remove"}</Button></div></td>
               </tr>)}</tbody>
             </table>
           </div>}
         </CardContent>
       </Card>
     </section>
+
+    <AlertDialog open={Boolean(removalTarget)} onOpenChange={open => { if (!open && !removeProjectAccount.isPending) setRemovalTarget(null); }}>
+      <AlertDialogContent>
+        <AlertDialogHeader><AlertDialogTitle>Remove account from the registry project?</AlertDialogTitle><AlertDialogDescription>{removalTarget ? `${removalTarget.name} will lose active project access and disappear from this list. Their OAuth account is not deleted, and research records, audit history, messages, and protected files are preserved.` : ""}</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogFooter><AlertDialogCancel disabled={removeProjectAccount.isPending}>Cancel</AlertDialogCancel><AlertDialogAction className="bg-rose-700 hover:bg-rose-800" disabled={!removalTarget || removeProjectAccount.isPending} onClick={event => { event.preventDefault(); if (removalTarget) removeProjectAccount.mutate({ userId: removalTarget.id, confirmed: true }); }}>{removeProjectAccount.isPending ? "Removing…" : "Remove from project"}</AlertDialogAction></AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
 
     <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <Card className="border-[#dce9e5] shadow-sm"><CardContent className="p-5"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf7f4] text-[#2d716a]"><KeyRound className="h-4 w-4" /></span><p className="mt-4 text-xs font-bold tracking-[0.12em] text-[#3d7a72]">1. SECURE SIGN-IN</p><p className="mt-2 text-sm leading-6 text-slate-600">Accounts use the existing OAuth identity flow. The registry does not create, display, or store local passwords.</p></CardContent></Card>

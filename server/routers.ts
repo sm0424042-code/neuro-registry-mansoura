@@ -114,6 +114,8 @@ export const appRouter = router({
   administration: router({
     users: adminProcedure.query(() => db.listUsersForAdmin()),
     setAccess: adminProcedure.input(z.object({ userId: z.number().int().positive(), accessStatus: z.enum(["pending", "approved", "suspended"]) })).mutation(async ({ input, ctx }) => {
+      const target = await db.getUserAdministrationState(input.userId);
+      if (!target || target.removedAt) throw new TRPCError({ code: "NOT_FOUND", message: "The selected active project account no longer exists." });
       if (input.userId === ctx.user.id && input.accessStatus !== "approved") {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Administrators cannot remove their own access." });
       }
@@ -124,6 +126,7 @@ export const appRouter = router({
     setRole: adminProcedure.input(z.object({ userId: z.number().int().positive(), role: z.enum(["user", "admin"]) })).mutation(async ({ input, ctx }) => {
       const target = await db.getUserAdministrationState(input.userId);
       if (!target) throw new TRPCError({ code: "NOT_FOUND", message: "The selected user no longer exists." });
+      if (target.removedAt) throw new TRPCError({ code: "NOT_FOUND", message: "The selected active project account no longer exists." });
       if (input.role === "admin" && target.accessStatus !== "approved") {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Approve an OAuth account before granting administrator access." });
       }
@@ -132,6 +135,16 @@ export const appRouter = router({
       }
       await db.setUserRole(target.id, input.role);
       await db.logRoleChange(ctx.user.id, target.id, input.role);
+      return { success: true } as const;
+    }),
+    removeProjectAccount: adminProcedure.input(z.object({ userId: z.number().int().positive(), confirmed: z.literal(true) })).mutation(async ({ input, ctx }) => {
+      const target = await db.getUserAdministrationState(input.userId);
+      if (!target || target.removedAt) throw new TRPCError({ code: "NOT_FOUND", message: "The selected active project account no longer exists." });
+      if (target.id === ctx.user.id || target.openId === ENV.ownerOpenId) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "The current or configured owner administrator cannot be removed here." });
+      }
+      await db.removeUserFromRegistry(target.id, ctx.user.id);
+      await db.logProjectAccountRemoval(ctx.user.id, target.id);
       return { success: true } as const;
     }),
     exportDeidentified: adminProcedure.mutation(async ({ ctx }) => {

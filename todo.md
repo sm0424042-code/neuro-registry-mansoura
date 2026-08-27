@@ -243,3 +243,6 @@
 - [x] Design multi-administrator onboarding through separate OAuth identities, with no local passwords or administrator self-registration.
 - [x] Add server-side administrator role management restricted to existing approved administrators, including protection against removing the configured owner’s administrator role.
 - [x] Add a clear Access Management control for promoting or demoting eligible approved OAuth users, with audit coverage and denied-caller tests.
+- [x] Add non-owner administrator demotion and project-account removal controls that preserve the configured primary owner and never delete OAuth identities or research records.
+- [x] Require explicit confirmation for registry-account removal and record an audit event without storing removed-account identifiers in clinical exports.
+- [x] Add denied-caller, owner-protection, self-protection, dependency, and confirmation tests for account removal.
