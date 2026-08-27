@@ -33,12 +33,14 @@ describe("PatientEditor cohort-specific options", () => {
 
   it("explains why a record was not submitted before a create request is attempted", () => {
     expect(getRecordSaveValidationError({ researchId: "", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toContain("Research ID");
-    expect(getRecordSaveValidationError({ researchId: "MUNR-STROKE26", primaryDiagnosis: "", ageAtEnrollment: "50" })).toContain("diagnosis");
-    expect(getRecordSaveValidationError({ researchId: "MUNR-STROKE26", primaryDiagnosis: "Stroke", ageAtEnrollment: "" })).toContain("age");
-    expect(getRecordSaveValidationError({ researchId: "MUNR-STROKE26", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toBeNull();
+    expect(getRecordSaveValidationError({ researchId: "MUNR-00000000000001", primaryDiagnosis: "", ageAtEnrollment: "50" })).toContain("diagnosis");
+    expect(getRecordSaveValidationError({ researchId: "MUNR-00000000000001", primaryDiagnosis: "Stroke", ageAtEnrollment: "" })).toContain("age");
+    expect(getRecordSaveValidationError({ researchId: "MUNR-00000000000001", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toBeNull();
+    expect(getRecordSaveValidationError({ researchId: "MUNR-0000000000001", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toContain("14 digits");
+    expect(getRecordSaveValidationError({ researchId: "MUNR-00000000000001A", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toContain("14 digits");
   });
 
   it("routes a successfully saved research record to its pseudonymised registry search", () => {
-    expect(getSavedRecordDestination("munr-stroke26")).toBe("/registry?search=MUNR-STROKE26");
+    expect(getSavedRecordDestination("munr-00000000000001")).toBe("/registry?search=MUNR-00000000000001");
   });
 });
