@@ -249,3 +249,4 @@
 - [x] Add an accessible local account search by OAuth display name or provider-linked email in Access Management.
 - [x] Add role and access-status filters, a visible matching-account count, and a clear no-results state without widening data access.
 - [x] Add unit coverage for the account-list search and filter logic, then run type checking, tests, and a production build.
+- [x] Refine Access Management approval and administrator-promotion controls with accessible icon-based upgrade actions while retaining server-side eligibility safeguards.

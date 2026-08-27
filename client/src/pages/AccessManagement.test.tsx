@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ADMINISTRATOR_DISPLAY_NAME, ADMINISTRATOR_INDICATOR_DESCRIPTION, ADMINISTRATOR_INDICATOR_LABEL, filterManagedAccounts, getApplicantDisplayName, getApplicantOAuthStatus } from "./AccessManagement";
+import { ADMINISTRATOR_DISPLAY_NAME, ADMINISTRATOR_INDICATOR_DESCRIPTION, ADMINISTRATOR_INDICATOR_LABEL, filterManagedAccounts, getApplicantDisplayName, getApplicantOAuthStatus, UPGRADE_ACCESS_LABEL, UPGRADE_ADMIN_LABEL } from "./AccessManagement";
 
 describe("AccessManagement applicant display name", () => {
   it("uses the configured administrator display label for a missing or blank name", () => {
@@ -28,5 +28,10 @@ describe("AccessManagement applicant display name", () => {
     expect(filterManagedAccounts(accounts, "COLLEAGUE@EXAMPLE", "user", "pending")).toHaveLength(1);
     expect(filterManagedAccounts(accounts, "", "admin", "approved")).toEqual([accounts[0]]);
     expect(filterManagedAccounts(accounts, "missing", "all", "all")).toEqual([]);
+  });
+
+  it("uses explicit labels for icon-based access and administrator upgrades", () => {
+    expect(UPGRADE_ACCESS_LABEL).toBe("Upgrade access");
+    expect(UPGRADE_ADMIN_LABEL).toBe("Upgrade to administrator");
   });
 });
