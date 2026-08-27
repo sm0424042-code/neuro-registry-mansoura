@@ -45,7 +45,7 @@ const cohortLabels: Record<string, string> = {
 
 export function getInitialRegistryFilters(location: string): Filters {
   const search = new URLSearchParams(location.split("?")[1] ?? "").get("search")?.trim().toUpperCase() ?? "";
-  return { ...initial, search: search.slice(0, 24) };
+  return { ...initial, search: search.slice(0, 30) };
 }
 
 export function getRecordedByLabel(name?: string | null) {

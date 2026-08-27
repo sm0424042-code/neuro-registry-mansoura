@@ -33,15 +33,16 @@ describe("PatientEditor cohort-specific options", () => {
 
   it("explains why a record was not submitted before a create request is attempted", () => {
     expect(getRecordSaveValidationError({ researchId: "", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toContain("Research ID");
-    expect(getRecordSaveValidationError({ researchId: "MUNR-00000000000001", primaryDiagnosis: "", ageAtEnrollment: "50" })).toContain("diagnosis");
-    expect(getRecordSaveValidationError({ researchId: "MUNR-00000000000001", primaryDiagnosis: "Stroke", ageAtEnrollment: "" })).toContain("age");
-    expect(getRecordSaveValidationError({ researchId: "MUNR-00000000000001", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toBeNull();
-    expect(getRecordSaveValidationError({ researchId: "MUNR-0000000000001", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toContain("14 digits");
-    expect(getRecordSaveValidationError({ researchId: "MUNR-00000000000001A", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toContain("14 digits");
+    expect(getRecordSaveValidationError({ researchId: "MUNR-0000000000000000000000001", primaryDiagnosis: "", ageAtEnrollment: "50" })).toContain("diagnosis");
+    expect(getRecordSaveValidationError({ researchId: "MUNR-0000000000000000000000001", primaryDiagnosis: "Stroke", ageAtEnrollment: "" })).toContain("age");
+    expect(getRecordSaveValidationError({ researchId: "MUNR-0000000000000000000000001", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toBeNull();
+    expect(getRecordSaveValidationError({ researchId: "MUNR-000000000000000000000000", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toContain("25 digits");
+    expect(getRecordSaveValidationError({ researchId: "MUNR-0000000000000000000000001A", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toContain("25 digits");
+    expect(getRecordSaveValidationError({ researchId: "MUNR-00000000000001", primaryDiagnosis: "Stroke", ageAtEnrollment: "50", mode: "edit" })).toBeNull();
   });
 
   it("routes a successfully saved research record to its pseudonymised registry search", () => {
-    expect(getSavedRecordDestination("munr-00000000000001")).toBe("/registry?search=MUNR-00000000000001");
+    expect(getSavedRecordDestination("munr-0000000000000000000000001")).toBe("/registry?search=MUNR-0000000000000000000000001");
   });
 
   it("shows only the OAuth display name for protected record attribution and uses a non-identifying fallback", () => {

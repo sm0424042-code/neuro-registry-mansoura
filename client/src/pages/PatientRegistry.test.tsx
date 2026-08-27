@@ -3,7 +3,7 @@ import { getInitialRegistryFilters, getRecordedByLabel } from "./PatientRegistry
 
 describe("PatientRegistry saved-record destination", () => {
   it("uses the saved research ID from the protected route query as the initial registry search", () => {
-    expect(getInitialRegistryFilters("/registry?search=munr-00000000000001").search).toBe("MUNR-00000000000001");
+    expect(getInitialRegistryFilters("/registry?search=munr-0000000000000000000000001").search).toBe("MUNR-0000000000000000000000001");
     expect(getInitialRegistryFilters("/registry").search).toBe("");
   });
 

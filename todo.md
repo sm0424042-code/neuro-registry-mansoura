@@ -265,3 +265,4 @@
 - [x] Replace the generic protected Recorded by fallback with the OAuth registration display name when available, while keeping account email confined to administrator-only Access Management.
 - [x] Add a privacy-safe Additional research information field to every cohort-specific section, with direct-identifier rejection and exclusion from de-identified export.
 - [x] Add protected, structured additional-information options unique to each cohort while retaining the optional research-safe note and excluding both from de-identified export.
+- [x] Require every new Research ID to use the pseudonymised format MUNR followed by exactly 25 digits, with matching client and server validation.
