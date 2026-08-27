@@ -246,3 +246,6 @@
 - [x] Add non-owner administrator demotion and project-account removal controls that preserve the configured primary owner and never delete OAuth identities or research records.
 - [x] Require explicit confirmation for registry-account removal and record an audit event without storing removed-account identifiers in clinical exports.
 - [x] Add denied-caller, owner-protection, self-protection, dependency, and confirmation tests for account removal.
+- [x] Add an accessible local account search by OAuth display name or provider-linked email in Access Management.
+- [x] Add role and access-status filters, a visible matching-account count, and a clear no-results state without widening data access.
+- [x] Add unit coverage for the account-list search and filter logic, then run type checking, tests, and a production build.

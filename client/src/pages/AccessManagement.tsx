@@ -1,10 +1,12 @@
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
-import { Check, Download, FileSpreadsheet, KeyRound, Mail, ShieldAlert, ShieldCheck, UsersRound } from "lucide-react";
+import { Check, Download, FileSpreadsheet, KeyRound, Mail, Search, ShieldAlert, ShieldCheck, UsersRound, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const ADMINISTRATOR_DISPLAY_NAME = "Abdelrahman Ibrahim Rashad";
@@ -17,6 +19,15 @@ export function getApplicantDisplayName(name: string | null | undefined) {
 
 export function getApplicantOAuthStatus(isLinked: boolean) {
   return isLinked ? "OAuth linked" : "Verification unavailable";
+}
+
+export type ManagedAccountPreview = { name: string | null; email: string | null; role: "user" | "admin"; accessStatus: "pending" | "approved" | "suspended" };
+export function filterManagedAccounts<T extends ManagedAccountPreview>(accounts: T[], query: string, roleFilter: "all" | "user" | "admin", accessFilter: "all" | "pending" | "approved" | "suspended") {
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  return accounts.filter(account => {
+    const matchesSearch = !normalizedQuery || [account.name, account.email].some(value => value?.toLocaleLowerCase().includes(normalizedQuery));
+    return matchesSearch && (roleFilter === "all" || account.role === roleFilter) && (accessFilter === "all" || account.accessStatus === accessFilter);
+  });
 }
 
 function AccessBadge({ value }: { value: string }) {
@@ -48,7 +59,11 @@ function downloadCsv(rows: object[]) {
 export default function AccessManagement() {
   const utils = trpc.useUtils();
   const [removalTarget, setRemovalTarget] = useState<{ id: number; name: string } | null>(null);
+  const [accountSearch, setAccountSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | "user" | "admin">("all");
+  const [accessFilter, setAccessFilter] = useState<"all" | "pending" | "approved" | "suspended">("all");
   const { data: users, isLoading, error } = trpc.administration.users.useQuery();
+  const filteredUsers = useMemo(() => filterManagedAccounts(users ?? [], accountSearch, roleFilter, accessFilter), [users, accountSearch, roleFilter, accessFilter]);
   const setAccess = trpc.administration.setAccess.useMutation({
     onSuccess: () => {
       utils.administration.users.invalidate();
@@ -113,10 +128,17 @@ export default function AccessManagement() {
               <div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#287168]">{ADMINISTRATOR_INDICATOR_LABEL}</p><p className="mt-0.5 truncate text-sm font-semibold text-[#173f45]">{ADMINISTRATOR_DISPLAY_NAME}</p><p className="mt-0.5 text-xs text-[#52716f]">{ADMINISTRATOR_INDICATOR_DESCRIPTION}</p></div>
             </div>
           </div>
+          <div className="border-b border-[#e8efec] bg-[#fbfdfc] px-6 py-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+              <div className="relative min-w-0 flex-1"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#64817f]" aria-hidden="true" /><Input value={accountSearch} onChange={event => setAccountSearch(event.target.value)} className="h-10 border-[#d8e7e2] bg-white pl-9 pr-9" placeholder="Search name or provider email" aria-label="Search active registry accounts" />{accountSearch ? <Button type="button" size="icon" variant="ghost" className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 text-slate-500" onClick={() => setAccountSearch("")} aria-label="Clear account search"><X className="h-4 w-4" /></Button> : null}</div>
+              <div className="grid grid-cols-2 gap-3 lg:flex lg:shrink-0"><Select value={roleFilter} onValueChange={value => setRoleFilter(value as typeof roleFilter)}><SelectTrigger className="h-10 min-w-[142px] border-[#d8e7e2] bg-white" aria-label="Filter accounts by role"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All roles</SelectItem><SelectItem value="admin">Administrators</SelectItem><SelectItem value="user">Research users</SelectItem></SelectContent></Select><Select value={accessFilter} onValueChange={value => setAccessFilter(value as typeof accessFilter)}><SelectTrigger className="h-10 min-w-[142px] border-[#d8e7e2] bg-white" aria-label="Filter accounts by access status"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All access states</SelectItem><SelectItem value="pending">Pending</SelectItem><SelectItem value="approved">Approved</SelectItem><SelectItem value="suspended">Suspended</SelectItem></SelectContent></Select></div>
+            </div>
+            <p className="mt-3 text-xs font-medium text-[#52716f]" aria-live="polite">{filteredUsers.length} matching active {filteredUsers.length === 1 ? "account" : "accounts"}</p>
+          </div>
           {error ? <div className="p-6 text-sm text-rose-700">Users could not be loaded. {error.message}</div> : isLoading ? <div className="space-y-3 p-6"><div className="h-12 animate-pulse rounded-lg bg-slate-100" /><div className="h-12 animate-pulse rounded-lg bg-slate-100" /></div> : <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead className="bg-[#f7faf8] text-xs font-semibold uppercase tracking-[0.08em] text-[#68807e]"><tr><th className="px-6 py-3">Applicant OAuth account</th><th className="px-4 py-3">Identity</th><th className="px-4 py-3">Role</th><th className="px-4 py-3">Access</th><th className="px-6 py-3 text-right">Manual decision</th></tr></thead>
-              <tbody>{users?.map(user => <tr key={user.id} className="border-t border-[#edf1ef]">
+              <tbody>{filteredUsers.length === 0 ? <tr><td colSpan={5} className="px-6 py-10 text-center text-sm text-slate-500">No active accounts match the current search and filters.</td></tr> : filteredUsers.map(user => <tr key={user.id} className="border-t border-[#edf1ef]">
                 <td className="px-6 py-4"><p className="font-medium text-[#30434c]">{getApplicantDisplayName(user.name)}</p><p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500"><Mail className="h-3.5 w-3.5 text-[#4a8a82]" aria-hidden="true" />{user.email || "No provider email available"}</p></td>
                 <td className="px-4 py-4"><Badge variant="outline" className={user.oauthIdentityLinked ? "border-teal-200 bg-teal-50 text-teal-700" : "border-slate-200 bg-slate-50 text-slate-600"}><ShieldCheck className="mr-1 h-3.5 w-3.5" />{getApplicantOAuthStatus(user.oauthIdentityLinked)}</Badge><p className="mt-1 text-[11px] text-slate-500">Provider identity only</p></td>
                 <td className="px-4 py-4"><Badge variant="outline" className="capitalize">{user.role}</Badge><Button size="sm" variant="ghost" className="mt-1 h-7 px-2 text-xs text-[#286069] hover:bg-[#edf7f4]" disabled={setRole.isPending || user.accessStatus !== "approved" || user.isPrimaryOwner} onClick={() => setRole.mutate({ userId: user.id, role: user.role === "admin" ? "user" : "admin" })}>{user.isPrimaryOwner ? "Owner protected" : user.role === "admin" ? "Revoke admin" : "Make admin"}</Button></td>
