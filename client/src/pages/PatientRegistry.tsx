@@ -49,7 +49,7 @@ export function getInitialRegistryFilters(location: string): Filters {
 }
 
 export function getRecordedByLabel(name?: string | null) {
-  return name?.trim() || "Approved registry user";
+  return name?.trim() || "OAuth display name unavailable";
 }
 
 export default function PatientRegistry() {

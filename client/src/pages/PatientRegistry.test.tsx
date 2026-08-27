@@ -9,6 +9,6 @@ describe("PatientRegistry saved-record destination", () => {
 
   it("uses an OAuth display name for Recorded by and never substitutes an email or identifier", () => {
     expect(getRecordedByLabel("Approved Researcher")).toBe("Approved Researcher");
-    expect(getRecordedByLabel(undefined)).toBe("Approved registry user");
+    expect(getRecordedByLabel(undefined)).toBe("OAuth display name unavailable");
   });
 });

@@ -46,6 +46,6 @@ describe("PatientEditor cohort-specific options", () => {
 
   it("shows only the OAuth display name for protected record attribution and uses a non-identifying fallback", () => {
     expect(getRecordedByLabel("Approved Researcher")).toBe("Approved Researcher");
-    expect(getRecordedByLabel(null)).toBe("Approved registry user");
+    expect(getRecordedByLabel(null)).toBe("OAuth display name unavailable");
   });
 });
