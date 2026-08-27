@@ -19,6 +19,7 @@ Each research record is identified in the application by a generated **MUNR Rese
 | Record lifecycle | Screened, enrolled, completed, withdrawn, or ineligible | Separate data-quality and completeness states identify work requiring completion or review. |
 | Follow-up | Baseline, routine, post-discharge, emergency, telemedicine, or other research follow-up | Follow-up remains part of the pseudonymised research record. |
 | Files | Protected research-file storage with controlled metadata | File access is restricted to approved registry users; exports do not include storage URLs or upload metadata. |
+| Profile picture | Optional JPEG, PNG, or WebP image up to 2 MB for an approved user | Stored in the separate `user_profiles` table and protected object storage; never attached to a clinical record, public preview, message, notification, or export. |
 | Messaging | Direct messages between approved registry users | Messages must not contain Research IDs, direct identifiers, or contact information. |
 | Export | Administrator-initiated research CSV export | The export uses the MUNR Research ID and age bands rather than direct identifiers. Every export remains subject to the approved research protocol and de-identification review before release. |
 | Public route | `/workflow-preview` | Uses fixed, data-free workflow content and abstract artwork only; it never queries protected registry content. |
@@ -95,6 +96,7 @@ The registry is pseudonymised by design. Controlled cohort-specific fields are p
 |---|---|
 | Records | Use the MUNR Research ID and controlled research variables. Do not create patient-name or contact fields. |
 | Attachments | Store only in protected object storage; validate size, MIME type, and safe filename. Do not use identifying filenames. |
+| Profile pictures | Restrict upload and retrieval to the approved owner of the profile. Keep the storage reference in `user_profiles`, separate from research records and all export queries. |
 | Messages | Limit participation to approved users and reject direct identifiers before persistence. |
 | Audit trail | Record actor, action type, timestamp, and safe record reference without copying clinical narratives. |
 | Export | Release only protocol-approved, de-identified research rows; remove direct identifiers, user-assignment details, file metadata, and storage links, and complete a release review before disclosure. |

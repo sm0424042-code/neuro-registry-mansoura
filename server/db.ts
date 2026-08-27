@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, like, lte, type SQL } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { and as sqlAnd, or as sqlOr } from "drizzle-orm";
-import { InsertUser, patientRecords, registryAuditLogs, userMessages, users } from "../drizzle/schema";
+import { InsertUser, patientRecords, registryAuditLogs, userMessages, userProfiles, users } from "../drizzle/schema";
 import type { CohortClinicalData, ImmuneTherapy, LaboratoryInvestigation, MultipleSclerosisDoseAdherence, NeurologicalInvestigation, PatientFollowUp, ProtocolInvestigation, RadiologicalInvestigation, ResearchFile } from "../drizzle/schema";
 import { storageGetSignedUrl, storagePut } from "./storage";
 import { ENV } from "./_core/env";
@@ -73,6 +73,22 @@ export async function setUserAccessStatus(userId: number, accessStatus: "pending
   const db = await getDb();
   if (!db) throw new Error("Database is unavailable");
   await db.update(users).set({ accessStatus }).where(eq(users.id, userId));
+}
+
+export async function getOwnProfileAvatar(userId: number) {
+  const db = requireDb(await getDb());
+  const result = await db.select({ storageKey: userProfiles.avatarStorageKey, mimeType: userProfiles.avatarMimeType, updatedAt: userProfiles.avatarUpdatedAt }).from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
+  const avatar = result[0];
+  if (!avatar) return null;
+  return { mimeType: avatar.mimeType, updatedAt: avatar.updatedAt, url: await storageGetSignedUrl(avatar.storageKey) };
+}
+
+export async function replaceOwnProfileAvatar(userId: number, upload: { content: Buffer; mimeType: "image/jpeg" | "image/png" | "image/webp" }) {
+  const db = requireDb(await getDb());
+  const extension = upload.mimeType === "image/jpeg" ? "jpg" : upload.mimeType === "image/png" ? "png" : "webp";
+  const stored = await storagePut(`user-profiles/${userId}/avatar.${extension}`, upload.content, upload.mimeType);
+  await db.insert(userProfiles).values({ userId, avatarStorageKey: stored.key, avatarMimeType: upload.mimeType }).onDuplicateKeyUpdate({ set: { avatarStorageKey: stored.key, avatarMimeType: upload.mimeType, avatarUpdatedAt: new Date() } });
+  return { mimeType: upload.mimeType, url: await storageGetSignedUrl(stored.key) };
 }
 
 type PatientInput = z.infer<typeof patientInputSchema>;

@@ -33,6 +33,18 @@ const HOMEPAGE_IMAGE_REPORT_COOLDOWN_MS = 5 * 60 * 1000;
 const homepageImageReportTimes = new Map<number, number>();
 const HOMEPAGE_IMAGE_REPORT_TITLE = "Broken homepage image reported";
 const HOMEPAGE_IMAGE_REPORT_CONTENT = "A registered user reported that the static abstract homepage hero image could not be loaded. No patient, record, user, or clinical data was included.";
+const PROFILE_AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+const profileAvatarInputSchema = z.object({
+  mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+  sizeBytes: z.number().int().positive().max(PROFILE_AVATAR_MAX_BYTES),
+  contentBase64: z.string().min(8).max(3 * 1024 * 1024).regex(/^[A-Za-z0-9+/]+={0,2}$/, "The image payload is not valid base64."),
+});
+
+function hasExpectedAvatarSignature(content: Buffer, mimeType: "image/jpeg" | "image/png" | "image/webp") {
+  if (mimeType === "image/jpeg") return content.length >= 3 && content[0] === 0xff && content[1] === 0xd8 && content[2] === 0xff;
+  if (mimeType === "image/png") return content.length >= 8 && content.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  return content.length >= 12 && content.subarray(0, 4).toString("ascii") === "RIFF" && content.subarray(8, 12).toString("ascii") === "WEBP";
+}
 
 export const appRouter = router({
   system: systemRouter,
@@ -42,6 +54,15 @@ export const appRouter = router({
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
+    }),
+  }),
+  profile: router({
+    avatar: approvedProcedure.query(({ ctx }) => db.getOwnProfileAvatar(ctx.user.id)),
+    replaceAvatar: approvedProcedure.input(profileAvatarInputSchema).mutation(async ({ input, ctx }) => {
+      const content = Buffer.from(input.contentBase64, "base64");
+      if (content.byteLength !== input.sizeBytes) throw new TRPCError({ code: "BAD_REQUEST", message: "The image size could not be verified." });
+      if (!hasExpectedAvatarSignature(content, input.mimeType)) throw new TRPCError({ code: "BAD_REQUEST", message: "The image content does not match its declared format." });
+      return db.replaceOwnProfileAvatar(ctx.user.id, { content, mimeType: input.mimeType });
     }),
   }),
   registry: router({

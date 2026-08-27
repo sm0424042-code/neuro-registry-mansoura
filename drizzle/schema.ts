@@ -121,6 +121,13 @@ export type PatientFollowUp = { visitType: "baseline" | "routine" | "post_discha
 
 export const users = mysqlTable("users", { id: int("id").autoincrement().primaryKey(), openId: varchar("openId", { length: 64 }).notNull().unique(), name: text("name"), email: varchar("email", { length: 320 }), loginMethod: varchar("loginMethod", { length: 64 }), role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(), accessStatus: mysqlEnum("accessStatus", ["pending", "approved", "suspended"]).default("pending").notNull(), createdAt: timestamp("createdAt").defaultNow().notNull(), updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(), lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull() });
 
+export const userProfiles = mysqlTable("user_profiles", {
+  userId: int("userId").primaryKey(),
+  avatarStorageKey: varchar("avatarStorageKey", { length: 300 }).notNull(),
+  avatarMimeType: varchar("avatarMimeType", { length: 64 }).notNull(),
+  avatarUpdatedAt: timestamp("avatarUpdatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export const patientRecords = mysqlTable("patient_records", {
   id: int("id").autoincrement().primaryKey(),
   researchId: varchar("researchId", { length: 24 }).notNull().unique(),

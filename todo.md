@@ -227,3 +227,8 @@
 - [x] Document the required owner properties: display name, registered OAuth identity binding, approved access status, and administrator role.
 - [x] Verify and, only if needed, correct the future administrator display name to Abdelrahman Ibrahim Rashad without changing OAuth-based authorization.
 - [x] Replace the visible Unnamed user fallback in Access Management with Abdelrahman Ibrahim Rashad as a display-only label.
+- [x] Assess safe OAuth-profile email and avatar presentation for approved users without local credentials or patient-data exposure.
+- [x] Add an approved-user profile-picture data model separate from clinical research records and de-identified exports.
+- [x] Add server-enforced profile-picture upload, replacement, and retrieval with safe image constraints and protected storage.
+- [x] Add an accessible profile-picture control to the approved-user workspace without exposing it on public pages.
+- [x] Add denied-caller, input-validation, and data-boundary tests for profile pictures; run type checking, tests, and a production build.
