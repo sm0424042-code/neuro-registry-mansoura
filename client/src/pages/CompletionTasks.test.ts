@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterAndSortCompletionTasks, getTaskNotificationLabel, getTaskStatusLabel } from "./CompletionTasks";
+import { filterAndSortCompletionTasks, getCompletionTaskPage, getCompletionTaskPagination, getTaskNotificationLabel, getTaskStatusLabel } from "./CompletionTasks";
 
 describe("completion-task labels", () => {
   it("uses clear controlled labels for task state", () => {
@@ -27,5 +27,14 @@ describe("completion-task labels", () => {
     expect(filterAndSortCompletionTasks(tasks, "all", "attention_first").map(task => task.id)).toEqual([4, 3, 2, 1]);
     expect(filterAndSortCompletionTasks(tasks, "all", "updated_desc").map(task => task.id)).toEqual([4, 2, 1, 3]);
     expect(filterAndSortCompletionTasks(tasks, "completed", "updated_asc").map(task => task.id)).toEqual([1]);
+  });
+
+  it("paginates already-filtered task results into a bounded accessible page window", () => {
+    const tasks = Array.from({ length: 23 }, (_, index) => ({ id: index + 1 }));
+    expect(getCompletionTaskPage(tasks, 1)).toMatchObject({ page: 1, pageCount: 3, totalItems: 23, firstItem: 1, lastItem: 10 });
+    expect(getCompletionTaskPage(tasks, 2).items.map(task => task.id)).toEqual([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
+    expect(getCompletionTaskPage(tasks, 9)).toMatchObject({ page: 3, firstItem: 21, lastItem: 23 });
+    expect(getCompletionTaskPage([], 1)).toMatchObject({ page: 1, pageCount: 0, totalItems: 0, firstItem: 0, lastItem: 0, items: [] });
+    expect(getCompletionTaskPagination(23, 9)).toMatchObject({ page: 3, pageCount: 3, firstItem: 21, lastItem: 23 });
   });
 });

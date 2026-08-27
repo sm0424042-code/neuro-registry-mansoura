@@ -156,6 +156,16 @@ describe("Mansoura University registry validation", () => {
     expect(db.getTaskTransitionError("reassigned", 22, 22, "accepted")).toBeNull();
     expect(db.getTaskTransitionError("accepted", 22, 22, "completed")).toBeNull();
   });
+  it("limits completion-task page queries to validated status, sorting, and bounded page inputs", async () => {
+    const listAll = vi.spyOn(db, "listAllRecordCompletionTasks").mockResolvedValue({ items: [], totalItems: 0, page: 2, pageSize: 20 } as any);
+    try {
+      const caller = appRouter.createCaller(context("admin", "approved"));
+      await expect(caller.completionTasks.all({ status: "accepted", sort: "updated_desc", page: 2, pageSize: 20 })).resolves.toMatchObject({ page: 2, pageSize: 20, items: [] });
+      expect(listAll).toHaveBeenCalledWith({ status: "accepted", sort: "updated_desc", page: 2, pageSize: 20 });
+      await expect(caller.completionTasks.all({ page: 0 } as any)).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      await expect(caller.completionTasks.all({ pageSize: 51 } as any)).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    } finally { listAll.mockRestore(); }
+  });
   it("alerts the owner with fixed generic text when a protected record completion status changes", async () => {
     const previous = vi.spyOn(db, "getPatientRecord").mockResolvedValue({ id: 7, completenessStatus: "incomplete" } as any);
     const update = vi.spyOn(db, "updatePatientRecord").mockResolvedValue({ id: 7, completenessStatus: "complete" } as any);

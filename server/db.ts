@@ -261,14 +261,40 @@ export async function assignRecordCompletionTask(patientRecordId: number, assign
   return task;
 }
 
-export async function listMyRecordCompletionTasks(userId: number) {
-  const db = requireDb(await getDb());
-  return db.select({ id: recordCompletionTasks.id, patientRecordId: recordCompletionTasks.patientRecordId, cohort: patientRecords.cohort, status: recordCompletionTasks.status, assignedToUserId: recordCompletionTasks.assignedToUserId, createdAt: recordCompletionTasks.createdAt, acceptedAt: recordCompletionTasks.acceptedAt, completedAt: recordCompletionTasks.completedAt, updatedAt: recordCompletionTasks.updatedAt }).from(recordCompletionTasks).innerJoin(patientRecords, eq(recordCompletionTasks.patientRecordId, patientRecords.id)).where(eq(recordCompletionTasks.assignedToUserId, userId)).orderBy(desc(recordCompletionTasks.updatedAt));
+export type CompletionTaskListInput = { status?: "action_required" | "accepted" | "completed"; sort: "attention_first" | "updated_desc" | "updated_asc" | "status"; page: number; pageSize: number };
+
+function taskListOrder(sort: CompletionTaskListInput["sort"]) {
+  const statusOrder = sql<number>`CASE ${recordCompletionTasks.status} WHEN 'assigned' THEN 0 WHEN 'reassigned' THEN 0 WHEN 'accepted' THEN 1 WHEN 'completed' THEN 2 ELSE 3 END`;
+  if (sort === "updated_asc") return [asc(recordCompletionTasks.updatedAt), asc(recordCompletionTasks.id)];
+  if (sort === "updated_desc") return [desc(recordCompletionTasks.updatedAt), asc(recordCompletionTasks.id)];
+  return [asc(statusOrder), desc(recordCompletionTasks.updatedAt), asc(recordCompletionTasks.id)];
 }
 
-export async function listAllRecordCompletionTasks() {
+function taskListStatusCondition(status: CompletionTaskListInput["status"]) {
+  if (status === "action_required") return sqlOr(eq(recordCompletionTasks.status, "assigned"), eq(recordCompletionTasks.status, "reassigned"));
+  if (status) return eq(recordCompletionTasks.status, status);
+  return undefined;
+}
+
+export async function listMyRecordCompletionTasks(userId: number, input: CompletionTaskListInput) {
   const db = requireDb(await getDb());
-  return db.select({ id: recordCompletionTasks.id, patientRecordId: recordCompletionTasks.patientRecordId, cohort: patientRecords.cohort, status: recordCompletionTasks.status, assignedToUserId: recordCompletionTasks.assignedToUserId, assigneeName: users.name, createdAt: recordCompletionTasks.createdAt, acceptedAt: recordCompletionTasks.acceptedAt, completedAt: recordCompletionTasks.completedAt, updatedAt: recordCompletionTasks.updatedAt }).from(recordCompletionTasks).innerJoin(patientRecords, eq(recordCompletionTasks.patientRecordId, patientRecords.id)).leftJoin(users, eq(recordCompletionTasks.assignedToUserId, users.id)).orderBy(desc(recordCompletionTasks.updatedAt));
+  const conditions = [eq(recordCompletionTasks.assignedToUserId, userId), taskListStatusCondition(input.status)].filter(Boolean);
+  const where = sqlAnd(...conditions);
+  const totalRows = await db.select({ total: count() }).from(recordCompletionTasks).where(where);
+  const totalItems = Number(totalRows[0]?.total ?? 0);
+  const page = totalItems ? Math.min(input.page, Math.ceil(totalItems / input.pageSize)) : 1;
+  const items = await db.select({ id: recordCompletionTasks.id, patientRecordId: recordCompletionTasks.patientRecordId, cohort: patientRecords.cohort, status: recordCompletionTasks.status, assignedToUserId: recordCompletionTasks.assignedToUserId, createdAt: recordCompletionTasks.createdAt, acceptedAt: recordCompletionTasks.acceptedAt, completedAt: recordCompletionTasks.completedAt, updatedAt: recordCompletionTasks.updatedAt }).from(recordCompletionTasks).innerJoin(patientRecords, eq(recordCompletionTasks.patientRecordId, patientRecords.id)).where(where).orderBy(...taskListOrder(input.sort)).limit(input.pageSize).offset((page - 1) * input.pageSize);
+  return { items, totalItems, page, pageSize: input.pageSize };
+}
+
+export async function listAllRecordCompletionTasks(input: CompletionTaskListInput) {
+  const db = requireDb(await getDb());
+  const where = taskListStatusCondition(input.status);
+  const totalRows = await db.select({ total: count() }).from(recordCompletionTasks).where(where);
+  const totalItems = Number(totalRows[0]?.total ?? 0);
+  const page = totalItems ? Math.min(input.page, Math.ceil(totalItems / input.pageSize)) : 1;
+  const items = await db.select({ id: recordCompletionTasks.id, patientRecordId: recordCompletionTasks.patientRecordId, cohort: patientRecords.cohort, status: recordCompletionTasks.status, assignedToUserId: recordCompletionTasks.assignedToUserId, assigneeName: users.name, createdAt: recordCompletionTasks.createdAt, acceptedAt: recordCompletionTasks.acceptedAt, completedAt: recordCompletionTasks.completedAt, updatedAt: recordCompletionTasks.updatedAt }).from(recordCompletionTasks).innerJoin(patientRecords, eq(recordCompletionTasks.patientRecordId, patientRecords.id)).leftJoin(users, eq(recordCompletionTasks.assignedToUserId, users.id)).where(where).orderBy(...taskListOrder(input.sort)).limit(input.pageSize).offset((page - 1) * input.pageSize);
+  return { items, totalItems, page, pageSize: input.pageSize };
 }
 
 async function changeTaskStatus(taskId: number, actorUserId: number, status: "accepted" | "completed") {

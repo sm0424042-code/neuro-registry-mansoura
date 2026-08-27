@@ -1,0 +1,1 @@
+CREATE INDEX `record_completion_tasks_status_updated_idx` ON `record_completion_tasks` (`status`,`updatedAt`);

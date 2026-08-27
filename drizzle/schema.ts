@@ -179,6 +179,7 @@ export const recordCompletionTasks = mysqlTable("record_completion_tasks", {
 }, table => [
   index("record_completion_tasks_assignee_status_idx").on(table.assignedToUserId, table.status),
   index("record_completion_tasks_record_status_idx").on(table.patientRecordId, table.status),
+  index("record_completion_tasks_status_updated_idx").on(table.status, table.updatedAt),
 ]);
 export const administratorNotifications = mysqlTable("administrator_notifications", {
   id: int("id").autoincrement().primaryKey(),

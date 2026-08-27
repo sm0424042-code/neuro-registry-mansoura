@@ -35,6 +35,13 @@ const homepageImageReportTimes = new Map<number, number>();
 const HOMEPAGE_IMAGE_REPORT_TITLE = "Broken homepage image reported";
 const HOMEPAGE_IMAGE_REPORT_CONTENT = "A registered user reported that the static abstract homepage hero image could not be loaded. No patient, record, user, or clinical data was included.";
 const PROFILE_AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+const completionTaskListInputSchema = z.object({
+  status: z.enum(["action_required", "accepted", "completed"]).optional(),
+  sort: z.enum(["attention_first", "updated_desc", "updated_asc", "status"]).optional(),
+  page: z.number().int().min(1).max(10_000).optional(),
+  pageSize: z.number().int().min(5).max(50).optional(),
+}).optional();
+const resolveCompletionTaskListInput = (input: z.infer<typeof completionTaskListInputSchema>): db.CompletionTaskListInput => ({ status: input?.status, sort: input?.sort ?? "attention_first", page: input?.page ?? 1, pageSize: input?.pageSize ?? 10 });
 const TASK_OWNER_ALERTS = {
   assigned: { title: "Registry task assigned", content: "A protected record-completion task was assigned. No patient, record, or clinical information is included." },
   reassigned: { title: "Registry task reassigned", content: "A protected record-completion task was reassigned. No patient, record, or clinical information is included." },
@@ -107,8 +114,8 @@ export const appRouter = router({
     }),
   }),
   completionTasks: router({
-    mine: approvedProcedure.query(({ ctx }) => db.listMyRecordCompletionTasks(ctx.user.id)),
-    all: adminProcedure.query(() => db.listAllRecordCompletionTasks()),
+    mine: approvedProcedure.input(completionTaskListInputSchema).query(({ ctx, input }) => db.listMyRecordCompletionTasks(ctx.user.id, resolveCompletionTaskListInput(input))),
+    all: adminProcedure.input(completionTaskListInputSchema).query(({ input }) => db.listAllRecordCompletionTasks(resolveCompletionTaskListInput(input))),
     assign: adminProcedure.input(z.object({ patientRecordId: z.number().int().positive(), assignedToUserId: z.number().int().positive() })).mutation(async ({ input, ctx }) => {
       const assignee = await db.getUserAdministrationState(input.assignedToUserId);
       if (!assignee || assignee.removedAt || assignee.accessStatus !== "approved") throw new TRPCError({ code: "BAD_REQUEST", message: "Choose an approved active registry member." });

@@ -280,3 +280,5 @@
 - [x] Provide in-site notifications to every approved administrator and a privacy-safe immediate alert to the project owner for record-task assignment and every accepted, completed, or reassigned status event.
 - [x] Add protected task-status filters and deterministic sort controls to Completion Tasks without exposing research identifiers or clinical details.
 - [x] Add unit tests for task filtering and sort ordering, then verify the protected task interface and publish the update.
+- [x] Add accessible client-side pagination for filtered and sorted Completion Tasks with a bounded page size and page controls.
+- [x] Test task-page pagination with filtering and sorting, verify the protected route boundary, and publish the update.
