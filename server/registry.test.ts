@@ -82,16 +82,18 @@ describe("Mansoura University registry validation", () => {
     const statistics = vi.spyOn(db, "getRegistryAggregateStatistics").mockResolvedValue(aggregate);
     try {
       await expect(appRouter.createCaller(context("user", "pending")).registry.statistics()).rejects.toMatchObject({ code: "FORBIDDEN" });
-      const result = await appRouter.createCaller(context("user", "approved")).registry.statistics({ cohort: "stroke", completenessStatus: "complete", startDate: "2026-01-01", endDate: "2026-01-31" });
-      expect(statistics).toHaveBeenCalledWith({ cohort: "stroke", completenessStatus: "complete", startDate: "2026-01-01", endDate: "2026-01-31" });
+      const result = await appRouter.createCaller(context("user", "approved")).registry.statistics({ cohort: "stroke", completenessStatus: "complete", startDate: "2026-01-01", endDate: "2026-01-31", comparisonStartDate: "2025-01-01", comparisonEndDate: "2025-01-31" });
+      expect(statistics).toHaveBeenCalledWith({ cohort: "stroke", completenessStatus: "complete", startDate: "2026-01-01", endDate: "2026-01-31", comparisonStartDate: "2025-01-01", comparisonEndDate: "2025-01-31" });
       expect(result).toEqual(aggregate);
       expect(JSON.stringify(result)).not.toMatch(/MUNR|researchId|patientRecord|diagnosis|clinicalData|briefClinicalHistory|email|assignedTo/i);
     } finally { statistics.mockRestore(); }
   });
   it("validates inclusive UTC registration-date ranges before aggregate statistics reach the database", () => {
-    expect(registryStatisticsFiltersSchema.safeParse({ startDate: "2026-01-01", endDate: "2026-01-31" }).success).toBe(true);
+    expect(registryStatisticsFiltersSchema.safeParse({ startDate: "2026-01-01", endDate: "2026-01-31", comparisonStartDate: "2025-01-01", comparisonEndDate: "2025-01-31" }).success).toBe(true);
     expect(registryStatisticsFiltersSchema.safeParse({ startDate: "2026-02-30" }).success).toBe(false);
     expect(registryStatisticsFiltersSchema.safeParse({ startDate: "2026-02-01", endDate: "2026-01-31" }).success).toBe(false);
+    expect(registryStatisticsFiltersSchema.safeParse({ startDate: "2026-01-01", endDate: "2026-01-31", comparisonStartDate: "2025-01-01" }).success).toBe(false);
+    expect(registryStatisticsFiltersSchema.safeParse({ startDate: "2026-01-01", endDate: "2026-01-31", comparisonStartDate: "2026-01-01", comparisonEndDate: "2026-01-31" }).success).toBe(false);
     expect(getRegistryStatisticsDateRangeBounds("2026-01-01", "2026-01-31")).toEqual({ start: new Date("2026-01-01T00:00:00.000Z"), endExclusive: new Date("2026-02-01T00:00:00.000Z") });
   });
   it("exports research-safe summaries while excluding clinical narratives, adherence dates, completion ownership, and research files", () => {

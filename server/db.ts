@@ -205,9 +205,16 @@ async function runRegistryStatisticsQuery<T>(query: any, conditions: SQL[]): Pro
   return conditions.length ? query.where(and(...conditions)) : query;
 }
 
-/** Returns aggregate research-operation metrics only. Never return individual record columns from this contract. */
-export async function getRegistryAggregateStatistics(filters?: RegistryStatisticsFilters) {
-  const db = requireDb(await getDb());
+export type RegistryAggregateStatisticsResult = {
+  totalRecords: number;
+  byCohort: Array<{ cohort: string; total: number }>;
+  byEnrollment: Array<{ status: string; total: number }>;
+  byCompleteness: Array<{ status: string; total: number }>;
+  byDataQuality: Array<{ status: string; total: number }>;
+  investigationCoverage: ReturnType<typeof getInvestigationCoverage>;
+};
+
+async function getRegistryAggregateStatisticsForPeriod(db: any, filters?: RegistryStatisticsFilters): Promise<RegistryAggregateStatisticsResult> {
   const conditions = getRegistryStatisticsConditions(filters);
   const [total] = await runRegistryStatisticsQuery<{ total: number }>(db.select({ total: count() }).from(patientRecords), conditions);
   const byCohort = await runRegistryStatisticsQuery<{ cohort: string; total: number }>(db.select({ cohort: patientRecords.cohort, total: count() }).from(patientRecords).groupBy(patientRecords.cohort), conditions);
@@ -216,6 +223,15 @@ export async function getRegistryAggregateStatistics(filters?: RegistryStatistic
   const byDataQuality = await runRegistryStatisticsQuery<{ status: string; total: number }>(db.select({ status: patientRecords.dataQualityStatus, total: count() }).from(patientRecords).groupBy(patientRecords.dataQualityStatus), conditions);
   const investigationRows = await runRegistryStatisticsQuery<{ radiologicalInvestigations: unknown[] | null; laboratoryInvestigations: unknown[] | null; neurologicalInvestigations: unknown[] | null; protocolInvestigations: Array<{ status?: string }> | null }>(db.select({ radiologicalInvestigations: patientRecords.radiologicalInvestigations, laboratoryInvestigations: patientRecords.laboratoryInvestigations, neurologicalInvestigations: patientRecords.neurologicalInvestigations, protocolInvestigations: patientRecords.protocolInvestigations }).from(patientRecords), conditions);
   return { totalRecords: total?.total ?? 0, byCohort, byEnrollment, byCompleteness, byDataQuality, investigationCoverage: getInvestigationCoverage(investigationRows) };
+}
+
+/** Returns only aggregate research-operation metrics for the current period and, when requested, a separate aggregate comparison period. */
+export async function getRegistryAggregateStatistics(filters?: RegistryStatisticsFilters) {
+  const db = requireDb(await getDb());
+  const current = await getRegistryAggregateStatisticsForPeriod(db, filters);
+  if (!filters?.comparisonStartDate || !filters.comparisonEndDate) return current;
+  const comparison = await getRegistryAggregateStatisticsForPeriod(db, { ...filters, startDate: filters.comparisonStartDate, endDate: filters.comparisonEndDate });
+  return { ...current, comparison };
 }
 
 export async function getPatientAuditTrail(patientRecordId: number) {

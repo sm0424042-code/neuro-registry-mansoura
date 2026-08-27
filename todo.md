@@ -308,3 +308,5 @@
 - [x] Test PNG export labeling and the aggregate-only export boundary, verify the protected route, and publish the update.
 - [x] Add an approved-user date-range filter to aggregate Statistics and apply it consistently to cards, charts, PNG exports, and aggregate CSV.
 - [x] Test date-range validation, server-side aggregate filtering, protected export exclusions, and the Statistics route; then publish the update.
+- [x] Add an approved-user comparison of two validated registration-date ranges with aggregate difference indicators and paired chart series.
+- [x] Test comparison-period validation, aggregate difference calculations, chart/CSV/PNG privacy boundaries, and the protected Statistics route; then publish the update.

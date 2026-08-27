@@ -40,7 +40,15 @@ const statisticsDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-M
   const date = new Date(`${value}T00:00:00.000Z`);
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }, "Use a valid calendar date.");
-export const registryStatisticsFiltersSchema = z.object({ cohort: cohortSchema.optional(), enrollmentStatus: z.enum(["screened", "enrolled", "completed", "withdrawn", "ineligible"]).optional(), dataQualityStatus: z.enum(["draft", "complete", "query"]).optional(), completenessStatus: z.enum(["complete", "incomplete", "needs_review"]).optional(), startDate: statisticsDateSchema.optional(), endDate: statisticsDateSchema.optional() }).superRefine((value, context) => { if (value.startDate && value.endDate && value.startDate > value.endDate) context.addIssue({ code: "custom", path: ["endDate"], message: "The end date must be on or after the start date." }); }).optional();
+export const registryStatisticsFiltersSchema = z.object({ cohort: cohortSchema.optional(), enrollmentStatus: z.enum(["screened", "enrolled", "completed", "withdrawn", "ineligible"]).optional(), dataQualityStatus: z.enum(["draft", "complete", "query"]).optional(), completenessStatus: z.enum(["complete", "incomplete", "needs_review"]).optional(), startDate: statisticsDateSchema.optional(), endDate: statisticsDateSchema.optional(), comparisonStartDate: statisticsDateSchema.optional(), comparisonEndDate: statisticsDateSchema.optional() }).superRefine((value, context) => {
+  if (value.startDate && value.endDate && value.startDate > value.endDate) context.addIssue({ code: "custom", path: ["endDate"], message: "The end date must be on or after the start date." });
+  const hasComparisonStart = Boolean(value.comparisonStartDate);
+  const hasComparisonEnd = Boolean(value.comparisonEndDate);
+  if (hasComparisonStart !== hasComparisonEnd) context.addIssue({ code: "custom", path: [hasComparisonStart ? "comparisonEndDate" : "comparisonStartDate"], message: "Enter both comparison dates." });
+  if ((hasComparisonStart || hasComparisonEnd) && (!value.startDate || !value.endDate)) context.addIssue({ code: "custom", path: ["startDate"], message: "Choose both current-period dates before comparing periods." });
+  if (value.comparisonStartDate && value.comparisonEndDate && value.comparisonStartDate > value.comparisonEndDate) context.addIssue({ code: "custom", path: ["comparisonEndDate"], message: "The comparison end date must be on or after its start date." });
+  if (value.startDate && value.endDate && value.comparisonStartDate && value.comparisonEndDate && value.startDate === value.comparisonStartDate && value.endDate === value.comparisonEndDate) context.addIssue({ code: "custom", path: ["comparisonStartDate"], message: "Choose a different comparison period." });
+}).optional();
 
 /** Converts validated UTC registration dates into inclusive start and exclusive-end query bounds. */
 export function getRegistryStatisticsDateRangeBounds(startDate?: string, endDate?: string) {

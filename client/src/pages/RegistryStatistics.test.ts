@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createAggregateStatisticsCsv, getStatisticShare, getStatisticsChartPngFileName, getStatisticsDateRangeLabel, statisticLabel, toAggregateChartData, type AggregateStatistics } from "./RegistryStatistics";
+import { createAggregateStatisticsCsv, getStatisticDifferenceLabel, getStatisticShare, getStatisticsChartPngFileName, getStatisticsDateRangeLabel, statisticLabel, toAggregateChartData, toAggregateComparisonChartData, type AggregateStatistics } from "./RegistryStatistics";
 
 const aggregate: AggregateStatistics = { totalRecords: 10, byCohort: [{ cohort: "stroke", total: 6 }, { cohort: "cidp", total: 4 }], byEnrollment: [{ status: "enrolled", total: 8 }, { status: "screened", total: 2 }], byCompleteness: [{ status: "complete", total: 7 }, { status: "incomplete", total: 3 }], byDataQuality: [{ status: "complete", total: 7 }, { status: "draft", total: 3 }], investigationCoverage: { radiologyRecorded: 8, laboratoryRecorded: 9, neurologicalRecorded: 7, protocolChecklistComplete: 6 } };
 
@@ -36,5 +36,15 @@ describe("RegistryStatistics", () => {
     expect(getStatisticsDateRangeLabel("2026-01-01")).toBe("From 2026-01-01");
     expect(getStatisticsDateRangeLabel()).toBe("All registration dates");
     expect(getStatisticsDateRangeLabel("2026-01-01", "2026-01-31")).not.toMatch(/MUNR|research.?id|patient|clinical|email/i);
+  });
+
+  it("compares aggregate category totals and includes only aggregate differences in comparison CSV", () => {
+    const comparison = { ...aggregate, totalRecords: 7, byCohort: [{ cohort: "stroke", total: 3 }, { cohort: "multiple_sclerosis", total: 4 }], byEnrollment: [{ status: "enrolled", total: 7 }], byCompleteness: [{ status: "complete", total: 5 }, { status: "incomplete", total: 2 }], byDataQuality: [{ status: "complete", total: 5 }, { status: "draft", total: 2 }], investigationCoverage: { radiologyRecorded: 6, laboratoryRecorded: 6, neurologicalRecorded: 5, protocolChecklistComplete: 4 } };
+    expect(toAggregateComparisonChartData(aggregate.byCohort, comparison.byCohort)).toEqual(expect.arrayContaining([expect.objectContaining({ key: "stroke", current: 6, comparison: 3, difference: 3 }), expect.objectContaining({ key: "multiple_sclerosis", current: 0, comparison: 4, difference: -4 })]));
+    expect(getStatisticDifferenceLabel(10, 7)).toBe("+3 vs comparison");
+    const csv = createAggregateStatisticsCsv(aggregate, "2026-01-01 to 2026-01-31", comparison, "2025-01-01 to 2025-01-31");
+    expect(csv).toContain("Dimension,Category,Current count,Comparison count,Difference");
+    expect(csv).toContain('"Cohort","stroke","6","3","3"');
+    expect(csv).not.toMatch(/MUNR|research.?id|patient|diagnosis|clinical|narrative|email|assigned|recorded by/i);
   });
 });
