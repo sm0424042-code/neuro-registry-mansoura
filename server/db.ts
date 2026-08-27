@@ -6,7 +6,7 @@ import type { CohortClinicalData, ImmuneTherapy, LaboratoryInvestigation, Multip
 import { storageGetSignedUrl, storagePut } from "./storage";
 import { ENV } from "./_core/env";
 import type { z } from "zod";
-import { getInvestigationCoverage, getPatientUpdateAuditSummary } from "./registry";
+import { getInvestigationCoverage, getPatientUpdateAuditSummary, getRegistryStatisticsDateRangeBounds } from "./registry";
 import type { patientInputSchema, registryFiltersSchema, registryStatisticsFiltersSchema } from "./registry";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -195,6 +195,9 @@ function getRegistryStatisticsConditions(filters?: RegistryStatisticsFilters) {
   if (filters?.enrollmentStatus) conditions.push(eq(patientRecords.enrollmentStatus, filters.enrollmentStatus));
   if (filters?.dataQualityStatus) conditions.push(eq(patientRecords.dataQualityStatus, filters.dataQualityStatus));
   if (filters?.completenessStatus) conditions.push(eq(patientRecords.completenessStatus, filters.completenessStatus));
+  const { start, endExclusive } = getRegistryStatisticsDateRangeBounds(filters?.startDate, filters?.endDate);
+  if (start) conditions.push(gte(patientRecords.createdAt, start));
+  if (endExclusive) conditions.push(lt(patientRecords.createdAt, endExclusive));
   return conditions;
 }
 

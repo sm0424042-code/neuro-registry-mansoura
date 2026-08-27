@@ -56,6 +56,12 @@ The code-level update was validated with TypeScript, Vitest, and a production bu
 
 The latest messaging validation passed TypeScript, all **16** Vitest tests, and the production build. The test suite explicitly proves that an approved user cannot read a direct-message thread for a recipient who is no longer approved, that the database thread reader is not invoked for that rejected request, and that expanded English and Arabic direct-identifier examples are rejected.
 
+## Aggregate registration-date range filter
+
+The protected Statistics contract now accepts an optional inclusive registration-date range in UTC (`YYYY-MM-DD`). Its server validation rejects malformed calendar dates and end dates that precede start dates. The database query applies the range to the existing record-registration timestamp using an inclusive start and exclusive next-day end, so a selected final day is included consistently in every aggregate count.
+
+The English Statistics UI provides keyboard-accessible **Registration date from (UTC)** and **Registration date to (UTC)** controls, an inline error for an invalid range, and one clear action that resets all filters. The applied date window is represented in the aggregate CSV and in each locally generated PNG chart. No individual registration timestamps, record references, Research IDs, patient details, clinical content, user data, or files are returned or exported. Automated tests verify the date validation, bounds, protected route input, CSV label, and aggregate-only boundary. The current `/statistics` visual capture remains limited to the suspension gate because the sandbox account is not approved; interactive date selection and download verification therefore remain deferred to a legitimate approved OAuth session.
+
 ## Deferred verification
 
 The sandbox browser does not hold an approved OAuth session, and the user explicitly asked to bypass the sign-in step and live interaction check for now. A later approved browser-session review remains required for interactive checks of all cohort selectors and messaging flows. The renderer captures and contract tests evidence implementation and layout only; they do not constitute authenticated browser verification.

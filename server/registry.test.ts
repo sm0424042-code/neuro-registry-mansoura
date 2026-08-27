@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PatientRecord } from "../drizzle/schema";
 import type { TrpcContext } from "./_core/context";
-import { getCompleteRecordThresholdError, getInvestigationCoverage, getPatientUpdateAuditSummary, getResearchRecordCompleteness, patientInputSchema, patientUpdateSchema, researchFileInputSchema, toDeidentifiedExportRow } from "./registry";
+import { getCompleteRecordThresholdError, getInvestigationCoverage, getPatientUpdateAuditSummary, getRegistryStatisticsDateRangeBounds, getResearchRecordCompleteness, patientInputSchema, patientUpdateSchema, registryStatisticsFiltersSchema, researchFileInputSchema, toDeidentifiedExportRow } from "./registry";
 import { appRouter } from "./routers";
 import * as db from "./db";
 import * as notifications from "./_core/notification";
@@ -82,11 +82,17 @@ describe("Mansoura University registry validation", () => {
     const statistics = vi.spyOn(db, "getRegistryAggregateStatistics").mockResolvedValue(aggregate);
     try {
       await expect(appRouter.createCaller(context("user", "pending")).registry.statistics()).rejects.toMatchObject({ code: "FORBIDDEN" });
-      const result = await appRouter.createCaller(context("user", "approved")).registry.statistics({ cohort: "stroke", completenessStatus: "complete" });
-      expect(statistics).toHaveBeenCalledWith({ cohort: "stroke", completenessStatus: "complete" });
+      const result = await appRouter.createCaller(context("user", "approved")).registry.statistics({ cohort: "stroke", completenessStatus: "complete", startDate: "2026-01-01", endDate: "2026-01-31" });
+      expect(statistics).toHaveBeenCalledWith({ cohort: "stroke", completenessStatus: "complete", startDate: "2026-01-01", endDate: "2026-01-31" });
       expect(result).toEqual(aggregate);
       expect(JSON.stringify(result)).not.toMatch(/MUNR|researchId|patientRecord|diagnosis|clinicalData|briefClinicalHistory|email|assignedTo/i);
     } finally { statistics.mockRestore(); }
+  });
+  it("validates inclusive UTC registration-date ranges before aggregate statistics reach the database", () => {
+    expect(registryStatisticsFiltersSchema.safeParse({ startDate: "2026-01-01", endDate: "2026-01-31" }).success).toBe(true);
+    expect(registryStatisticsFiltersSchema.safeParse({ startDate: "2026-02-30" }).success).toBe(false);
+    expect(registryStatisticsFiltersSchema.safeParse({ startDate: "2026-02-01", endDate: "2026-01-31" }).success).toBe(false);
+    expect(getRegistryStatisticsDateRangeBounds("2026-01-01", "2026-01-31")).toEqual({ start: new Date("2026-01-01T00:00:00.000Z"), endExclusive: new Date("2026-02-01T00:00:00.000Z") });
   });
   it("exports research-safe summaries while excluding clinical narratives, adherence dates, completion ownership, and research files", () => {
     const row = toDeidentifiedExportRow({ id: 7, researchId: "MUNR-STROKE26", cohort: "stroke", sex: "male", ageAtEnrollment: 64, ageAtOnset: 63, consentStatus: "consented", enrollmentStatus: "enrolled", clinicalStatus: "active", dataQualityStatus: "complete", completenessStatus: "incomplete", missingItems: ["follow_up"], completionOwnerUserId: 33, primaryDiagnosis: "Ischaemic stroke", briefClinicalHistory: "Sensitive narrative", positiveExaminationFindings: "Sensitive findings", dischargeTreatment: "Sensitive plan", immuneTherapies: [{ therapyClass: "corticosteroid", status: "completed", agent: "Prednisone", startDate: "2026-01-01" }], msDoseAdherence: [], clinicalData: stroke, radiologicalInvestigations: [{ modality: "mri", bodyRegion: "brain", keyFinding: "Focal lesion", lesionStatus: "present", reportReference: "RAD-2026-001" }], laboratoryInvestigations: [{ testName: "hba1c", resultStatus: "abnormal", resultSummary: "Above local reference range" }], neurologicalInvestigations: [{ testName: "fundus_examination", resultStatus: "normal" }], protocolInvestigations: [{ itemCode: "vascular_imaging", status: "completed" }], followUpVisits: [{ visitType: "routine", followUpStatus: "completed", outcome: "stable", assessmentSummary: "Stable", timepoint: "3_months" }], researchFiles: [{ fileName: "RAD-2026-001.pdf", storageKey: "key", url: "url", mimeType: "application/pdf", sizeBytes: 4, category: "radiology_report", uploadedAt: "2026-01-01", uploadedByUserId: 14 }], createdByUserId: 1, lastModifiedByUserId: 2, createdAt: new Date(), updatedAt: new Date() } as PatientRecord);
