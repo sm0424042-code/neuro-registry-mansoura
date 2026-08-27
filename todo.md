@@ -290,3 +290,5 @@
 - [x] Apply the safe task search before pagination and CSV export, add privacy and matching tests, then publish the update.
 - [x] Add accessible auto-complete suggestions for only the permitted task-status terms and a UTC date-format example in Completion Tasks search.
 - [x] Test auto-complete filtering, keyboard selection, and exclusion of user, record, and clinical data suggestions; then publish the update.
+- [x] Highlight only the case-insensitive matching text inside fixed safe task-search suggestions without changing the suggestion data contract.
+- [x] Test highlighted suggestion segments and accessibility semantics, then verify the protected route boundary and publish the update.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterAndSortCompletionTasks, getCompletionTaskPage, getCompletionTaskPagination, getNextTaskSearchSuggestionIndex, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskSearchSuggestions, getTaskSearchValidation, getTaskStatusLabel } from "./CompletionTasks";
+import { filterAndSortCompletionTasks, getCompletionTaskPage, getCompletionTaskPagination, getNextTaskSearchSuggestionIndex, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskSearchSuggestions, getTaskSearchValidation, getTaskStatusLabel, splitTaskSearchSuggestionHighlight } from "./CompletionTasks";
 
 describe("completion-task labels", () => {
   it("uses clear controlled labels for task state", () => {
@@ -66,6 +66,13 @@ describe("completion-task labels", () => {
     expect(getNextTaskSearchSuggestionIndex(2, "ArrowDown", 3)).toBe(0);
     expect(getNextTaskSearchSuggestionIndex(0, "ArrowUp", 3)).toBe(2);
     expect(getNextTaskSearchSuggestionIndex(-1, "ArrowDown", 0)).toBe(-1);
+  });
+
+  it("highlights only the case-insensitive matching text within a safe suggestion label", () => {
+    expect(splitTaskSearchSuggestionHighlight("Accepted", "acc")).toEqual([{ text: "Acc", matched: true }, { text: "epted", matched: false }]);
+    expect(splitTaskSearchSuggestionHighlight("Today’s UTC date: 2026-08-27", "2026")).toEqual([{ text: "Today’s UTC date: ", matched: false }, { text: "2026", matched: true }, { text: "-08-27", matched: false }]);
+    expect(splitTaskSearchSuggestionHighlight("Completed", "")).toEqual([{ text: "Completed", matched: false }]);
+    expect(JSON.stringify(splitTaskSearchSuggestionHighlight("Reassigned", "assign"))).not.toMatch(/MUNR|research|record|patient|clinical|email/i);
   });
 
   it("sends only the current controlled status, search, and sort options to the CSV export", () => {
