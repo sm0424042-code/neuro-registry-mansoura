@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, like, lte, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, like, lt, lte, sql, type SQL } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { and as sqlAnd, isNull, or as sqlOr } from "drizzle-orm";
 import { administratorNotifications, InsertUser, patientRecords, recordCompletionTasks, registryAuditLogs, userMessages, userProfiles, users } from "../drizzle/schema";
@@ -261,7 +261,7 @@ export async function assignRecordCompletionTask(patientRecordId: number, assign
   return task;
 }
 
-export type CompletionTaskListInput = { status?: "action_required" | "accepted" | "completed"; sort: "attention_first" | "updated_desc" | "updated_asc" | "status"; page: number; pageSize: number };
+export type CompletionTaskListInput = { status?: "action_required" | "accepted" | "completed"; search?: string; sort: "attention_first" | "updated_desc" | "updated_asc" | "status"; page: number; pageSize: number };
 
 function taskListOrder(sort: CompletionTaskListInput["sort"]) {
   const statusOrder = sql<number>`CASE ${recordCompletionTasks.status} WHEN 'assigned' THEN 0 WHEN 'reassigned' THEN 0 WHEN 'accepted' THEN 1 WHEN 'completed' THEN 2 ELSE 3 END`;
@@ -276,9 +276,19 @@ function taskListStatusCondition(status: CompletionTaskListInput["status"]) {
   return undefined;
 }
 
+function taskListSearchCondition(search: CompletionTaskListInput["search"]) {
+  if (!search) return undefined;
+  if (search === "awaiting acceptance") return sqlOr(eq(recordCompletionTasks.status, "assigned"), eq(recordCompletionTasks.status, "reassigned"));
+  if (["assigned", "reassigned", "accepted", "completed"].includes(search)) return eq(recordCompletionTasks.status, search as "assigned" | "reassigned" | "accepted" | "completed");
+  const start = new Date(`${search}T00:00:00.000Z`);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 1);
+  return sqlAnd(gte(recordCompletionTasks.updatedAt, start), lt(recordCompletionTasks.updatedAt, end));
+}
+
 export async function listMyRecordCompletionTasks(userId: number, input: CompletionTaskListInput) {
   const db = requireDb(await getDb());
-  const conditions = [eq(recordCompletionTasks.assignedToUserId, userId), taskListStatusCondition(input.status)].filter(Boolean);
+  const conditions = [eq(recordCompletionTasks.assignedToUserId, userId), taskListStatusCondition(input.status), taskListSearchCondition(input.search)].filter(Boolean);
   const where = sqlAnd(...conditions);
   const totalRows = await db.select({ total: count() }).from(recordCompletionTasks).where(where);
   const totalItems = Number(totalRows[0]?.total ?? 0);
@@ -289,7 +299,8 @@ export async function listMyRecordCompletionTasks(userId: number, input: Complet
 
 export async function listAllRecordCompletionTasks(input: CompletionTaskListInput) {
   const db = requireDb(await getDb());
-  const where = taskListStatusCondition(input.status);
+  const conditions = [taskListStatusCondition(input.status), taskListSearchCondition(input.search)].filter(Boolean);
+  const where = conditions.length ? sqlAnd(...conditions) : undefined;
   const totalRows = await db.select({ total: count() }).from(recordCompletionTasks).where(where);
   const totalItems = Number(totalRows[0]?.total ?? 0);
   const page = totalItems ? Math.min(input.page, Math.ceil(totalItems / input.pageSize)) : 1;
@@ -297,9 +308,9 @@ export async function listAllRecordCompletionTasks(input: CompletionTaskListInpu
   return { items, totalItems, page, pageSize: input.pageSize };
 }
 
-export async function listRecordCompletionTaskExportRows(userId: number, isAdmin: boolean, input: Pick<CompletionTaskListInput, "status" | "sort">) {
+export async function listRecordCompletionTaskExportRows(userId: number, isAdmin: boolean, input: Pick<CompletionTaskListInput, "status" | "search" | "sort">) {
   const db = requireDb(await getDb());
-  const conditions = [isAdmin ? undefined : eq(recordCompletionTasks.assignedToUserId, userId), taskListStatusCondition(input.status)].filter(Boolean);
+  const conditions = [isAdmin ? undefined : eq(recordCompletionTasks.assignedToUserId, userId), taskListStatusCondition(input.status), taskListSearchCondition(input.search)].filter(Boolean);
   const where = conditions.length ? sqlAnd(...conditions) : undefined;
   return db.select({ status: recordCompletionTasks.status, updatedAt: recordCompletionTasks.updatedAt }).from(recordCompletionTasks).where(where).orderBy(...taskListOrder(input.sort)).limit(10_000);
 }

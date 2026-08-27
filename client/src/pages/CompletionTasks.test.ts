@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterAndSortCompletionTasks, getCompletionTaskPage, getCompletionTaskPagination, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskStatusLabel } from "./CompletionTasks";
+import { filterAndSortCompletionTasks, getCompletionTaskPage, getCompletionTaskPagination, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskSearchValidation, getTaskStatusLabel } from "./CompletionTasks";
 
 describe("completion-task labels", () => {
   it("uses clear controlled labels for task state", () => {
@@ -45,8 +45,16 @@ describe("completion-task labels", () => {
     expect(getTaskLoadingMode(false, true, false)).toBe("idle");
   });
 
-  it("sends only the current controlled status and sort options to the CSV export", () => {
-    expect(getTaskExportInput("all", "attention_first")).toEqual({ status: undefined, sort: "attention_first" });
-    expect(getTaskExportInput("accepted", "updated_desc")).toEqual({ status: "accepted", sort: "updated_desc" });
+  it("accepts only operational status terms or valid UTC dates for task search", () => {
+    expect(getTaskSearchValidation(" Accepted ")).toEqual({ normalized: "accepted", error: null });
+    expect(getTaskSearchValidation("2026-08-27")).toEqual({ normalized: "2026-08-27", error: null });
+    expect(getTaskSearchValidation("2026-02-30").error).toMatch(/valid UTC date/i);
+    expect(getTaskSearchValidation("member name").error).toMatch(/task status/i);
+    expect(getTaskSearchValidation("MUNR-0000000000000000000000001").error).toMatch(/task status/i);
+  });
+
+  it("sends only the current controlled status, search, and sort options to the CSV export", () => {
+    expect(getTaskExportInput("all", "attention_first")).toEqual({ status: undefined, search: undefined, sort: "attention_first" });
+    expect(getTaskExportInput("accepted", "updated_desc", "accepted")).toEqual({ status: "accepted", search: "accepted", sort: "updated_desc" });
   });
 });

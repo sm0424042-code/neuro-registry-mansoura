@@ -36,18 +36,27 @@ const homepageImageReportTimes = new Map<number, number>();
 const HOMEPAGE_IMAGE_REPORT_TITLE = "Broken homepage image reported";
 const HOMEPAGE_IMAGE_REPORT_CONTENT = "A registered user reported that the static abstract homepage hero image could not be loaded. No patient, record, user, or clinical data was included.";
 const PROFILE_AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+const safeCompletionTaskSearchTerms = ["assigned", "reassigned", "accepted", "completed", "awaiting acceptance"] as const;
+const isSafeCompletionTaskSearch = (value: string) => {
+  if (safeCompletionTaskSearchTerms.includes(value.toLowerCase() as typeof safeCompletionTaskSearchTerms[number])) return true;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+};
 const completionTaskListInputSchema = z.object({
   status: z.enum(["action_required", "accepted", "completed"]).optional(),
+  search: z.string().trim().min(1).max(24).refine(isSafeCompletionTaskSearch, "Search is limited to task status or a UTC date in YYYY-MM-DD format.").optional(),
   sort: z.enum(["attention_first", "updated_desc", "updated_asc", "status"]).optional(),
   page: z.number().int().min(1).max(10_000).optional(),
   pageSize: z.number().int().min(5).max(50).optional(),
 }).optional();
-const resolveCompletionTaskListInput = (input: z.infer<typeof completionTaskListInputSchema>): db.CompletionTaskListInput => ({ status: input?.status, sort: input?.sort ?? "attention_first", page: input?.page ?? 1, pageSize: input?.pageSize ?? 10 });
+const resolveCompletionTaskListInput = (input: z.infer<typeof completionTaskListInputSchema>): db.CompletionTaskListInput => ({ status: input?.status, search: input?.search?.toLowerCase(), sort: input?.sort ?? "attention_first", page: input?.page ?? 1, pageSize: input?.pageSize ?? 10 });
 const completionTaskExportInputSchema = z.object({
   status: z.enum(["action_required", "accepted", "completed"]).optional(),
+  search: z.string().trim().min(1).max(24).refine(isSafeCompletionTaskSearch, "Search is limited to task status or a UTC date in YYYY-MM-DD format.").optional(),
   sort: z.enum(["attention_first", "updated_desc", "updated_asc", "status"]).optional(),
 }).optional();
-const resolveCompletionTaskExportInput = (input: z.infer<typeof completionTaskExportInputSchema>) => ({ status: input?.status, sort: input?.sort ?? "attention_first" as const });
+const resolveCompletionTaskExportInput = (input: z.infer<typeof completionTaskExportInputSchema>) => ({ status: input?.status, search: input?.search?.toLowerCase(), sort: input?.sort ?? "attention_first" as const });
 const TASK_OWNER_ALERTS = {
   assigned: { title: "Registry task assigned", content: "A protected record-completion task was assigned. No patient, record, or clinical information is included." },
   reassigned: { title: "Registry task reassigned", content: "A protected record-completion task was reassigned. No patient, record, or clinical information is included." },

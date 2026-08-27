@@ -286,3 +286,5 @@
 - [x] Test task-page loading feedback, preserve filtering and pagination behavior, and publish the update.
 - [x] Add an approved-user CSV export for the currently filtered and sorted completion-task list, with a strict de-identified column contract.
 - [x] Test export authorization, CSV escaping, and exclusion of Research IDs, record references, clinical content, emails, and assignment identities; then publish the update.
+- [x] Add a safe quick-search control for task status and UTC update date, excluding names, descriptions, identities, record references, and clinical content.
+- [x] Apply the safe task search before pagination and CSV export, add privacy and matching tests, then publish the update.

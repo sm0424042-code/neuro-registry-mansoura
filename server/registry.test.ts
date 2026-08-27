@@ -170,12 +170,14 @@ describe("Mansoura University registry validation", () => {
     const exportRows = vi.spyOn(db, "listRecordCompletionTaskExportRows").mockResolvedValue([{ status: "accepted", updatedAt: new Date("2026-08-27T09:15:00.000Z") }] as any);
     try {
       const caller = appRouter.createCaller(context("user", "approved"));
-      const result = await caller.completionTasks.exportCsv({ status: "accepted", sort: "updated_desc" });
-      expect(exportRows).toHaveBeenCalledWith(14, false, { status: "accepted", sort: "updated_desc" });
+      const result = await caller.completionTasks.exportCsv({ status: "accepted", search: "accepted", sort: "updated_desc" });
+      expect(exportRows).toHaveBeenCalledWith(14, false, { status: "accepted", search: "accepted", sort: "updated_desc" });
       expect(result).toMatchObject({ exportedRows: 1, isTruncated: false });
       expect(result.filename).toMatch(/^completion-tasks-\d{4}-\d{2}-\d{2}\.csv$/);
       expect(result.csv).toContain('"Accepted","2026-08-27T09:15:00.000Z"');
       expect(result.csv).not.toMatch(/MUNR|patientRecordId|researchId|diagnosis|cohort|clinical|email|assignedTo/i);
+      await expect(caller.completionTasks.exportCsv({ search: "member name" } as any)).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      await expect(caller.completionTasks.mine({ search: "record description" } as any)).rejects.toMatchObject({ code: "BAD_REQUEST" });
       await expect(appRouter.createCaller(context("user", "pending")).completionTasks.exportCsv()).rejects.toMatchObject({ code: "FORBIDDEN" });
     } finally { exportRows.mockRestore(); }
   });
