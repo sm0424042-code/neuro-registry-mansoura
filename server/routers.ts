@@ -40,6 +40,7 @@ const TASK_OWNER_ALERTS = {
   reassigned: { title: "Registry task reassigned", content: "A protected record-completion task was reassigned. No patient, record, or clinical information is included." },
   accepted: { title: "Registry task accepted", content: "A protected record-completion task was accepted by its assigned member. No patient, record, or clinical information is included." },
   completed: { title: "Registry task completed", content: "A protected record-completion task was marked complete by its assigned member. No patient, record, or clinical information is included." },
+  record_completion_changed: { title: "Registry completion status changed", content: "A protected record-completion status changed. No patient, record, or clinical information is included." },
 } as const;
 
 async function notifyOwnerOfTaskEvent(eventType: keyof typeof TASK_OWNER_ALERTS) {
@@ -88,11 +89,14 @@ export const appRouter = router({
     auditTrail: approvedProcedure.input(z.object({ id: z.number().int().positive() })).query(({ input }) => db.getPatientAuditTrail(input.id)),
     assignableUsers: approvedProcedure.query(() => db.listAssignableUsers()),
     create: approvedProcedure.input(patientInputSchema).mutation(({ input, ctx }) => { const error = getCompleteRecordThresholdError(input); if (error) throw new TRPCError({ code: "BAD_REQUEST", message: error }); return db.createPatientRecord(input, ctx.user.id); }),
-    update: approvedProcedure.input(patientUpdateSchema).mutation(({ input, ctx }) => {
+    update: approvedProcedure.input(patientUpdateSchema).mutation(async ({ input, ctx }) => {
       const error = getCompleteRecordThresholdError(input);
       if (error) throw new TRPCError({ code: "BAD_REQUEST", message: error });
       const { id, ...record } = input;
-      return db.updatePatientRecord(id, record, ctx.user.id);
+      const existing = await db.getPatientRecord(id);
+      const updated = await db.updatePatientRecord(id, record, ctx.user.id);
+      if (existing && existing.completenessStatus !== updated.completenessStatus) await notifyOwnerOfTaskEvent("record_completion_changed");
+      return updated;
     }),
     files: approvedProcedure.input(z.object({ patientRecordId: z.number().int().positive() })).query(({ input }) => db.listResearchFiles(input.patientRecordId)),
     downloadFile: approvedProcedure.input(z.object({ patientRecordId: z.number().int().positive(), storageKey: z.string().trim().min(1).max(300) })).query(({ input }) => db.getResearchFileUrl(input.patientRecordId, input.storageKey)),

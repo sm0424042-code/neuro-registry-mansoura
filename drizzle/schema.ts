@@ -183,8 +183,9 @@ export const recordCompletionTasks = mysqlTable("record_completion_tasks", {
 export const administratorNotifications = mysqlTable("administrator_notifications", {
   id: int("id").autoincrement().primaryKey(),
   recipientUserId: int("recipientUserId").notNull(),
-  taskId: int("taskId").notNull(),
-  eventType: mysqlEnum("eventType", ["assigned", "accepted", "completed", "reassigned"]).notNull(),
+  taskId: int("taskId"),
+  patientRecordId: int("patientRecordId"),
+  eventType: mysqlEnum("eventType", ["assigned", "accepted", "completed", "reassigned", "record_completion_changed"]).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   readAt: timestamp("readAt"),
 }, table => [

@@ -14,7 +14,7 @@ const cohortLabels: Record<string, string> = {
 
 export function getTaskStatusLabel(status: string) { return status === "reassigned" ? "Reassigned — accept again" : status.charAt(0).toUpperCase() + status.slice(1); }
 export function getTaskNotificationLabel(eventType: string) {
-  return ({ assigned: "A record-completion task was assigned.", accepted: "A record-completion task was accepted.", completed: "A record-completion task was marked complete.", reassigned: "A record-completion task was reassigned." } as Record<string, string>)[eventType] ?? "A protected task event occurred.";
+  return ({ assigned: "A record-completion task was assigned.", accepted: "A record-completion task was accepted.", completed: "A record-completion task was marked complete.", reassigned: "A record-completion task was reassigned.", record_completion_changed: "A record-completion status changed." } as Record<string, string>)[eventType] ?? "A protected task event occurred.";
 }
 
 function TaskStatus({ status }: { status: string }) {

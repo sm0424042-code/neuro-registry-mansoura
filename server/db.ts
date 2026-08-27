@@ -146,10 +146,11 @@ export async function createPatientRecord(input: PatientInput, actorUserId: numb
 export async function updatePatientRecord(id: number, input: PatientInput, actorUserId: number) { return updatePatientRecordWithDb(requireDb(await getDb()), id, input, actorUserId); }
 
 export async function updatePatientRecordWithDb(db: any, id: number, input: PatientInput, actorUserId: number) {
-  const existing = await db.select({ id: patientRecords.id }).from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
+  const existing = await db.select({ id: patientRecords.id, completenessStatus: patientRecords.completenessStatus }).from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
   if (!existing[0]) throw new Error("Patient record not found");
   await db.update(patientRecords).set({ ...input, ageAtOnset: input.ageAtOnset ?? null, completionOwnerUserId: input.completionOwnerUserId ?? null, briefClinicalHistory: input.briefClinicalHistory ?? null, positiveExaminationFindings: input.positiveExaminationFindings ?? null, dischargeTreatment: input.dischargeTreatment ?? null, immuneTherapies: input.immuneTherapies as ImmuneTherapy[], msDoseAdherence: input.msDoseAdherence as MultipleSclerosisDoseAdherence[], clinicalData: input.clinicalData as CohortClinicalData, radiologicalInvestigations: input.radiologicalInvestigations as RadiologicalInvestigation[], laboratoryInvestigations: input.laboratoryInvestigations as LaboratoryInvestigation[], neurologicalInvestigations: input.neurologicalInvestigations as NeurologicalInvestigation[], protocolInvestigations: input.protocolInvestigations as ProtocolInvestigation[], followUpVisits: input.followUpVisits as PatientFollowUp[], lastModifiedByUserId: actorUserId }).where(eq(patientRecords.id, id));
   await db.insert(registryAuditLogs).values({ patientRecordId: id, actorUserId, action: "updated", fieldSummary: getPatientUpdateAuditSummary(input) });
+  if (shouldNotifyRecordCompletionStatusChange(existing[0].completenessStatus, input.completenessStatus)) await createAdministratorTaskNotifications(db, { patientRecordId: id, eventType: "record_completion_changed" });
   const result = await db.select().from(patientRecords).where(eq(patientRecords.id, id)).limit(1);
   return result[0];
 }
@@ -216,8 +217,12 @@ export async function appendResearchFile(patientRecordId: number, actorUserId: n
 
 export async function getResearchFileUrl(patientRecordId: number, storageKey: string) { const db = requireDb(await getDb()); const result = await db.select({ researchFiles: patientRecords.researchFiles }).from(patientRecords).where(eq(patientRecords.id, patientRecordId)).limit(1); const file = ((result[0]?.researchFiles as ResearchFile[] | null | undefined) ?? []).find(item => item.storageKey === storageKey); if (!file) throw new Error("Research file not found for this record"); return { fileName: file.fileName, url: await storageGetSignedUrl(file.storageKey) }; }
 
-type TaskEvent = "assigned" | "accepted" | "completed" | "reassigned";
+type TaskEvent = "assigned" | "accepted" | "completed" | "reassigned" | "record_completion_changed";
 const activeTaskStatuses = ["assigned", "accepted", "reassigned"] as const;
+
+export function shouldNotifyRecordCompletionStatusChange(previousStatus: string | undefined, nextStatus: string) {
+  return previousStatus !== undefined && previousStatus !== nextStatus;
+}
 
 export function getTaskTransitionError(currentStatus: string, assignedToUserId: number, actorUserId: number, nextStatus: "accepted" | "completed") {
   if (assignedToUserId !== actorUserId) return "Only the assigned approved member can change this task.";
@@ -231,9 +236,9 @@ async function ensureApprovedTaskAssignee(db: any, userId: number) {
   if (!assignee[0]) throw new Error("Tasks can be assigned only to an approved active registry member.");
 }
 
-async function createAdministratorTaskNotifications(db: any, taskId: number, eventType: TaskEvent) {
+async function createAdministratorTaskNotifications(db: any, reference: { taskId?: number; patientRecordId?: number; eventType: TaskEvent }) {
   const administrators = await db.select({ id: users.id }).from(users).where(sqlAnd(eq(users.role, "admin"), eq(users.accessStatus, "approved"), isNull(users.removedAt)));
-  if (administrators.length) await db.insert(administratorNotifications).values(administrators.map((administrator: { id: number }) => ({ recipientUserId: administrator.id, taskId, eventType })));
+  if (administrators.length) await db.insert(administratorNotifications).values(administrators.map((administrator: { id: number }) => ({ recipientUserId: administrator.id, taskId: reference.taskId ?? null, patientRecordId: reference.patientRecordId ?? null, eventType: reference.eventType })));
 }
 
 export async function assignRecordCompletionTask(patientRecordId: number, assignedToUserId: number, assignedByAdminId: number) {
@@ -252,7 +257,7 @@ export async function assignRecordCompletionTask(patientRecordId: number, assign
   await db.update(patientRecords).set({ completionOwnerUserId: assignedToUserId }).where(eq(patientRecords.id, patientRecordId));
   const task = (await db.select().from(recordCompletionTasks).where(eq(recordCompletionTasks.patientRecordId, patientRecordId)).orderBy(desc(recordCompletionTasks.updatedAt)).limit(1))[0];
   await db.insert(registryAuditLogs).values({ patientRecordId, actorUserId: assignedByAdminId, action: "updated", fieldSummary: eventType === "assigned" ? "Record-completion task assigned" : "Record-completion task reassigned" });
-  await createAdministratorTaskNotifications(db, task.id, eventType);
+  await createAdministratorTaskNotifications(db, { taskId: task.id, eventType });
   return task;
 }
 
@@ -275,7 +280,7 @@ async function changeTaskStatus(taskId: number, actorUserId: number, status: "ac
   const now = new Date();
   await db.update(recordCompletionTasks).set(status === "accepted" ? { status, acceptedAt: now } : { status, completedAt: now }).where(eq(recordCompletionTasks.id, taskId));
   await db.insert(registryAuditLogs).values({ patientRecordId: task.patientRecordId, actorUserId, action: "updated", fieldSummary: status === "accepted" ? "Record-completion task accepted" : "Record-completion task completed" });
-  await createAdministratorTaskNotifications(db, taskId, status);
+  await createAdministratorTaskNotifications(db, { taskId, eventType: status });
   return (await db.select().from(recordCompletionTasks).where(eq(recordCompletionTasks.id, taskId)).limit(1))[0];
 }
 

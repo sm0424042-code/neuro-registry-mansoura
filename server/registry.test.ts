@@ -156,6 +156,17 @@ describe("Mansoura University registry validation", () => {
     expect(db.getTaskTransitionError("reassigned", 22, 22, "accepted")).toBeNull();
     expect(db.getTaskTransitionError("accepted", 22, 22, "completed")).toBeNull();
   });
+  it("alerts the owner with fixed generic text when a protected record completion status changes", async () => {
+    const previous = vi.spyOn(db, "getPatientRecord").mockResolvedValue({ id: 7, completenessStatus: "incomplete" } as any);
+    const update = vi.spyOn(db, "updatePatientRecord").mockResolvedValue({ id: 7, completenessStatus: "complete" } as any);
+    const notify = vi.spyOn(notifications, "notifyOwner").mockResolvedValue(true);
+    try {
+      const input = { ...base, id: 7, researchId: newResearchId, cohort: "stroke" as const, clinicalData: stroke, missingItems: [], dataQualityStatus: "complete" as const, completenessStatus: "complete" as const };
+      await expect(appRouter.createCaller(context("user", "approved")).registry.update(input)).resolves.toMatchObject({ completenessStatus: "complete" });
+      expect(notify).toHaveBeenCalledWith({ title: "Registry completion status changed", content: "A protected record-completion status changed. No patient, record, or clinical information is included." });
+      expect(notify.mock.calls[0][0].content).not.toMatch(/MUNR|research ID|diagnosis|cohort|email/i);
+    } finally { previous.mockRestore(); update.mockRestore(); notify.mockRestore(); }
+  });
   it("lets only the assigned approved member accept or complete a task through the protected task procedures", async () => {
     const accept = vi.spyOn(db, "acceptRecordCompletionTask").mockResolvedValue({ id: 31, status: "accepted" } as any);
     const complete = vi.spyOn(db, "completeRecordCompletionTask").mockResolvedValue({ id: 31, status: "completed" } as any);

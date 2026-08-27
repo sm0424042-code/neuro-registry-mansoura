@@ -9,9 +9,9 @@ describe("completion-task labels", () => {
   });
 
   it("keeps administrator notification text generic and free from patient-record content", () => {
-    for (const type of ["assigned", "accepted", "completed", "reassigned"]) {
+    for (const type of ["assigned", "accepted", "completed", "reassigned", "record_completion_changed"]) {
       const label = getTaskNotificationLabel(type);
-      expect(label).toMatch(/record-completion task/i);
+      expect(label).toMatch(/record-completion (task|status)/i);
       expect(label).not.toMatch(/MUNR|research ID|diagnosis|cohort|patient name|email/i);
     }
   });
