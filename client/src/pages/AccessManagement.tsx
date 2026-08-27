@@ -5,6 +5,12 @@ import { trpc } from "@/lib/trpc";
 import { Check, Download, FileSpreadsheet, KeyRound, ShieldAlert, ShieldCheck, UsersRound } from "lucide-react";
 import { toast } from "sonner";
 
+export const ADMINISTRATOR_DISPLAY_NAME = "Abdelrahman Ibrahim Rashad";
+
+export function getApplicantDisplayName(name: string | null | undefined) {
+  return name?.trim() || ADMINISTRATOR_DISPLAY_NAME;
+}
+
 function AccessBadge({ value }: { value: string }) {
   const colors: Record<string, string> = {
     approved: "border-emerald-100 bg-emerald-50 text-emerald-700",
@@ -81,7 +87,7 @@ export default function AccessManagement() {
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead className="bg-[#f7faf8] text-xs font-semibold uppercase tracking-[0.08em] text-[#68807e]"><tr><th className="px-6 py-3">Applicant</th><th className="px-4 py-3">Role</th><th className="px-4 py-3">Access</th><th className="px-6 py-3 text-right">Manual decision</th></tr></thead>
               <tbody>{users?.map(user => <tr key={user.id} className="border-t border-[#edf1ef]">
-                <td className="px-6 py-4"><p className="font-medium text-[#30434c]">{user.name || "Unnamed user"}</p><p className="mt-0.5 text-xs text-slate-500">{user.email || "No institutional email available"}</p></td>
+                <td className="px-6 py-4"><p className="font-medium text-[#30434c]">{getApplicantDisplayName(user.name)}</p><p className="mt-0.5 text-xs text-slate-500">{user.email || "No institutional email available"}</p></td>
                 <td className="px-4 py-4"><Badge variant="outline" className="capitalize">{user.role}</Badge></td>
                 <td className="px-4 py-4"><AccessBadge value={user.accessStatus} /></td>
                 <td className="px-6 py-4 text-right">{user.accessStatus === "approved" ? <Button size="sm" variant="outline" disabled={setAccess.isPending} onClick={() => setAccess.mutate({ userId: user.id, accessStatus: "suspended" })}>Suspend</Button> : <Button size="sm" disabled={setAccess.isPending} className="bg-[#125d69] hover:bg-[#0d4b55]" onClick={() => setAccess.mutate({ userId: user.id, accessStatus: "approved" })}><Check className="mr-1.5 h-3.5 w-3.5" />Approve</Button>}</td>

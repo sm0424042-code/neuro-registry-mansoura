@@ -226,3 +226,4 @@
 - [x] Review README wording for accuracy and absence of credentials or identity-based authorization shortcuts, then save a checkpoint.
 - [x] Document the required owner properties: display name, registered OAuth identity binding, approved access status, and administrator role.
 - [x] Verify and, only if needed, correct the future administrator display name to Abdelrahman Ibrahim Rashad without changing OAuth-based authorization.
+- [x] Replace the visible Unnamed user fallback in Access Management with Abdelrahman Ibrahim Rashad as a display-only label.
