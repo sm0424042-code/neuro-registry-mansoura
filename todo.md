@@ -296,3 +296,5 @@
 - [x] Add regression coverage for keyboard navigation edge cases and publish the verified accessibility update.
 - [x] Add an accessible X clear button inside Completion Tasks quick search that resets only the safe search value and returns to the first filtered page.
 - [x] Test clearing search state, restoring full matching results, and preserving status and sort controls; then publish the update.
+- [x] Add a bounded device-local recent-search list for only validated task-status and UTC-date terms, shown when Completion Tasks search is empty and focused.
+- [x] Test de-duplication, recency order, invalid-term exclusion, and the absence of record, user, and clinical data from local recent-search storage; then publish the update.

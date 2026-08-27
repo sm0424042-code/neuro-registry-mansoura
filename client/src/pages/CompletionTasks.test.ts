@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterAndSortCompletionTasks, getActiveTaskSearchSuggestion, getClearedTaskSearchState, getCompletionTaskPage, getCompletionTaskPagination, getNextTaskSearchSuggestionIndex, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskSearchSuggestions, getTaskSearchValidation, getTaskStatusLabel, splitTaskSearchSuggestionHighlight } from "./CompletionTasks";
+import { addRecentTaskSearch, filterAndSortCompletionTasks, getActiveTaskSearchSuggestion, getClearedTaskSearchState, getCompletionTaskPage, getCompletionTaskPagination, getNextTaskSearchSuggestionIndex, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskSearchSuggestions, getTaskSearchValidation, getTaskStatusLabel, MAX_RECENT_TASK_SEARCHES, normaliseRecentTaskSearches, splitTaskSearchSuggestionHighlight } from "./CompletionTasks";
 
 describe("completion-task labels", () => {
   it("uses clear controlled labels for task state", () => {
@@ -78,6 +78,15 @@ describe("completion-task labels", () => {
 
   it("clears only the safe search state and returns to the first result page", () => {
     expect(getClearedTaskSearchState()).toEqual({ taskSearch: "", currentPage: 1 });
+  });
+
+  it("keeps only recent validated operational searches in bounded de-duplicated order", () => {
+    const recent = normaliseRecentTaskSearches(["Accepted", "member name", "2026-08-27", "accepted", "MUNR-0000000000000000000000001", "completed", "assigned", "reassigned", "awaiting acceptance", "2026-08-28"]);
+    expect(recent).toEqual(["accepted", "2026-08-27", "completed", "assigned", "reassigned"]);
+    expect(recent).toHaveLength(MAX_RECENT_TASK_SEARCHES);
+    expect(addRecentTaskSearch(recent, "2026-08-28")).toEqual(["2026-08-28", "accepted", "2026-08-27", "completed", "assigned"]);
+    expect(addRecentTaskSearch(recent, "person name")).toEqual(recent);
+    expect(JSON.stringify(recent)).not.toMatch(/MUNR|person|record|patient|clinical|email/i);
   });
 
   it("highlights only the case-insensitive matching text within a safe suggestion label", () => {
