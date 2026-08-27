@@ -250,3 +250,6 @@
 - [x] Add role and access-status filters, a visible matching-account count, and a clear no-results state without widening data access.
 - [x] Add unit coverage for the account-list search and filter logic, then run type checking, tests, and a production build.
 - [x] Refine Access Management approval and administrator-promotion controls with accessible icon-based upgrade actions while retaining server-side eligibility safeguards.
+- [x] Review the protected record editor for shared sections that should be cohort-specific across Stroke, MS, Abnormal Movements, GBS, MG, Myelopathy, Neuro-ophthalmology, and CIDP.
+- [x] Restrict cohort-specific evaluation and protocol-investigation choices to the selected cohort while retaining only research-wide core metadata.
+- [x] Add isolation tests for cohort-specific recording options, then run type checking, tests, production build, and visual verification.
