@@ -239,3 +239,4 @@
 - [x] Clarify applicant OAuth display name and provider-linked email for access reviewers while excluding national IDs, mobile numbers, and local credentials.
 - [x] Add a derived OAuth-identity verification state and clear manual access-decision context to the applicant review table.
 - [x] Change the sidebar account-card display fallback to Abdelrahman Ibrahim Rashad above the Administrator role without changing OAuth authorization.
+- [x] Refine the sidebar account-card layout so the complete administrator display name remains legible.
