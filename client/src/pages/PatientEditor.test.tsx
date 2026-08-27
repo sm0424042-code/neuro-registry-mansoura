@@ -34,7 +34,10 @@ describe("PatientEditor cohort-specific options", () => {
   it("limits clinical selectors to the relevant choices and preserves historic values only during review", () => {
     const codes = (options: Array<[string, string]>) => options.map(([code]) => code);
     expect(codes(getClinicalSelectorOptions("Stroke type", [["ischemic", "Ischaemic"], ["hemorrhagic", "Haemorrhagic"], ["tia", "TIA"], ["aidp", "AIDP"]], "unknown"))).toEqual(["ischemic", "hemorrhagic", "tia", "unknown"]);
-    expect(codes(getClinicalSelectorOptions("GBS variant", [["aidp", "AIDP"], ["aman", "AMAN"]], "madsam"))).toEqual(["madsam", "aidp", "aman", "amsan", "miller_fisher", "other", "unknown"]);
+    const gbsWithHistoricValue = codes(getClinicalSelectorOptions("GBS variant", [["aidp", "AIDP"], ["aman", "AMAN"]], "madsam"));
+    expect(gbsWithHistoricValue[0]).toBe("madsam");
+    expect(gbsWithHistoricValue).toEqual(expect.arrayContaining(["aidp", "aman", "amsan", "miller_fisher", "pharyngeal_cervical_brachial"]));
+    expect(gbsWithHistoricValue).not.toContain("typical");
     expect(codes(getClinicalSelectorOptions("CIDP variant", [["typical", "Typical CIDP"], ["madsam", "MADSAM"]], "typical"))).not.toContain("aidp");
   });
 

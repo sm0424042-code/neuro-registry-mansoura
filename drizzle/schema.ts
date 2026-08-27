@@ -28,87 +28,87 @@ type EvaluationChecklist = { evaluationItems?: CohortEvaluationItem[] };
 export type StrokeClinicalData = EvaluationChecklist & {
   cohort: "stroke";
   strokeType: "ischemic" | "hemorrhagic" | "tia" | "other" | "unknown";
-  vascularTerritory: "aca" | "mca_complete" | "mca_incomplete" | "pca" | "vertebrobasilar" | "other" | "unknown";
+  vascularTerritory: "aca" | "mca_complete" | "mca_incomplete" | "pca" | "vertebrobasilar" | "lacunar_deep" | "multiterritory" | "other" | "unknown";
   reperfusionTherapy: "none" | "iv_thrombolysis" | "mechanical_thrombectomy" | "both" | "unknown";
   toastEtiology: "large_artery" | "cardioembolic" | "small_vessel" | "other_determined" | "undetermined" | "unknown";
-  majorComplication: "none" | "hemorrhagic_transformation" | "cerebral_edema" | "seizure" | "aspiration_pneumonia" | "dvt_pe" | "recurrent_stroke" | "other" | "unknown";
-  strokeEvaluation: "nihss_and_mrs" | "nihss_only" | "mrs_only" | "not_recorded" | "unknown";
+  majorComplication: "none" | "hemorrhagic_transformation" | "cerebral_edema" | "malignant_infarction" | "hydrocephalus" | "seizure" | "status_epilepticus" | "aspiration_pneumonia" | "dvt_pe" | "recurrent_stroke" | "other" | "unknown";
+  strokeEvaluation: "nihss_and_mrs" | "nihss_mrs_barthel" | "nihss_mrs_cognitive" | "nihss_only" | "mrs_only" | "not_recorded" | "unknown";
 };
 
 export type MultipleSclerosisClinicalData = EvaluationChecklist & {
   cohort: "multiple_sclerosis";
   diseaseCourse: "relapsing_remitting" | "primary_progressive" | "secondary_progressive" | "clinically_isolated_syndrome" | "unknown";
   disabilityLevel: "mild" | "moderate" | "severe" | "unknown";
-  relapseActivity: "active" | "inactive" | "unknown";
-  diseaseModifyingTherapy: "none" | "interferon_beta" | "glatiramer_acetate" | "dimethyl_fumarate" | "teriflunomide" | "fingolimod" | "siponimod" | "natalizumab" | "ocrelizumab" | "ofatumumab" | "cladribine" | "alemtuzumab" | "other" | "unknown";
+  relapseActivity: "active" | "inactive" | "suspected" | "progression_without_relapse" | "unknown";
+  diseaseModifyingTherapy: "none" | "interferon_beta" | "glatiramer_acetate" | "dimethyl_fumarate" | "teriflunomide" | "fingolimod" | "ozanimod" | "ponesimod" | "siponimod" | "natalizumab" | "ocrelizumab" | "ofatumumab" | "ublituximab" | "cladribine" | "alemtuzumab" | "rituximab" | "other" | "unknown";
   msfcAssessed: "yes" | "no" | "not_applicable";
   timed25FootWalkSeconds: number | null;
   nineHolePegTestSeconds: number | null;
   pasat3Score: number | null;
   tuberculinScreen: "negative" | "positive" | "indeterminate" | "not_done" | "not_required" | "unknown";
   chestTuberculosisScreen: "clear" | "abnormal" | "not_done" | "not_required" | "unknown";
-  msEvaluation: "clinical_mri_msfc" | "clinical_mri" | "clinical_only" | "treatment_safety" | "unknown";
+  msEvaluation: "clinical_mri_msfc" | "clinical_mri_msfc_edss" | "clinical_mri_edss" | "clinical_mri" | "clinical_only" | "treatment_safety" | "unknown";
 };
 
 export type AbnormalMovementClinicalData = EvaluationChecklist & {
   cohort: "abnormal_movements";
-  movementPhenotype: "tremor" | "dystonia" | "chorea" | "ataxia" | "tics" | "other" | "unknown";
-  distribution: "focal" | "segmental" | "generalized" | "unknown";
+  movementPhenotype: "tremor" | "parkinsonism" | "dystonia" | "chorea" | "ballism" | "myoclonus" | "ataxia" | "tics" | "stereotypy" | "functional_movement_disorder" | "other" | "unknown";
+  distribution: "focal" | "segmental" | "hemibody" | "multifocal" | "generalized" | "unknown";
   severity: "mild" | "moderate" | "severe" | "unknown";
   functionalImpact: "none" | "mild" | "moderate" | "severe" | "unknown";
-  treatmentResponse: "responsive" | "partially_responsive" | "refractory" | "unknown";
-  movementEvaluation: "phenomenology_and_video" | "phenomenology_only" | "imaging_reviewed" | "unknown";
+  treatmentResponse: "not_treated" | "responsive" | "partially_responsive" | "intolerant" | "refractory" | "unknown";
+  movementEvaluation: "phenomenology_and_video" | "phenomenology_video_scale" | "phenomenology_only" | "imaging_reviewed" | "genetic_metabolic_workup" | "unknown";
 };
 
 export type GuillainBarreClinicalData = EvaluationChecklist & {
   cohort: "guillain_barre";
-  variant: "aidp" | "aman" | "amsan" | "miller_fisher" | "other" | "unknown";
+  variant: "aidp" | "aman" | "amsan" | "miller_fisher" | "pharyngeal_cervical_brachial" | "paraparetic" | "pure_motor" | "sensory_ataxic" | "bickerstaff" | "other" | "unknown";
   disabilityScore: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "unknown";
-  ventilatorySupport: "none" | "non_invasive" | "invasive" | "unknown";
-  treatment: "ivig" | "plasmapheresis" | "both" | "supportive" | "unknown";
-  gbsEvaluation: "gbs_disability_and_respiratory" | "gbs_disability_only" | "electrodiagnostic_reviewed" | "unknown";
+  ventilatorySupport: "none" | "supplemental_oxygen" | "non_invasive" | "invasive" | "tracheostomy" | "unknown";
+  treatment: "observation" | "ivig" | "plasmapheresis" | "both" | "supportive" | "unknown";
+  gbsEvaluation: "gbs_disability_and_respiratory" | "serial_disability_and_respiratory" | "gbs_disability_only" | "electrodiagnostic_reviewed" | "brighton_level_recorded" | "autonomic_respiratory_review" | "unknown";
 };
 
 export type MyastheniaGravisClinicalData = EvaluationChecklist & {
   cohort: "myasthenia_gravis";
-  mgfaClass: "I" | "II" | "III" | "IV" | "V" | "unknown";
-  antibodyStatus: "achr" | "musk" | "lrp4" | "seronegative" | "unknown";
-  thymomaStatus: "present" | "absent" | "not_assessed" | "unknown";
-  crisisHistory: "never" | "past" | "current" | "unknown";
+  mgfaClass: "I" | "II" | "IIa" | "IIb" | "III" | "IIIa" | "IIIb" | "IV" | "IVa" | "IVb" | "V" | "unknown";
+  antibodyStatus: "achr" | "musk" | "lrp4" | "titin" | "agrin" | "seronegative" | "unknown";
+  thymomaStatus: "present" | "absent" | "thymic_hyperplasia" | "post_thymectomy" | "not_assessed" | "unknown";
+  crisisHistory: "never" | "impending" | "past" | "current" | "post_crisis_recovery" | "unknown";
   treatmentResponse: "responsive" | "partially_responsive" | "refractory" | "unknown";
-  mgEvaluation: "mgfa_and_qmg" | "mgfa_only" | "respiratory_review" | "unknown";
+  mgEvaluation: "mgfa_qmg_mgadl" | "mgfa_and_qmg" | "mgadl_only" | "mgfa_only" | "respiratory_review" | "unknown";
 };
 
 export type MyelopathyClinicalData = EvaluationChecklist & {
   cohort: "myelopathy";
-  level: "cervical" | "thoracic" | "lumbar" | "multilevel" | "unknown";
-  cause: "degenerative" | "inflammatory" | "compressive" | "vascular" | "infectious" | "other" | "unknown";
+  level: "cervical" | "cervicothoracic" | "thoracic" | "thoracolumbar" | "lumbar" | "conus" | "multilevel" | "unknown";
+  cause: "degenerative" | "inflammatory" | "demyelinating" | "compressive" | "neoplastic" | "vascular" | "vascular_malformation" | "metabolic_nutritional" | "infectious" | "other" | "unknown";
   upperMotorNeuronSigns: "present" | "absent" | "unknown";
   lowerMotorNeuronFeatures: "present" | "absent" | "unknown";
-  bladderInvolvement: "yes" | "no" | "unknown";
-  myelopathyEvaluation: "mri_and_neuroexam" | "mri_only" | "csf_reviewed" | "unknown";
+  bladderInvolvement: "yes" | "urgency_frequency" | "retention" | "incontinence" | "mixed" | "no" | "unknown";
+  myelopathyEvaluation: "mri_and_neuroexam" | "mri_neuroexam_csf" | "mri_vascular_imaging" | "mri_only" | "csf_reviewed" | "neurophysiology_reviewed" | "unknown";
 };
 
 export type NeuroOphthalmologyClinicalData = EvaluationChecklist & {
   cohort: "neuro_ophthalmology";
-  visualSyndrome: "optic_neuritis" | "visual_field_defect" | "diplopia" | "papilledema" | "other" | "unknown";
+  visualSyndrome: "optic_neuritis" | "ischemic_optic_neuropathy" | "compressive_optic_neuropathy" | "visual_field_defect" | "diplopia" | "ocular_motor_palsy" | "papilledema" | "chiasmal_syndrome" | "cortical_visual_syndrome" | "other" | "unknown";
   laterality: "right" | "left" | "bilateral" | "unknown";
-  acuityChange: "improved" | "stable" | "worsened" | "unknown";
+  acuityChange: "improved" | "stable" | "worsened" | "severely_reduced" | "no_light_perception" | "unknown";
   afferentDefect: "yes" | "no" | "unknown";
-  diseaseClassification: "nmosd" | "mogad" | "giant_cell_arteritis" | "ms_associated" | "idiopathic_optic_neuritis" | "other" | "unknown";
-  antibodyProfile: "aqp4_positive" | "mog_positive" | "both_negative" | "not_done" | "unknown";
-  linkedSystemicDisease: "none" | "multiple_sclerosis" | "sarcoidosis" | "systemic_vasculitis" | "other" | "unknown";
-  neuroOphEvaluation: "acuity_fields_oct" | "fundus_and_oct" | "antibody_workup" | "gca_pathway" | "unknown";
+  diseaseClassification: "nmosd" | "mogad" | "giant_cell_arteritis" | "ms_associated" | "sarcoid_optic_neuropathy" | "idiopathic_optic_neuritis" | "idiopathic_intracranial_hypertension" | "other" | "unknown";
+  antibodyProfile: "aqp4_positive" | "mog_positive" | "both_positive" | "both_negative" | "indeterminate" | "not_done" | "unknown";
+  linkedSystemicDisease: "none" | "multiple_sclerosis" | "sarcoidosis" | "systemic_lupus" | "systemic_vasculitis" | "behcet_disease" | "other" | "unknown";
+  neuroOphEvaluation: "acuity_fields_oct" | "acuity_colour_vision_oct" | "fundus_and_oct" | "neuroimaging_reviewed" | "antibody_workup" | "gca_pathway" | "unknown";
 };
 
 export type CIDPClinicalData = EvaluationChecklist & {
   cohort: "cidp";
-  variant: "typical" | "madsam" | "distal" | "focal" | "motor" | "sensory" | "other" | "unknown";
-  diagnosticPathway: "cidp" | "mononeuritis_multiplex" | "vasculitic_neuropathy" | "other" | "unknown";
+  variant: "typical" | "madsam" | "distal" | "focal" | "motor" | "sensory" | "sensory_motor" | "other" | "unknown";
+  diagnosticPathway: "cidp" | "possible_cidp" | "mononeuritis_multiplex" | "vasculitic_neuropathy" | "anti_mag_neuropathy" | "multifocal_motor_neuropathy" | "other" | "unknown";
   disabilityLevel: "mild" | "moderate" | "severe" | "unknown";
-  emgNcsEvidence: "demyelinating" | "axonal_multifocal" | "equivocal" | "not_done" | "unknown";
-  csfProteinStatus: "elevated" | "normal" | "not_done" | "unknown";
-  cidpEvaluation: "emg_ncs_and_disability" | "emg_ncs_only" | "vasculitis_workup" | "unknown";
+  emgNcsEvidence: "demyelinating" | "conduction_block" | "axonal_multifocal" | "mixed_demyelinating_axonal" | "equivocal" | "not_done" | "unknown";
+  csfProteinStatus: "markedly_elevated" | "elevated" | "normal" | "not_done" | "unknown";
+  cidpEvaluation: "emg_ncs_disability_treatment" | "emg_ncs_and_disability" | "emg_ncs_only" | "serial_incat_onls" | "vasculitis_workup" | "unknown";
 };
 
 export type CohortClinicalData = StrokeClinicalData | MultipleSclerosisClinicalData | AbnormalMovementClinicalData | GuillainBarreClinicalData | MyastheniaGravisClinicalData | MyelopathyClinicalData | NeuroOphthalmologyClinicalData | CIDPClinicalData;
