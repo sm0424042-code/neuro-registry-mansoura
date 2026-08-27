@@ -302,3 +302,5 @@
 - [x] Test recent-search visual metadata and confirm ordinary suggestions receive no recent-history label; then publish the update.
 - [x] Add approved-user aggregate registry statistics for total records, cohort distribution, completion state, and assessed-field completeness without exposing individual record data.
 - [x] Test statistics authorization, aggregate-only response contract, and the absence of Research IDs, clinical narratives, free text, contact data, and user identity; then publish the update.
+- [x] Add interactive aggregate-only donut and bar charts for cohort composition and record-completion status to the protected Statistics workspace.
+- [x] Test chart data transformation, interaction accessibility, and the exclusion of individual registry data; then verify the protected route and publish the update.
