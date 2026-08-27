@@ -16,6 +16,7 @@ import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 const baseMenuItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/" },
   { icon: BarChart3, label: "Statistics", path: "/statistics" },
+  { icon: Microscope, label: "Research Questions", path: "/research-questions" },
   { icon: ClipboardList, label: "Patient Registry", path: "/registry" },
   { icon: ClipboardCheck, label: "Completion Tasks", path: "/tasks" },
   { icon: MessageSquare, label: "Messages", path: "/messages" },

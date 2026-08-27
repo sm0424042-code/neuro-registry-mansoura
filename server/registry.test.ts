@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PatientRecord } from "../drizzle/schema";
 import type { TrpcContext } from "./_core/context";
-import { getCompleteRecordThresholdError, getInvestigationCoverage, getPatientUpdateAuditSummary, getRegistryStatisticsDateRangeBounds, getResearchRecordCompleteness, patientInputSchema, patientUpdateSchema, registryStatisticsFiltersSchema, researchFileInputSchema, toDeidentifiedExportRow } from "./registry";
+import { getCompleteRecordThresholdError, getInvestigationCoverage, getPatientUpdateAuditSummary, getRegistryStatisticsDateRangeBounds, getResearchRecordCompleteness, patientInputSchema, patientUpdateSchema, registryStatisticsFiltersSchema, researchFileInputSchema, researchQuestionInputSchema, toDeidentifiedExportRow } from "./registry";
 import { appRouter } from "./routers";
 import * as db from "./db";
 import * as notifications from "./_core/notification";
@@ -88,6 +88,19 @@ describe("Mansoura University registry validation", () => {
       expect(JSON.stringify(result)).not.toMatch(/MUNR|researchId|patientRecord|diagnosis|clinicalData|briefClinicalHistory|email|assignedTo/i);
     } finally { statistics.mockRestore(); }
   });
+  it("runs a named research question only for approved users and returns the protected aggregate contract", async () => {
+    const aggregate = { totalRecords: 6, byCohort: [{ cohort: "stroke", total: 6 }], byEnrollment: [], byCompleteness: [], byDataQuality: [], investigationCoverage: { totalRecords: 6, radiologyRecorded: 0, laboratoryRecorded: 0, neurologicalRecorded: 0, protocolChecklistComplete: 0, protocolChecklistOutstanding: 0 }, cohortIndicators: [] };
+    const statistics = vi.spyOn(db, "getRegistryAggregateStatistics").mockResolvedValue(aggregate);
+    const input = { title: "What proportion of matching records received reperfusion?", filters: { cohort: "stroke", startDate: "2026-01-01", endDate: "2026-01-31" } };
+    try {
+      await expect(appRouter.createCaller(context("user", "pending")).registry.researchQuestion(input)).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(appRouter.createCaller(context("user", "approved")).registry.researchQuestion({ ...input, title: "MUNR-12345678901234" })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      const result = await appRouter.createCaller(context("user", "approved")).registry.researchQuestion(input);
+      expect(statistics).toHaveBeenCalledWith(input.filters);
+      expect(result).toEqual({ title: input.title, statistics: aggregate });
+      expect(JSON.stringify(result)).not.toMatch(/researchId|patientRecord|diagnosis|clinicalData|briefClinicalHistory|email|assignedTo/i);
+    } finally { statistics.mockRestore(); }
+  });
   it("validates inclusive UTC registration-date ranges before aggregate statistics reach the database", () => {
     expect(registryStatisticsFiltersSchema.safeParse({ startDate: "2026-01-01", endDate: "2026-01-31", comparisonStartDate: "2025-01-01", comparisonEndDate: "2025-01-31" }).success).toBe(true);
     expect(registryStatisticsFiltersSchema.safeParse({ startDate: "2026-02-30" }).success).toBe(false);
@@ -95,6 +108,12 @@ describe("Mansoura University registry validation", () => {
     expect(registryStatisticsFiltersSchema.safeParse({ startDate: "2026-01-01", endDate: "2026-01-31", comparisonStartDate: "2025-01-01" }).success).toBe(false);
     expect(registryStatisticsFiltersSchema.safeParse({ startDate: "2026-01-01", endDate: "2026-01-31", comparisonStartDate: "2026-01-01", comparisonEndDate: "2026-01-31" }).success).toBe(false);
     expect(getRegistryStatisticsDateRangeBounds("2026-01-01", "2026-01-31")).toEqual({ start: new Date("2026-01-01T00:00:00.000Z"), endExclusive: new Date("2026-02-01T00:00:00.000Z") });
+  });
+  it("validates a non-identifying Research Question title and its controlled filters", () => {
+    expect(researchQuestionInputSchema.safeParse({ title: "What proportion of Stroke records used IV thrombolysis?", filters: { cohort: "stroke" } }).success).toBe(true);
+    expect(researchQuestionInputSchema.safeParse({ title: "MUNR-12345678901234", filters: { cohort: "stroke" } }).success).toBe(false);
+    expect(researchQuestionInputSchema.safeParse({ title: "Patient name contact analysis", filters: { cohort: "stroke" } }).success).toBe(false);
+    expect(researchQuestionInputSchema.safeParse({ title: "How many matching records?", filters: { cohort: "uncontrolled_value" } }).success).toBe(false);
   });
   it("calculates cohort clinical indicators from controlled values without record or identity fields", () => {
     const indicators = getCohortClinicalIndicators([{ cohort: "stroke", strokeReperfusion: "iv_thrombolysis" }, { cohort: "stroke", strokeReperfusion: "none" }, { cohort: "guillain_barre", gbsVariant: "aidp" }, { cohort: "guillain_barre", gbsVariant: "aman" }, { cohort: "neuro_ophthalmology", neuroOphDiseaseClassification: "nmosd", neuroOphAntibodyProfile: "aqp4_positive" }, { cohort: "neuro_ophthalmology", neuroOphDiseaseClassification: "nmosd", neuroOphAntibodyProfile: "both_negative" }, { cohort: "neuro_ophthalmology", neuroOphDiseaseClassification: "mogad", neuroOphAntibodyProfile: "mog_positive" }, { cohort: "cidp", cidpVariant: "madsam" }]);

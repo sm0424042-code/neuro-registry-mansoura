@@ -338,3 +338,6 @@
 - [x] Expand the approved custom-statistic library with controlled cohort-specific numerator and denominator definitions from the research evidence.
 - [x] Add a flexible researcher question composer that combines approved structured conditions only, enforces aggregate-only results, and suppresses unsafe small groups.
 - [x] Test research-definition validation, small-group protection, export exclusions, access control, and protected route behavior; then publish the update.
+- [x] Add a dedicated Research Question Builder that accepts a researcher-supplied non-identifying question title and approved structured conditions.
+- [x] Add protected aggregate execution, small-group suppression, local save/load, and aggregate CSV/PNG/PDF/Word exports for a Research Question.
+- [x] Test question-title safety, controlled-condition validation, aggregate result calculation, export exclusions, and protected access; then publish the update.

@@ -7,7 +7,7 @@ import * as notifications from "./_core/notification";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { ENV } from "./_core/env";
-import { getCompleteRecordThresholdError, patientInputSchema, patientUpdateSchema, registryFiltersSchema, registryStatisticsFiltersSchema, researchFileInputSchema, toDeidentifiedExportRow } from "./registry";
+import { getCompleteRecordThresholdError, patientInputSchema, patientUpdateSchema, registryFiltersSchema, registryStatisticsFiltersSchema, researchFileInputSchema, researchQuestionInputSchema, toDeidentifiedExportRow } from "./registry";
 import { createCompletionTaskCsv } from "./completionTaskExport";
 
 const approvedProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -107,6 +107,7 @@ export const appRouter = router({
   registry: router({
     overview: approvedProcedure.query(() => db.getRegistryOverview()),
     statistics: approvedProcedure.input(registryStatisticsFiltersSchema).query(({ input }) => db.getRegistryAggregateStatistics(input)),
+    researchQuestion: approvedProcedure.input(researchQuestionInputSchema).query(async ({ input }) => ({ title: input.title, statistics: await db.getRegistryAggregateStatistics(input.filters) })),
     list: approvedProcedure.input(registryFiltersSchema).query(({ input }) => db.listPatientRecords(input)),
     get: approvedProcedure.input(z.object({ id: z.number().int().positive() })).query(({ input }) => db.getPatientRecord(input.id)),
     auditTrail: approvedProcedure.input(z.object({ id: z.number().int().positive() })).query(({ input }) => db.getPatientAuditTrail(input.id)),

@@ -14,6 +14,7 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const PatientEditor = lazy(() => import("@/pages/PatientEditor"));
 const PatientRegistry = lazy(() => import("@/pages/PatientRegistry"));
 const PublicWorkflowPreview = lazy(() => import("@/pages/PublicWorkflowPreview"));
+const ResearchQuestions = lazy(() => import("@/pages/ResearchQuestions"));
 const RegistryStatistics = lazy(() => import("@/pages/RegistryStatistics"));
 
 function RouteLoading() {
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/workflow-preview">{() => <RouteBoundary><PublicWorkflowPreview /></RouteBoundary>}</Route>
       <Route path="/">{() => <ProtectedPage><Home /></ProtectedPage>}</Route>
       <Route path="/statistics">{() => <ProtectedPage><RegistryStatistics /></ProtectedPage>}</Route>
+      <Route path="/research-questions">{() => <ProtectedPage><ResearchQuestions /></ProtectedPage>}</Route>
       <Route path="/registry">{() => <ProtectedPage><PatientRegistry /></ProtectedPage>}</Route>
       <Route path="/messages">{() => <ProtectedPage><Messages /></ProtectedPage>}</Route>
       <Route path="/tasks">{() => <ProtectedPage><CompletionTasks /></ProtectedPage>}</Route>
