@@ -1,5 +1,8 @@
 import { z } from "zod";
 import type { CohortClinicalData, PatientRecord, RadiologicalInvestigation } from "../drizzle/schema";
+import { getCompleteRecordThresholdError, getResearchRecordCompleteness } from "../shared/recordCompleteness";
+
+export { COMPLETE_RECORD_THRESHOLD_PERCENT, getCompleteRecordThresholdError, getResearchRecordCompleteness } from "../shared/recordCompleteness";
 
 export const cohortSchema = z.enum(["stroke", "multiple_sclerosis", "abnormal_movements", "guillain_barre", "myasthenia_gravis", "myelopathy", "neuro_ophthalmology", "cidp"]);
 const choice = <T extends readonly [string, ...string[]]>(values: T) => z.enum(values);

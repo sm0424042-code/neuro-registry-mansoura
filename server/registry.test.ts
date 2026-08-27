@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PatientRecord } from "../drizzle/schema";
 import type { TrpcContext } from "./_core/context";
-import { getInvestigationCoverage, getPatientUpdateAuditSummary, patientInputSchema, patientUpdateSchema, researchFileInputSchema, toDeidentifiedExportRow } from "./registry";
+import { getCompleteRecordThresholdError, getInvestigationCoverage, getPatientUpdateAuditSummary, getResearchRecordCompleteness, patientInputSchema, patientUpdateSchema, researchFileInputSchema, toDeidentifiedExportRow } from "./registry";
 import { appRouter } from "./routers";
 import * as db from "./db";
 import * as notifications from "./_core/notification";
@@ -53,6 +53,16 @@ describe("Mansoura University registry validation", () => {
     expect(patientInputSchema.safeParse({ ...base, researchId: newResearchId, cohort: "cidp", clinicalData: { ...cidp, diagnosticPathway: "mononeuritis_multiplex" }, neurologicalInvestigations: [{ testName: "nerve_biopsy", resultStatus: "abnormal" }] }).success).toBe(true);
   });
   it("enforces completion workflow consistency", () => { expect(patientInputSchema.safeParse({ ...base, researchId: "MUNR-00000000000012", cohort: "cidp", completenessStatus: "complete", missingItems: ["laboratory"], clinicalData: cidp }).success).toBe(false); });
+  it("requires 85% assessed-field completion before a record can be marked complete while allowing a draft", () => {
+    const incomplete = { ...base, researchId: newResearchId, cohort: "stroke", clinicalData: { ...stroke, strokeType: "unknown", vascularTerritory: "unknown", strokeEvaluation: "unknown" }, missingItems: [], dataQualityStatus: "complete", completenessStatus: "complete" };
+    expect(getResearchRecordCompleteness(incomplete).percentage).toBeLessThan(85);
+    expect(getCompleteRecordThresholdError(incomplete)).toContain("at least 85%");
+    expect(getCompleteRecordThresholdError({ ...incomplete, dataQualityStatus: "draft", completenessStatus: "incomplete" })).toBeNull();
+    const complete = { ...base, researchId: newResearchId, cohort: "stroke", clinicalData: stroke, missingItems: [], dataQualityStatus: "complete", completenessStatus: "complete" };
+    expect(getResearchRecordCompleteness(complete).percentage).toBeGreaterThanOrEqual(85);
+    expect(getCompleteRecordThresholdError(complete)).toBeNull();
+    expect(getCompleteRecordThresholdError({ ...complete, missingItems: ["follow_up"] })).toContain("cannot retain items still required");
+  });
   it("accepts research-safe additional cohort information but rejects direct identifiers", () => {
     expect(patientInputSchema.safeParse({ ...base, researchId: newResearchId, cohort: "stroke", clinicalData: { ...stroke, additionalResearchInformation: "Protocol-relevant classification detail" } }).success).toBe(true);
     expect(patientInputSchema.safeParse({ ...base, researchId: newResearchId, cohort: "stroke", clinicalData: { ...stroke, additionalResearchInformation: "Patient name is included" } }).success).toBe(false);

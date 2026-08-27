@@ -273,3 +273,4 @@
 - [x] Clarify in the protected Research ID form that the approved data recorder manually selects the 25-digit suffix; do not auto-generate or alter existing identifiers.
 - [x] Restrict every displayed cohort-specific selector to clinically appropriate options for its field, while preserving existing historic values without offering them as new choices.
 - [x] Expand each cohort-specific clinical selector with medically appropriate, guideline-informed choices while preserving strict field relevance and safe historic-value display.
+- [x] Add a transparent 85% research-field completeness threshold: allow protected draft saving below it and require the threshold before a record can be marked complete in Patient Registry.

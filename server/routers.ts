@@ -7,7 +7,7 @@ import * as notifications from "./_core/notification";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { ENV } from "./_core/env";
-import { patientInputSchema, patientUpdateSchema, registryFiltersSchema, researchFileInputSchema, toDeidentifiedExportRow } from "./registry";
+import { getCompleteRecordThresholdError, patientInputSchema, patientUpdateSchema, registryFiltersSchema, researchFileInputSchema, toDeidentifiedExportRow } from "./registry";
 
 const approvedProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.accessStatus !== "approved") {
@@ -72,8 +72,10 @@ export const appRouter = router({
     get: approvedProcedure.input(z.object({ id: z.number().int().positive() })).query(({ input }) => db.getPatientRecord(input.id)),
     auditTrail: approvedProcedure.input(z.object({ id: z.number().int().positive() })).query(({ input }) => db.getPatientAuditTrail(input.id)),
     assignableUsers: approvedProcedure.query(() => db.listAssignableUsers()),
-    create: approvedProcedure.input(patientInputSchema).mutation(({ input, ctx }) => db.createPatientRecord(input, ctx.user.id)),
+    create: approvedProcedure.input(patientInputSchema).mutation(({ input, ctx }) => { const error = getCompleteRecordThresholdError(input); if (error) throw new TRPCError({ code: "BAD_REQUEST", message: error }); return db.createPatientRecord(input, ctx.user.id); }),
     update: approvedProcedure.input(patientUpdateSchema).mutation(({ input, ctx }) => {
+      const error = getCompleteRecordThresholdError(input);
+      if (error) throw new TRPCError({ code: "BAD_REQUEST", message: error });
       const { id, ...record } = input;
       return db.updatePatientRecord(id, record, ctx.user.id);
     }),
