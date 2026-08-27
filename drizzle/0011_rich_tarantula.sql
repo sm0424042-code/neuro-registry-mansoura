@@ -1,0 +1,1 @@
+ALTER TABLE `patient_records` MODIFY COLUMN `researchId` varchar(30) NOT NULL;

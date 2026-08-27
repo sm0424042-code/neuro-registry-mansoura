@@ -4,7 +4,7 @@ import axios, { type AxiosInstance } from "axios";
 import { parse as parseCookieHeader } from "cookie";
 import type { Request } from "express";
 import { SignJWT, jwtVerify } from "jose";
-import type { User } from "../../drizzle/schema";
+import type { InsertUser, User } from "../../drizzle/schema";
 import * as db from "../db";
 import { ENV } from "./env";
 import type {
@@ -23,6 +23,16 @@ export type SessionPayload = {
   appId: string;
   name: string;
 };
+
+export function getSessionUserSyncPayload(user: User, sessionName: string, lastSignedIn: Date): InsertUser {
+  return {
+    openId: user.openId,
+    name: sessionName.trim() || user.name || null,
+    email: user.email ?? null,
+    loginMethod: user.loginMethod ?? null,
+    lastSignedIn,
+  };
+}
 
 const EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
 const GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
@@ -311,10 +321,7 @@ class SDKServer {
       throw ForbiddenError("User not found");
     }
 
-    await db.upsertUser({
-      openId: user.openId,
-      lastSignedIn: signedInAt,
-    });
+    await db.upsertUser(getSessionUserSyncPayload(user, session.name, signedInAt));
 
     return user;
   }

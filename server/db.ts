@@ -130,7 +130,7 @@ function requireDb(db: Awaited<ReturnType<typeof getDb>>) {
 }
 
 function recordedByDisplayName() {
-  return sql<string | null>`COALESCE(NULLIF(TRIM(${users.name}), ''), NULLIF(CASE WHEN ${users.openId} = ${ENV.ownerOpenId ?? ""} THEN ${process.env.OWNER_NAME ?? ""} ELSE NULL END, ''))`;
+  return sql<string | null>`NULLIF(TRIM(${users.name}), '')`;
 }
 
 export async function createPatientRecord(input: PatientInput, actorUserId: number) {

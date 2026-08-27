@@ -78,6 +78,13 @@
       "when": 1787794300416,
       "tag": "0010_vengeful_risque",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1787801867905,
+      "tag": "0011_rich_tarantula",
+      "breakpoints": true
     }
   ]
 }

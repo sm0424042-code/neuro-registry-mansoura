@@ -2,6 +2,8 @@
 
 ## Verified in the current session
 
+The published `/records/new` route was reopened in the normal browser without an approved OAuth session. After the workspace loader completed, it rendered only the **Authorised access only** gate and a non-patient release summary; it did not reveal a record form, Research ID field, user attribution, or registry data. A live signed-in review remains necessary to inspect the protected form's current MUNR guidance.
+
 The protected `/records/new` route was opened in the live sandbox browser. It displayed the **Authorised access only** gate and did not expose registry data, confirming that a missing session cookie does not reveal protected research records.
 
 The same protected route now visibly displays a **Latest clinical workflow added** release summary on desktop and mobile. The summary names the new Stroke, MS, CIDP/neuropathy, and Neuro-ophthalmology pathways while exposing no patient-specific data. The mobile capture stacked the secure sign-in card, the release summary, and the protected editor skeleton without horizontal overflow.

@@ -130,7 +130,7 @@ export const userProfiles = mysqlTable("user_profiles", {
 
 export const patientRecords = mysqlTable("patient_records", {
   id: int("id").autoincrement().primaryKey(),
-  researchId: varchar("researchId", { length: 24 }).notNull().unique(),
+  researchId: varchar("researchId", { length: 30 }).notNull().unique(),
   cohort: mysqlEnum("cohort", ["stroke", "multiple_sclerosis", "abnormal_movements", "guillain_barre", "myasthenia_gravis", "myelopathy", "neuro_ophthalmology", "cidp"]).notNull(),
   sex: mysqlEnum("sex", ["female", "male", "not_recorded"]).notNull(),
   ageAtEnrollment: int("ageAtEnrollment").notNull(),
