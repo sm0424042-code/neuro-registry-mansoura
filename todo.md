@@ -327,3 +327,7 @@
 - [x] Apply current and comparison date ranges, standard Statistics filters, and protected aggregation to each custom statistic without returning individual records.
 - [x] Add aggregate-only CSV, PNG, PDF, and Word export support for the custom statistic and its period comparison.
 - [x] Test custom-statistic validation, denominator safety, authorization, export exclusions, and protected route behavior; then publish the update.
+- [x] Add multiple accessible views for a selected custom statistic, including a proportion chart, a numerator-versus-denominator chart, and a comparison trend view.
+- [x] Add bounded local-only saving, naming, loading, and deletion of custom-statistic query definitions without storing results or individual data.
+- [x] Add deterministic smart interpretation charts that explain aggregate magnitude, direction, and denominator context without making causal or clinical claims.
+- [x] Test view transforms, saved-query validation, interpretation content, export exclusions, and protected Statistics behavior; then publish the update.

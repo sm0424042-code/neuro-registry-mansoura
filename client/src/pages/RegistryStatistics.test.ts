@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildComparisonSummary, buildCustomStatisticSummary, createAggregateStatisticsCsv, createCustomStatisticCsv, getComparisonSignal, getCustomStatisticOptions, getPercentagePointDifferenceLabel, getStatisticDifferenceLabel, getStatisticShare, getStatisticsChartPngFileName, getStatisticsDateRangeLabel, normalizeStatisticsViewPreference, statisticLabel, toAggregateChartData, toAggregateComparisonChartData, toComparisonReportRows, toCohortIndicatorDistributionComparison, type AggregateStatistics } from "./RegistryStatistics";
+import { buildComparisonSummary, buildCustomStatisticSummary, createAggregateStatisticsCsv, createCustomStatisticCsv, getComparisonSignal, getCustomStatisticInsight, getCustomStatisticOptions, getCustomStatisticViewData, getPercentagePointDifferenceLabel, getStatisticDifferenceLabel, getStatisticShare, getStatisticsChartPngFileName, getStatisticsDateRangeLabel, normalizeSavedCustomStatisticQueries, normalizeStatisticsViewPreference, statisticLabel, toAggregateChartData, toAggregateComparisonChartData, toComparisonReportRows, toCohortIndicatorDistributionComparison, type AggregateStatistics } from "./RegistryStatistics";
 
 const aggregate: AggregateStatistics = { totalRecords: 10, byCohort: [{ cohort: "stroke", total: 6 }, { cohort: "cidp", total: 4 }], byEnrollment: [{ status: "enrolled", total: 8 }, { status: "screened", total: 2 }], byCompleteness: [{ status: "complete", total: 7 }, { status: "incomplete", total: 3 }], byDataQuality: [{ status: "complete", total: 7 }, { status: "draft", total: 3 }], investigationCoverage: { radiologyRecorded: 8, laboratoryRecorded: 9, neurologicalRecorded: 7, protocolChecklistComplete: 6 }, cohortIndicators: [{ id: "stroke_iv_thrombolysis", cohort: "stroke", title: "IV thrombolysis use", numeratorLabel: "IV thrombolysis or combined reperfusion", denominatorLabel: "All Stroke records", numerator: 3, denominator: 6, percentage: 50, distribution: [{ key: "iv_thrombolysis", label: "IV thrombolysis", total: 2, percentage: 33 }, { key: "none", label: "none", total: 3, percentage: 50 }, { key: "both", label: "Combined reperfusion", total: 1, percentage: 17 }] }] };
 
@@ -90,5 +90,16 @@ describe("RegistryStatistics", () => {
     expect(csv).toContain('"Comparison share","33%"');
     expect(buildCustomStatisticSummary(thrombolysis!, "2026-01-01 to 2026-01-31", "2025-01-01 to 2025-01-31").join(" ")).toContain("not a clinical, operational, or causal explanation");
     expect(`${JSON.stringify(options)}${csv}`).not.toMatch(/MUNR|research.?id|patient|diagnosis|clinical narrative|email|recorded by/i);
+  });
+
+  it("builds allowed chart views, bounded saved-query definitions, and a non-causal smart interpretation", () => {
+    const comparison = { ...aggregate, totalRecords: 7, byCohort: [{ cohort: "stroke", total: 3 }, { cohort: "multiple_sclerosis", total: 4 }], cohortIndicators: [{ ...aggregate.cohortIndicators[0], numerator: 1, denominator: 3, percentage: 33 }] };
+    const strokeShare = getCustomStatisticOptions(aggregate, comparison).find(option => option.key === "cohort:stroke")!;
+    expect(getCustomStatisticViewData(strokeShare, "proportion")).toEqual([expect.objectContaining({ current: 60, comparison: 43 })]);
+    expect(getCustomStatisticViewData(strokeShare, "counts")).toEqual([expect.objectContaining({ numerator: 6, denominator: 10 }), expect.objectContaining({ numerator: 3, denominator: 7 })]);
+    expect(getCustomStatisticInsight(strokeShare)).toMatchObject({ currentShare: 60, comparisonShare: 43, remainingShare: 40 });
+    expect(getCustomStatisticInsight(strokeShare).note).toContain("does not establish");
+    expect(normalizeSavedCustomStatisticQueries([{ id: "saved-stroke-share", family: "cohort", selectedKey: "cohort:stroke", view: "comparison" }, { id: "unsafe", family: "free_text", selectedKey: "patient:name", view: "raw" }])).toEqual([{ id: "saved-stroke-share", family: "cohort", selectedKey: "cohort:stroke", view: "comparison" }]);
+    expect(JSON.stringify(getCustomStatisticInsight(strokeShare))).not.toMatch(/MUNR|research.?id|patient|diagnosis|clinical narrative|email|recorded by/i);
   });
 });
