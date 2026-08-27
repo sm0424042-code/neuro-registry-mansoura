@@ -323,3 +323,7 @@
 - [x] Add client-local PDF and Word exports for the aggregate Statistics comparison report with no individual records or identifiers.
 - [x] Package and validate a reusable skill for safe aggregate statistics comparison, summaries, and report exports.
 - [x] Test local preferences, summaries, PDF/Word contracts, export exclusions, protected route behavior, and publish the update.
+- [x] Add an approved-user custom medical-statistic builder with a fixed allow-list of aggregate numerator and denominator definitions.
+- [x] Apply current and comparison date ranges, standard Statistics filters, and protected aggregation to each custom statistic without returning individual records.
+- [x] Add aggregate-only CSV, PNG, PDF, and Word export support for the custom statistic and its period comparison.
+- [x] Test custom-statistic validation, denominator safety, authorization, export exclusions, and protected route behavior; then publish the update.
