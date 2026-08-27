@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, like, lte, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, like, lte, sql, type SQL } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { and as sqlAnd, or as sqlOr } from "drizzle-orm";
 import { InsertUser, patientRecords, registryAuditLogs, userMessages, userProfiles, users } from "../drizzle/schema";
@@ -60,7 +60,7 @@ export async function getUserByOpenId(openId: string) {
 export async function listUsersForAdmin() {
   const db = await getDb();
   if (!db) return [];
-  return db.select({ id: users.id, name: users.name, email: users.email, role: users.role, accessStatus: users.accessStatus, lastSignedIn: users.lastSignedIn, updatedAt: users.updatedAt }).from(users).orderBy(asc(users.name));
+  return db.select({ id: users.id, name: users.name, email: users.email, role: users.role, accessStatus: users.accessStatus, oauthIdentityLinked: sql<boolean>`${users.openId} <> ''`, lastSignedIn: users.lastSignedIn, updatedAt: users.updatedAt }).from(users).orderBy(asc(users.name));
 }
 
 export async function listAssignableUsers() {

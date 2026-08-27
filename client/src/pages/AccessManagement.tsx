@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { Check, Download, FileSpreadsheet, KeyRound, ShieldAlert, ShieldCheck, UsersRound } from "lucide-react";
+import { Check, Download, FileSpreadsheet, KeyRound, Mail, ShieldAlert, ShieldCheck, UsersRound } from "lucide-react";
 import { toast } from "sonner";
 
 export const ADMINISTRATOR_DISPLAY_NAME = "Abdelrahman Ibrahim Rashad";
@@ -11,6 +11,10 @@ export const ADMINISTRATOR_INDICATOR_DESCRIPTION = "Manual access approver";
 
 export function getApplicantDisplayName(name: string | null | undefined) {
   return name?.trim() || ADMINISTRATOR_DISPLAY_NAME;
+}
+
+export function getApplicantOAuthStatus(isLinked: boolean) {
+  return isLinked ? "OAuth linked" : "Verification unavailable";
 }
 
 function AccessBadge({ value }: { value: string }) {
@@ -82,8 +86,8 @@ export default function AccessManagement() {
             <div className="flex items-center gap-3">
               <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf7f4] text-[#2d716a]"><UsersRound className="h-4 w-4" /></span>
               <div>
-                <h2 className="font-display text-xl text-[#203943]">Authorised research users</h2>
-                <p className="text-xs text-slate-500">Pending access is manually approved by Abdelrahman Ibrahim Rashad.</p>
+                <h2 className="font-display text-xl text-[#203943]">Applicants &amp; research users</h2>
+                <p className="text-xs text-slate-500">Review OAuth display name, provider-linked email, verification state, and the manual access decision.</p>
               </div>
             </div>
             <div className="flex w-full shrink-0 items-center gap-3 rounded-2xl border border-[#b9ddd4] bg-gradient-to-br from-[#edf9f5] to-[#f8fcfa] px-3.5 py-3 shadow-[0_8px_22px_rgba(29,107,95,0.09)] sm:w-auto sm:min-w-[248px]" aria-label="Administrator display information" title="Display-only administrator information">
@@ -92,13 +96,14 @@ export default function AccessManagement() {
             </div>
           </div>
           {error ? <div className="p-6 text-sm text-rose-700">Users could not be loaded. {error.message}</div> : isLoading ? <div className="space-y-3 p-6"><div className="h-12 animate-pulse rounded-lg bg-slate-100" /><div className="h-12 animate-pulse rounded-lg bg-slate-100" /></div> : <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="bg-[#f7faf8] text-xs font-semibold uppercase tracking-[0.08em] text-[#68807e]"><tr><th className="px-6 py-3">Applicant</th><th className="px-4 py-3">Role</th><th className="px-4 py-3">Access</th><th className="px-6 py-3 text-right">Manual decision</th></tr></thead>
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="bg-[#f7faf8] text-xs font-semibold uppercase tracking-[0.08em] text-[#68807e]"><tr><th className="px-6 py-3">Applicant OAuth account</th><th className="px-4 py-3">Identity</th><th className="px-4 py-3">Role</th><th className="px-4 py-3">Access</th><th className="px-6 py-3 text-right">Manual decision</th></tr></thead>
               <tbody>{users?.map(user => <tr key={user.id} className="border-t border-[#edf1ef]">
-                <td className="px-6 py-4"><p className="font-medium text-[#30434c]">{getApplicantDisplayName(user.name)}</p><p className="mt-0.5 text-xs text-slate-500">{user.email || "No institutional email available"}</p></td>
+                <td className="px-6 py-4"><p className="font-medium text-[#30434c]">{getApplicantDisplayName(user.name)}</p><p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500"><Mail className="h-3.5 w-3.5 text-[#4a8a82]" aria-hidden="true" />{user.email || "No provider email available"}</p></td>
+                <td className="px-4 py-4"><Badge variant="outline" className={user.oauthIdentityLinked ? "border-teal-200 bg-teal-50 text-teal-700" : "border-slate-200 bg-slate-50 text-slate-600"}><ShieldCheck className="mr-1 h-3.5 w-3.5" />{getApplicantOAuthStatus(user.oauthIdentityLinked)}</Badge><p className="mt-1 text-[11px] text-slate-500">Provider identity only</p></td>
                 <td className="px-4 py-4"><Badge variant="outline" className="capitalize">{user.role}</Badge></td>
                 <td className="px-4 py-4"><AccessBadge value={user.accessStatus} /></td>
-                <td className="px-6 py-4 text-right">{user.accessStatus === "approved" ? <Button size="sm" variant="outline" disabled={setAccess.isPending} onClick={() => setAccess.mutate({ userId: user.id, accessStatus: "suspended" })}>Suspend</Button> : <Button size="sm" disabled={setAccess.isPending} className="bg-[#125d69] hover:bg-[#0d4b55]" onClick={() => setAccess.mutate({ userId: user.id, accessStatus: "approved" })}><Check className="mr-1.5 h-3.5 w-3.5" />Approve</Button>}</td>
+                <td className="px-6 py-4 text-right"><p className="mb-2 text-xs text-slate-500">{user.accessStatus === "pending" ? "Awaiting administrator review" : user.accessStatus === "approved" ? "Approved by manual review" : "Access suspended"}</p>{user.accessStatus === "approved" ? <Button size="sm" variant="outline" disabled={setAccess.isPending} onClick={() => setAccess.mutate({ userId: user.id, accessStatus: "suspended" })}>Suspend</Button> : <Button size="sm" disabled={setAccess.isPending} className="bg-[#125d69] hover:bg-[#0d4b55]" onClick={() => setAccess.mutate({ userId: user.id, accessStatus: "approved" })}><Check className="mr-1.5 h-3.5 w-3.5" />Approve</Button>}</td>
               </tr>)}</tbody>
             </table>
           </div>}
@@ -108,7 +113,7 @@ export default function AccessManagement() {
 
     <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <Card className="border-[#dce9e5] shadow-sm"><CardContent className="p-5"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf7f4] text-[#2d716a]"><KeyRound className="h-4 w-4" /></span><p className="mt-4 text-xs font-bold tracking-[0.12em] text-[#3d7a72]">1. SECURE SIGN-IN</p><p className="mt-2 text-sm leading-6 text-slate-600">Accounts use the existing OAuth identity flow. The registry does not create, display, or store local passwords.</p></CardContent></Card>
-      <Card className="border-[#dce9e5] shadow-sm"><CardContent className="p-5"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf7f4] text-[#2d716a]"><UsersRound className="h-4 w-4" /></span><p className="mt-4 text-xs font-bold tracking-[0.12em] text-[#3d7a72]">2. APPLICANT DETAILS</p><p className="mt-2 text-sm leading-6 text-slate-600">The approver reviews the authenticated display name, institutional email when available, requested role, and protocol authorisation.</p></CardContent></Card>
+      <Card className="border-[#dce9e5] shadow-sm"><CardContent className="p-5"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf7f4] text-[#2d716a]"><UsersRound className="h-4 w-4" /></span><p className="mt-4 text-xs font-bold tracking-[0.12em] text-[#3d7a72]">2. APPLICANT DETAILS</p><p className="mt-2 text-sm leading-6 text-slate-600">The approver reviews the OAuth display name, provider-linked email when available, linked-identity state, requested role, and protocol authorisation. No phone number or national ID is collected.</p></CardContent></Card>
       <Card className="border-[#dce9e5] shadow-sm"><CardContent className="p-5"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf7f4] text-[#2d716a]"><ShieldCheck className="h-4 w-4" /></span><p className="mt-4 text-xs font-bold tracking-[0.12em] text-[#3d7a72]">3. MANUAL DECISION</p><p className="mt-2 text-sm leading-6 text-slate-600">Abdelrahman Ibrahim Rashad approves or suspends access. Approval does not grant permission to export direct identifiers or clear protected registry data.</p></CardContent></Card>
       <Card className="border-[#efd9d4] bg-[#fffaf9] shadow-sm"><CardContent className="p-5"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#fff0ee] text-[#9b3b33]"><ShieldAlert className="h-4 w-4" /></span><p className="mt-4 text-xs font-bold tracking-[0.12em] text-[#9b4b42]">4. OWNER-ONLY CLEARING</p><p className="mt-2 text-sm leading-6 text-[#705651]">No protected record-clear or deletion control is enabled today. If one is approved later, it must be bound server-side to Abdelrahman’s registered OAuth identity and administrator role—not to a display name or local password.</p></CardContent></Card>
     </section>

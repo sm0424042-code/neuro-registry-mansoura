@@ -234,3 +234,7 @@
 - [x] Add denied-caller, input-validation, and data-boundary tests for profile pictures; run type checking, tests, and a production build.
 - [x] Add a display-only administrator icon and Abdelrahman Ibrahim Rashad label beside the Access Management applicant area.
 - [x] Refine the administrator name-and-icon indicator for stronger clarity and visual consistency without changing authorization.
+- [ ] Prepare the user-provided two-person photograph for private approved-user profile use while preserving both people and excluding phone-interface framing.
+- [ ] Link the prepared two-person image only to the approved profile-picture workflow, then verify it remains absent from research records, exports, and public pages.
+- [x] Clarify applicant OAuth display name and provider-linked email for access reviewers while excluding national IDs, mobile numbers, and local credentials.
+- [x] Add a derived OAuth-identity verification state and clear manual access-decision context to the applicant review table.

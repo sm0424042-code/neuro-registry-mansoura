@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ADMINISTRATOR_DISPLAY_NAME, ADMINISTRATOR_INDICATOR_DESCRIPTION, ADMINISTRATOR_INDICATOR_LABEL, getApplicantDisplayName } from "./AccessManagement";
+import { ADMINISTRATOR_DISPLAY_NAME, ADMINISTRATOR_INDICATOR_DESCRIPTION, ADMINISTRATOR_INDICATOR_LABEL, getApplicantDisplayName, getApplicantOAuthStatus } from "./AccessManagement";
 
 describe("AccessManagement applicant display name", () => {
   it("uses the configured administrator display label for a missing or blank name", () => {
@@ -16,5 +16,9 @@ describe("AccessManagement applicant display name", () => {
     expect(ADMINISTRATOR_DISPLAY_NAME).toBe("Abdelrahman Ibrahim Rashad");
     expect(ADMINISTRATOR_INDICATOR_LABEL).toBe("Registry administrator");
     expect(ADMINISTRATOR_INDICATOR_DESCRIPTION).toBe("Manual access approver");
+  });
+  it("labels the derived OAuth identity state without exposing an identity value", () => {
+    expect(getApplicantOAuthStatus(true)).toBe("OAuth linked");
+    expect(getApplicantOAuthStatus(false)).toBe("Verification unavailable");
   });
 });
