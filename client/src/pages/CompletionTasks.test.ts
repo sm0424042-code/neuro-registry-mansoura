@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterAndSortCompletionTasks, getCompletionTaskPage, getCompletionTaskPagination, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskSearchValidation, getTaskStatusLabel } from "./CompletionTasks";
+import { filterAndSortCompletionTasks, getCompletionTaskPage, getCompletionTaskPagination, getNextTaskSearchSuggestionIndex, getTaskExportInput, getTaskLoadingMode, getTaskNotificationLabel, getTaskSearchSuggestions, getTaskSearchValidation, getTaskStatusLabel } from "./CompletionTasks";
 
 describe("completion-task labels", () => {
   it("uses clear controlled labels for task state", () => {
@@ -51,6 +51,21 @@ describe("completion-task labels", () => {
     expect(getTaskSearchValidation("2026-02-30").error).toMatch(/valid UTC date/i);
     expect(getTaskSearchValidation("member name").error).toMatch(/task status/i);
     expect(getTaskSearchValidation("MUNR-0000000000000000000000001").error).toMatch(/task status/i);
+  });
+
+  it("offers only fixed operational suggestions and a UTC date-format helper", () => {
+    const suggestions = getTaskSearchSuggestions("", new Date("2026-08-27T10:30:00.000Z"));
+    expect(suggestions.map(suggestion => suggestion.value)).toEqual(["assigned", "reassigned", "accepted", "completed", "awaiting acceptance", "2026-08-27"]);
+    expect(getTaskSearchSuggestions("acc", new Date("2026-08-27T10:30:00.000Z")).map(suggestion => suggestion.value)).toEqual(["accepted", "awaiting acceptance"]);
+    expect(getTaskSearchSuggestions("person", new Date("2026-08-27T10:30:00.000Z"))).toEqual([]);
+    expect(JSON.stringify(suggestions)).not.toMatch(/MUNR|research|record|patient|clinical|email|assigned to/i);
+  });
+
+  it("cycles safely through auto-complete options using arrow keys", () => {
+    expect(getNextTaskSearchSuggestionIndex(-1, "ArrowDown", 3)).toBe(0);
+    expect(getNextTaskSearchSuggestionIndex(2, "ArrowDown", 3)).toBe(0);
+    expect(getNextTaskSearchSuggestionIndex(0, "ArrowUp", 3)).toBe(2);
+    expect(getNextTaskSearchSuggestionIndex(-1, "ArrowDown", 0)).toBe(-1);
   });
 
   it("sends only the current controlled status, search, and sort options to the CSV export", () => {

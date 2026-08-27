@@ -288,3 +288,5 @@
 - [x] Test export authorization, CSV escaping, and exclusion of Research IDs, record references, clinical content, emails, and assignment identities; then publish the update.
 - [x] Add a safe quick-search control for task status and UTC update date, excluding names, descriptions, identities, record references, and clinical content.
 - [x] Apply the safe task search before pagination and CSV export, add privacy and matching tests, then publish the update.
+- [x] Add accessible auto-complete suggestions for only the permitted task-status terms and a UTC date-format example in Completion Tasks search.
+- [x] Test auto-complete filtering, keyboard selection, and exclusion of user, record, and clinical data suggestions; then publish the update.
