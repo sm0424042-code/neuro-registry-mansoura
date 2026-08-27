@@ -11,4 +11,8 @@ describe("AccessManagement applicant display name", () => {
   it("keeps an authenticated user-provided display name when available", () => {
     expect(getApplicantDisplayName("Research User")).toBe("Research User");
   });
+
+  it("keeps the configured administrator label available for the applicant-area indicator", () => {
+    expect(ADMINISTRATOR_DISPLAY_NAME).toBe("Abdelrahman Ibrahim Rashad");
+  });
 });

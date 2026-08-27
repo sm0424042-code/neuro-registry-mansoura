@@ -76,11 +76,17 @@ export default function AccessManagement() {
 
       <Card className="border-[#e1e9e5] shadow-sm">
         <CardContent className="p-0">
-          <div className="flex items-center gap-3 border-b border-[#e8efec] p-6">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf7f4] text-[#2d716a]"><UsersRound className="h-4 w-4" /></span>
-            <div>
-              <h2 className="font-display text-xl text-[#203943]">Authorised research users</h2>
-              <p className="text-xs text-slate-500">Pending access is manually approved by Abdelrahman Ibrahim Rashad.</p>
+          <div className="flex items-center justify-between gap-4 border-b border-[#e8efec] p-6">
+            <div className="flex items-center gap-3">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf7f4] text-[#2d716a]"><UsersRound className="h-4 w-4" /></span>
+              <div>
+                <h2 className="font-display text-xl text-[#203943]">Authorised research users</h2>
+                <p className="text-xs text-slate-500">Pending access is manually approved by Abdelrahman Ibrahim Rashad.</p>
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-2 rounded-xl border border-[#cfe3de] bg-[#eff8f5] px-3 py-2 text-right" aria-label="Administrator display information">
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#d9f0e9] text-[#287168]"><ShieldCheck className="h-4 w-4" aria-hidden="true" /></span>
+              <div><p className="text-[10px] font-bold tracking-[0.12em] text-[#3d7a72]">ADMINISTRATOR</p><p className="text-xs font-semibold text-[#1f4148]">Abdelrahman Ibrahim Rashad</p></div>
             </div>
           </div>
           {error ? <div className="p-6 text-sm text-rose-700">Users could not be loaded. {error.message}</div> : isLoading ? <div className="space-y-3 p-6"><div className="h-12 animate-pulse rounded-lg bg-slate-100" /><div className="h-12 animate-pulse rounded-lg bg-slate-100" /></div> : <div className="overflow-x-auto">

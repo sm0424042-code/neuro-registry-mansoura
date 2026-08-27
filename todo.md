@@ -232,3 +232,4 @@
 - [x] Add server-enforced profile-picture upload, replacement, and retrieval with safe image constraints and protected storage.
 - [x] Add an accessible profile-picture control to the approved-user workspace without exposing it on public pages.
 - [x] Add denied-caller, input-validation, and data-boundary tests for profile pictures; run type checking, tests, and a production build.
+- [x] Add a display-only administrator icon and Abdelrahman Ibrahim Rashad label beside the Access Management applicant area.
