@@ -218,3 +218,10 @@
 - [x] Test spinner visibility, duplicate-click prevention, recovery, and reduced-motion behavior, then save a checkpoint.
 - [x] Add an authenticated, privacy-safe Broken image report control beside the image-link copy action.
 - [x] Verify report authorization, minimal static-media payload, user feedback, and no registry-data exposure, then save a checkpoint.
+- [x] Package the privacy-safe media fallback, Retry, copy-link, and reporting workflow as a reusable skill.
+- [x] Validate the reusable skill package and deliver its SKILL.md file.
+- [x] Package OAuth-bound pseudonymised clinical registry governance as a reusable skill.
+- [x] Validate and deliver the reusable registry-governance SKILL.md package.
+- [x] Create README.md documenting core registry settings, privacy boundaries, and OAuth-bound owner governance.
+- [x] Review README wording for accuracy and absence of credentials or identity-based authorization shortcuts, then save a checkpoint.
+- [x] Document the required owner properties: display name, registered OAuth identity binding, approved access status, and administrator role.
