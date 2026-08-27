@@ -258,3 +258,5 @@
 - [x] Clarify applicant onboarding in the protected access guidance: OAuth supplies the account name and email, while password creation and storage remain outside the registry.
 - [x] Enforce server-side immutable-owner protection: reject every attempt to delete, suspend, approve, or change the role of the configured current owner.
 - [x] Add regression tests proving that another approved administrator cannot modify the configured owner through access, role, or removal procedures.
+- [x] Investigate why a protected research record reported as saved does not appear in Patient Registry, without reading or generating clinical data.
+- [x] Fix the validated save-to-registry-list flow and add regression coverage for the save result, cache refresh, and protected navigation behavior.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cohortImmuneTherapyOptions, getCohortInvestigationOptions } from "./PatientEditor";
+import { cohortImmuneTherapyOptions, getCohortInvestigationOptions, getRecordSaveValidationError, getSavedRecordDestination } from "./PatientEditor";
 
 describe("PatientEditor cohort-specific options", () => {
   it("keeps stroke laboratory choices distinct from MS treatment-screening choices", () => {
@@ -29,5 +29,16 @@ describe("PatientEditor cohort-specific options", () => {
     expect(gbsTherapies).toEqual(expect.arrayContaining(["ivig", "plasma_exchange"]));
     expect(gbsTherapies).not.toContain("b_cell_depleting");
     expect(msTherapies).toContain("b_cell_depleting");
+  });
+
+  it("explains why a record was not submitted before a create request is attempted", () => {
+    expect(getRecordSaveValidationError({ researchId: "", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toContain("Research ID");
+    expect(getRecordSaveValidationError({ researchId: "MUNR-STROKE26", primaryDiagnosis: "", ageAtEnrollment: "50" })).toContain("diagnosis");
+    expect(getRecordSaveValidationError({ researchId: "MUNR-STROKE26", primaryDiagnosis: "Stroke", ageAtEnrollment: "" })).toContain("age");
+    expect(getRecordSaveValidationError({ researchId: "MUNR-STROKE26", primaryDiagnosis: "Stroke", ageAtEnrollment: "50" })).toBeNull();
+  });
+
+  it("routes a successfully saved research record to its pseudonymised registry search", () => {
+    expect(getSavedRecordDestination("munr-stroke26")).toBe("/registry?search=MUNR-STROKE26");
   });
 });
