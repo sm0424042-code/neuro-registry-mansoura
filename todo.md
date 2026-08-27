@@ -310,3 +310,7 @@
 - [x] Test date-range validation, server-side aggregate filtering, protected export exclusions, and the Statistics route; then publish the update.
 - [x] Add an approved-user comparison of two validated registration-date ranges with aggregate difference indicators and paired chart series.
 - [x] Test comparison-period validation, aggregate difference calculations, chart/CSV/PNG privacy boundaries, and the protected Statistics route; then publish the update.
+- [x] Add approved-user aggregate clinical indicators for Stroke thrombolysis use and Guillain–Barré syndrome variants, scoped to the active date and comparison filters.
+- [x] Test indicator numerators, denominators, period comparison differences, chart/CSV/PNG export exclusions, and protected Statistics access; then publish the update.
+- [x] Generalize cohort-specific aggregate indicator cards to Stroke, MS, Abnormal Movements, GBS, MG, Myelopathy, Neuro-ophthalmology, and CIDP using only controlled clinical fields.
+- [x] Test cohort-indicator eligibility, denominators, comparison differences, aggregate-only exports, and protected route behavior; then publish the update.

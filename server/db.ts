@@ -212,7 +212,62 @@ export type RegistryAggregateStatisticsResult = {
   byCompleteness: Array<{ status: string; total: number }>;
   byDataQuality: Array<{ status: string; total: number }>;
   investigationCoverage: ReturnType<typeof getInvestigationCoverage>;
+  cohortIndicators: CohortClinicalIndicator[];
 };
+
+export type CohortClinicalIndicatorRow = {
+  cohort: string;
+  strokeReperfusion?: string | null;
+  msDiseaseModifyingTherapy?: string | null;
+  movementPhenotype?: string | null;
+  gbsVariant?: string | null;
+  mgAntibodyStatus?: string | null;
+  myelopathyCause?: string | null;
+  neuroOphDiseaseClassification?: string | null;
+  cidpVariant?: string | null;
+};
+export type CohortClinicalIndicator = {
+  id: string;
+  cohort: string;
+  title: string;
+  numeratorLabel: string;
+  denominatorLabel: string;
+  numerator: number;
+  denominator: number;
+  percentage: number;
+  distribution: Array<{ key: string; label: string; total: number; percentage: number }>;
+};
+type CohortClinicalIndicatorDefinition = {
+  id: string;
+  cohort: string;
+  title: string;
+  numeratorLabel: string;
+  denominatorLabel: string;
+  field: Exclude<keyof CohortClinicalIndicatorRow, "cohort">;
+  numeratorMatches: (value: string) => boolean;
+};
+const cohortClinicalIndicatorDefinitions: CohortClinicalIndicatorDefinition[] = [
+  { id: "stroke_iv_thrombolysis", cohort: "stroke", title: "IV thrombolysis use", numeratorLabel: "IV thrombolysis or combined reperfusion", denominatorLabel: "All Stroke records", field: "strokeReperfusion", numeratorMatches: value => value === "iv_thrombolysis" || value === "both" },
+  { id: "ms_disease_modifying_therapy", cohort: "multiple_sclerosis", title: "Disease-modifying therapy use", numeratorLabel: "Disease-modifying therapy recorded", denominatorLabel: "All Multiple Sclerosis records", field: "msDiseaseModifyingTherapy", numeratorMatches: value => !["none", "unknown", "not_recorded"].includes(value) },
+  { id: "abnormal_movements_parkinsonism", cohort: "abnormal_movements", title: "Parkinsonism phenotype", numeratorLabel: "Parkinsonism phenotype", denominatorLabel: "All Abnormal Movements records", field: "movementPhenotype", numeratorMatches: value => value === "parkinsonism" },
+  { id: "gbs_aidp_variant", cohort: "guillain_barre", title: "AIDP variant", numeratorLabel: "AIDP variant", denominatorLabel: "All Guillain–Barré records", field: "gbsVariant", numeratorMatches: value => value === "aidp" },
+  { id: "mg_seropositive", cohort: "myasthenia_gravis", title: "Seropositive antibody profile", numeratorLabel: "AChR, MuSK, LRP4, titin, or agrin", denominatorLabel: "All Myasthenia Gravis records", field: "mgAntibodyStatus", numeratorMatches: value => ["achr", "musk", "lrp4", "titin", "agrin"].includes(value) },
+  { id: "myelopathy_compressive_cause", cohort: "myelopathy", title: "Compressive myelopathy cause", numeratorLabel: "Compressive cause", denominatorLabel: "All Myelopathy records", field: "myelopathyCause", numeratorMatches: value => value === "compressive" },
+  { id: "neurooph_nmosd_mogad", cohort: "neuro_ophthalmology", title: "NMOSD or MOGAD classification", numeratorLabel: "NMOSD or MOGAD classification", denominatorLabel: "All Neuro-ophthalmology records", field: "neuroOphDiseaseClassification", numeratorMatches: value => value === "nmosd" || value === "mogad" },
+  { id: "cidp_typical_madsam", cohort: "cidp", title: "Typical or MADSAM CIDP phenotype", numeratorLabel: "Typical or MADSAM variant", denominatorLabel: "All CIDP records", field: "cidpVariant", numeratorMatches: value => value === "typical" || value === "madsam" },
+];
+const cohortIndicatorValueLabels: Record<string, string> = { iv_thrombolysis: "IV thrombolysis", mechanical_thrombectomy: "Mechanical thrombectomy", both: "Combined reperfusion", relapsing_remitting: "Relapsing–remitting", primary_progressive: "Primary progressive", secondary_progressive: "Secondary progressive", clinically_isolated_syndrome: "Clinically isolated syndrome", achr: "AChR", musk: "MuSK", lrp4: "LRP4", aidp: "AIDP", aman: "AMAN", amsan: "AMSAN", miller_fisher: "Miller Fisher", pharyngeal_cervical_brachial: "Pharyngeal–cervical–brachial", nmosd: "NMOSD", mogad: "MOGAD", cidp: "CIDP", madsam: "MADSAM", not_recorded: "Not recorded" };
+export function getCohortIndicatorValueLabel(value: string) { return cohortIndicatorValueLabels[value] ?? value.replaceAll("_", " "); }
+export function getCohortClinicalIndicators(rows: CohortClinicalIndicatorRow[]): CohortClinicalIndicator[] {
+  return cohortClinicalIndicatorDefinitions.map(definition => {
+    const cohortRows = rows.filter(row => row.cohort === definition.cohort);
+    const values = cohortRows.map(row => row[definition.field] ?? "not_recorded");
+    const distribution = Array.from(values.reduce((counts, value) => counts.set(value, (counts.get(value) ?? 0) + 1), new Map<string, number>()).entries()).map(([key, total]) => ({ key, label: getCohortIndicatorValueLabel(key), total, percentage: cohortRows.length ? Math.round((total / cohortRows.length) * 100) : 0 })).sort((left, right) => right.total - left.total || left.label.localeCompare(right.label));
+    const numerator = values.filter(definition.numeratorMatches).length;
+    return { id: definition.id, cohort: definition.cohort, title: definition.title, numeratorLabel: definition.numeratorLabel, denominatorLabel: definition.denominatorLabel, numerator, denominator: cohortRows.length, percentage: cohortRows.length ? Math.round((numerator / cohortRows.length) * 100) : 0, distribution };
+  });
+}
+function clinicalJsonValue(path: string) { return sql<string | null>`JSON_UNQUOTE(JSON_EXTRACT(${patientRecords.clinicalData}, ${path}))`; }
 
 async function getRegistryAggregateStatisticsForPeriod(db: any, filters?: RegistryStatisticsFilters): Promise<RegistryAggregateStatisticsResult> {
   const conditions = getRegistryStatisticsConditions(filters);
@@ -222,7 +277,8 @@ async function getRegistryAggregateStatisticsForPeriod(db: any, filters?: Regist
   const byCompleteness = await runRegistryStatisticsQuery<{ status: string; total: number }>(db.select({ status: patientRecords.completenessStatus, total: count() }).from(patientRecords).groupBy(patientRecords.completenessStatus), conditions);
   const byDataQuality = await runRegistryStatisticsQuery<{ status: string; total: number }>(db.select({ status: patientRecords.dataQualityStatus, total: count() }).from(patientRecords).groupBy(patientRecords.dataQualityStatus), conditions);
   const investigationRows = await runRegistryStatisticsQuery<{ radiologicalInvestigations: unknown[] | null; laboratoryInvestigations: unknown[] | null; neurologicalInvestigations: unknown[] | null; protocolInvestigations: Array<{ status?: string }> | null }>(db.select({ radiologicalInvestigations: patientRecords.radiologicalInvestigations, laboratoryInvestigations: patientRecords.laboratoryInvestigations, neurologicalInvestigations: patientRecords.neurologicalInvestigations, protocolInvestigations: patientRecords.protocolInvestigations }).from(patientRecords), conditions);
-  return { totalRecords: total?.total ?? 0, byCohort, byEnrollment, byCompleteness, byDataQuality, investigationCoverage: getInvestigationCoverage(investigationRows) };
+  const indicatorRows = await runRegistryStatisticsQuery<CohortClinicalIndicatorRow>(db.select({ cohort: patientRecords.cohort, strokeReperfusion: clinicalJsonValue("$.reperfusionTherapy"), msDiseaseModifyingTherapy: clinicalJsonValue("$.diseaseModifyingTherapy"), movementPhenotype: clinicalJsonValue("$.movementPhenotype"), gbsVariant: clinicalJsonValue("$.variant"), mgAntibodyStatus: clinicalJsonValue("$.antibodyStatus"), myelopathyCause: clinicalJsonValue("$.cause"), neuroOphDiseaseClassification: clinicalJsonValue("$.diseaseClassification"), cidpVariant: clinicalJsonValue("$.variant") }).from(patientRecords), conditions);
+  return { totalRecords: total?.total ?? 0, byCohort, byEnrollment, byCompleteness, byDataQuality, investigationCoverage: getInvestigationCoverage(investigationRows), cohortIndicators: getCohortClinicalIndicators(indicatorRows) };
 }
 
 /** Returns only aggregate research-operation metrics for the current period and, when requested, a separate aggregate comparison period. */

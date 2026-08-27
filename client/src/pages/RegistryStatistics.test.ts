@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createAggregateStatisticsCsv, getStatisticDifferenceLabel, getStatisticShare, getStatisticsChartPngFileName, getStatisticsDateRangeLabel, statisticLabel, toAggregateChartData, toAggregateComparisonChartData, type AggregateStatistics } from "./RegistryStatistics";
+import { createAggregateStatisticsCsv, getPercentagePointDifferenceLabel, getStatisticDifferenceLabel, getStatisticShare, getStatisticsChartPngFileName, getStatisticsDateRangeLabel, statisticLabel, toAggregateChartData, toAggregateComparisonChartData, toCohortIndicatorDistributionComparison, type AggregateStatistics } from "./RegistryStatistics";
 
-const aggregate: AggregateStatistics = { totalRecords: 10, byCohort: [{ cohort: "stroke", total: 6 }, { cohort: "cidp", total: 4 }], byEnrollment: [{ status: "enrolled", total: 8 }, { status: "screened", total: 2 }], byCompleteness: [{ status: "complete", total: 7 }, { status: "incomplete", total: 3 }], byDataQuality: [{ status: "complete", total: 7 }, { status: "draft", total: 3 }], investigationCoverage: { radiologyRecorded: 8, laboratoryRecorded: 9, neurologicalRecorded: 7, protocolChecklistComplete: 6 } };
+const aggregate: AggregateStatistics = { totalRecords: 10, byCohort: [{ cohort: "stroke", total: 6 }, { cohort: "cidp", total: 4 }], byEnrollment: [{ status: "enrolled", total: 8 }, { status: "screened", total: 2 }], byCompleteness: [{ status: "complete", total: 7 }, { status: "incomplete", total: 3 }], byDataQuality: [{ status: "complete", total: 7 }, { status: "draft", total: 3 }], investigationCoverage: { radiologyRecorded: 8, laboratoryRecorded: 9, neurologicalRecorded: 7, protocolChecklistComplete: 6 }, cohortIndicators: [{ id: "stroke_iv_thrombolysis", cohort: "stroke", title: "IV thrombolysis use", numeratorLabel: "IV thrombolysis or combined reperfusion", denominatorLabel: "All Stroke records", numerator: 3, denominator: 6, percentage: 50, distribution: [{ key: "iv_thrombolysis", label: "IV thrombolysis", total: 2, percentage: 33 }, { key: "none", label: "none", total: 3, percentage: 50 }, { key: "both", label: "Combined reperfusion", total: 1, percentage: 17 }] }] };
 
 describe("RegistryStatistics", () => {
   it("formats labels and aggregate shares without individual record data", () => {
@@ -39,12 +39,21 @@ describe("RegistryStatistics", () => {
   });
 
   it("compares aggregate category totals and includes only aggregate differences in comparison CSV", () => {
-    const comparison = { ...aggregate, totalRecords: 7, byCohort: [{ cohort: "stroke", total: 3 }, { cohort: "multiple_sclerosis", total: 4 }], byEnrollment: [{ status: "enrolled", total: 7 }], byCompleteness: [{ status: "complete", total: 5 }, { status: "incomplete", total: 2 }], byDataQuality: [{ status: "complete", total: 5 }, { status: "draft", total: 2 }], investigationCoverage: { radiologyRecorded: 6, laboratoryRecorded: 6, neurologicalRecorded: 5, protocolChecklistComplete: 4 } };
+    const comparison = { ...aggregate, totalRecords: 7, byCohort: [{ cohort: "stroke", total: 3 }, { cohort: "multiple_sclerosis", total: 4 }], byEnrollment: [{ status: "enrolled", total: 7 }], byCompleteness: [{ status: "complete", total: 5 }, { status: "incomplete", total: 2 }], byDataQuality: [{ status: "complete", total: 5 }, { status: "draft", total: 2 }], investigationCoverage: { radiologyRecorded: 6, laboratoryRecorded: 6, neurologicalRecorded: 5, protocolChecklistComplete: 4 }, cohortIndicators: [{ ...aggregate.cohortIndicators[0], numerator: 1, denominator: 3, percentage: 33, distribution: [{ key: "iv_thrombolysis", label: "IV thrombolysis", total: 1, percentage: 33 }, { key: "none", label: "none", total: 2, percentage: 67 }] }] };
     expect(toAggregateComparisonChartData(aggregate.byCohort, comparison.byCohort)).toEqual(expect.arrayContaining([expect.objectContaining({ key: "stroke", current: 6, comparison: 3, difference: 3 }), expect.objectContaining({ key: "multiple_sclerosis", current: 0, comparison: 4, difference: -4 })]));
     expect(getStatisticDifferenceLabel(10, 7)).toBe("+3 vs comparison");
     const csv = createAggregateStatisticsCsv(aggregate, "2026-01-01 to 2026-01-31", comparison, "2025-01-01 to 2025-01-31");
     expect(csv).toContain("Dimension,Category,Current count,Comparison count,Difference");
     expect(csv).toContain('"Cohort","stroke","6","3","3"');
+    expect(csv).toContain('"Cohort indicator","IV thrombolysis use — numerator","3","1","2"');
     expect(csv).not.toMatch(/MUNR|research.?id|patient|diagnosis|clinical|narrative|email|assigned|recorded by/i);
+  });
+
+  it("compares a cohort-specific rate and its controlled distribution without individual content", () => {
+    const current = aggregate.cohortIndicators[0];
+    const comparison = { ...current, numerator: 1, denominator: 3, percentage: 33, distribution: [{ key: "iv_thrombolysis", label: "IV thrombolysis", total: 1, percentage: 33 }, { key: "none", label: "none", total: 2, percentage: 67 }] };
+    expect(toCohortIndicatorDistributionComparison(current, comparison)).toEqual(expect.arrayContaining([expect.objectContaining({ key: "iv_thrombolysis", current: 2, comparison: 1, currentPercentage: 33, comparisonPercentage: 33, difference: 0 })]));
+    expect(getPercentagePointDifferenceLabel(50, 33)).toBe("+17 percentage points");
+    expect(JSON.stringify(toCohortIndicatorDistributionComparison(current, comparison))).not.toMatch(/MUNR|research.?id|patient|diagnosis|clinical|email|recorded.?by/i);
   });
 });
