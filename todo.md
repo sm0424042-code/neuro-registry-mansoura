@@ -225,3 +225,4 @@
 - [x] Create README.md documenting core registry settings, privacy boundaries, and OAuth-bound owner governance.
 - [x] Review README wording for accuracy and absence of credentials or identity-based authorization shortcuts, then save a checkpoint.
 - [x] Document the required owner properties: display name, registered OAuth identity binding, approved access status, and administrator role.
+- [x] Verify and, only if needed, correct the future administrator display name to Abdelrahman Ibrahim Rashad without changing OAuth-based authorization.
