@@ -158,7 +158,7 @@
 - [x] Add the Epilepsy cohort with controlled, cohort-specific clinical research assessment fields.
 - [x] Integrate Epilepsy into forms, validation, cohort labels, statistics indicators, and protected exports without exposing direct identifiers.
 - [x] Add focused Epilepsy schema, UI, aggregate-statistics, privacy, and regression tests; document medical-source limitations.
-- [ ] Save a checkpoint and publish the Epilepsy update after final validation.
+- [x] Save a checkpoint and publish the Epilepsy update after final validation.
 
 ---
 
