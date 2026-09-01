@@ -20,6 +20,7 @@ const cohortLabels: Record<string, string> = {
   myelopathy: "Myelopathy",
   neuro_ophthalmology: "Neuro-ophthalmology",
   cidp: "CIDP",
+  epilepsy: "Epilepsy",
 };
 
 export const COMPLETION_TASKS_PAGE_SIZE = 10;

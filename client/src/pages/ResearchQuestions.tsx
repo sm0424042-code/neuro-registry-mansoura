@@ -8,7 +8,7 @@ import { Calculator, FlaskConical, ShieldCheck } from "lucide-react";
 import React from "react";
 
 const cohorts = [
-  { value: "all", label: "All cohorts" }, { value: "stroke", label: "Stroke" }, { value: "multiple_sclerosis", label: "Multiple Sclerosis" }, { value: "abnormal_movements", label: "Abnormal Movements" }, { value: "guillain_barre", label: "Guillain–Barré" }, { value: "myasthenia_gravis", label: "Myasthenia Gravis" }, { value: "myelopathy", label: "Myelopathy" }, { value: "neuro_ophthalmology", label: "Neuro-ophthalmology" }, { value: "cidp", label: "CIDP" },
+  { value: "all", label: "All cohorts" }, { value: "stroke", label: "Stroke" }, { value: "multiple_sclerosis", label: "Multiple Sclerosis" }, { value: "abnormal_movements", label: "Abnormal Movements" }, { value: "guillain_barre", label: "Guillain–Barré" }, { value: "myasthenia_gravis", label: "Myasthenia Gravis" }, { value: "myelopathy", label: "Myelopathy" }, { value: "neuro_ophthalmology", label: "Neuro-ophthalmology" }, { value: "cidp", label: "CIDP" }, { value: "epilepsy", label: "Epilepsy" },
 ] as const;
 
 const completionStates = ["all", "complete", "incomplete", "needs_review"] as const;

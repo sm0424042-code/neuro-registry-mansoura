@@ -12,6 +12,17 @@ describe("PatientEditor cohort-specific options", () => {
     expect(msTests).not.toContain("lipid_profile");
   });
 
+  it("provides Epilepsy-specific clinical and investigation pathways", () => {
+    const codes = (options: Array<[string, string]>) => options.map(([code]) => code);
+    const epilepsyNeurology = codes(getCohortInvestigationOptions("epilepsy", "neurological") as Array<[string, string]>);
+    const epilepsyLaboratory = codes(getCohortInvestigationOptions("epilepsy", "laboratory") as Array<[string, string]>);
+    const epilepsyImaging = getCohortInvestigationOptions("epilepsy", "radiology") as { modalities: Array<[string, string]>; regions: Array<[string, string]> };
+    expect(epilepsyNeurology).toEqual(expect.arrayContaining(["eeg", "cognitive_assessment"]));
+    expect(epilepsyLaboratory).toEqual(expect.arrayContaining(["renal_profile", "other"]));
+    expect(epilepsyImaging.modalities.map(([code]) => code)).toEqual(["mri", "ct", "pet"]);
+    expect(epilepsyImaging.regions.map(([code]) => code)).toEqual(["brain"]);
+  });
+
   it("limits neurological investigations and imaging regions to the selected cohort pathway", () => {
     const codes = (options: Array<[string, string]>) => options.map(([code]) => code);
     const neuroOphthalmology = codes(getCohortInvestigationOptions("neuro_ophthalmology", "neurological") as Array<[string, string]>);
@@ -51,10 +62,11 @@ describe("PatientEditor cohort-specific options", () => {
       "Spinal level", "Likely cause", "UMN signs", "LMN features", "Bladder involvement", "Myelopathy evaluation",
       "Visual syndrome", "Laterality", "Acuity change", "Afferent defect", "Disease classification", "AQP4 / MOG profile", "Linked systemic disease", "Neuro-ophthalmology evaluation",
       "CIDP variant", "Diagnostic pathway", "EMG/NCS evidence", "CSF protein status", "CIDP / neuropathy evaluation",
+      "Seizure class", "Epilepsy type", "Epilepsy syndrome classification", "Seizure frequency", "Last seizure interval", "Status epilepticus history", "Cluster or prolonged seizures", "EEG assessment", "Neuroimaging assessment", "Drug-resistant epilepsy status", "Antiseizure medication count", "Epilepsy treatment response", "Safety and comorbidity screening", "Epilepsy evaluation",
     ];
-    expect(fields).toHaveLength(49);
+    expect(fields).toHaveLength(63);
     expect(Object.keys(clinicalSelectorOptions)).toEqual(expect.arrayContaining(fields));
-    expect(Object.keys(clinicalSelectorOptions)).toHaveLength(49);
+    expect(Object.keys(clinicalSelectorOptions)).toHaveLength(63);
   });
 
   it("explains why a record was not submitted before a create request is attempted", () => {

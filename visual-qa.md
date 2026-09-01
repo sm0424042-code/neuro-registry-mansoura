@@ -319,3 +319,9 @@ The interactive data transform accepts only aggregate category keys and counts r
 Every aggregate chart now includes an **Export PNG** button. The browser generates the selected chart card locally at two-times pixel density, including the title, chart, and aggregate-only legend; then downloads it with a fixed date-stamped filename. The export controls show a preparation state while rendering and offer a non-sensitive retry message if conversion fails. The existing **Download aggregate CSV** button remains available separately for the aggregate data table.
 
 PNG export operates only on a chart already rendered from the protected aggregate-statistics response. It does not make a new record query, persist an image, add a user identifier, or add any individual research data to the visual. Tests verify the stable aggregate-only PNG naming and the continued exclusion of sensitive data markers from the export contract. The available `/statistics` capture correctly showed the suspension gate for the removed sandbox account, so a live chart-image download remains deferred to a legitimate approved OAuth session.
+
+## Epilepsy cohort update — 2026-08-30
+
+The `/research-questions` and `/statistics` routes were captured at desktop width after the Epilepsy integration. The available browser identity remains suspended, so both protected routes correctly show `Access is suspended`. This confirms the server/client access gate only; it does not verify approved-session interaction with the Epilepsy form, protocol checklist, statistics filter, or exports. Those flows remain deferred until a genuine approved OAuth session is available.
+
+Automated validation for this update passed: `pnpm check`, full `pnpm test` (109 tests), `pnpm build`, and `git diff --check` after the protocol-contract fix. The production build retains existing large-chunk warnings.

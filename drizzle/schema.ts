@@ -101,8 +101,27 @@ export type NeuroOphthalmologyClinicalData = EvaluationChecklist & {
   neuroOphEvaluation: "acuity_fields_oct" | "acuity_colour_vision_oct" | "fundus_and_oct" | "neuroimaging_reviewed" | "antibody_workup" | "gca_pathway" | "unknown";
 };
 
+export type EpilepsyClinicalData = EvaluationChecklist & {
+  cohort: "epilepsy";
+  seizureClass: "focal" | "generalized" | "unknown_focal_or_generalized" | "unclassified" | "unknown";
+  epilepsyType: "focal_epilepsy" | "generalized_epilepsy" | "combined_generalized_and_focal" | "unknown" | "unclassified";
+  syndromeClassification: "self_limited_focal" | "self_limited_generalized" | "developmental_epileptic" | "genetic_generalized" | "structural_metabolic" | "unknown" | "unclassified";
+  seizureFrequencyCategory: "seizure_free" | "less_than_monthly" | "monthly_to_weekly" | "more_than_weekly" | "daily_or_near_daily" | "unknown";
+  lastSeizureInterval: "never_recorded" | "less_than_24_hours" | "1_to_7_days" | "8_to_30_days" | "1_to_6_months" | "more_than_6_months" | "unknown";
+  statusEpilepticusHistory: "none" | "remote" | "recent" | "current_or_index_event" | "unknown";
+  clusterOrProlongedSeizures: "none" | "documented" | "suspected" | "unknown";
+  eegAssessment: "routine_eeg" | "sleep_or_sleep_deprived_eeg" | "prolonged_video_eeg" | "ambulatory_eeg" | "not_done" | "unknown";
+  neuroimagingAssessment: "mri_epilepsy_protocol" | "other_mri" | "ct" | "no_relevant_imaging" | "unknown";
+  drugResistantEpilepsyStatus: "not_applicable" | "not_yet_assessed" | "unlikely" | "suspected" | "confirmed" | "unknown";
+  antiseizureMedicationCount: "none" | "one" | "two" | "three_or_more" | "unknown";
+  treatmentResponse: "seizure_free" | "improved" | "unchanged" | "worsened" | "intolerant_or_adverse_effects" | "unknown";
+  safetyAndComorbidityScreening: "completed" | "partially_completed" | "not_done" | "not_applicable" | "unknown";
+  epilepsyEvaluation: "history_and_semiology" | "eeg_and_mri" | "prolonged_video_eeg" | "drug_resistance_review" | "surgery_or_tertiary_review" | "comprehensive_follow_up" | "unknown";
+};
+
 export type CIDPClinicalData = EvaluationChecklist & {
   cohort: "cidp";
+
   variant: "typical" | "madsam" | "distal" | "focal" | "motor" | "sensory" | "sensory_motor" | "other" | "unknown";
   diagnosticPathway: "cidp" | "possible_cidp" | "mononeuritis_multiplex" | "vasculitic_neuropathy" | "anti_mag_neuropathy" | "multifocal_motor_neuropathy" | "other" | "unknown";
   disabilityLevel: "mild" | "moderate" | "severe" | "unknown";
@@ -111,7 +130,7 @@ export type CIDPClinicalData = EvaluationChecklist & {
   cidpEvaluation: "emg_ncs_disability_treatment" | "emg_ncs_and_disability" | "emg_ncs_only" | "serial_incat_onls" | "vasculitis_workup" | "unknown";
 };
 
-export type CohortClinicalData = StrokeClinicalData | MultipleSclerosisClinicalData | AbnormalMovementClinicalData | GuillainBarreClinicalData | MyastheniaGravisClinicalData | MyelopathyClinicalData | NeuroOphthalmologyClinicalData | CIDPClinicalData;
+export type CohortClinicalData = StrokeClinicalData | MultipleSclerosisClinicalData | AbnormalMovementClinicalData | GuillainBarreClinicalData | MyastheniaGravisClinicalData | MyelopathyClinicalData | NeuroOphthalmologyClinicalData | CIDPClinicalData | EpilepsyClinicalData;
 export type RadiologicalInvestigation = { modality: "mri" | "ct" | "cta" | "mra" | "dsa" | "doppler" | "pet" | "spect" | "xray" | "other"; bodyRegion: "brain" | "spine" | "chest" | "cranial_nerves" | "cerebral_vessels" | "temporal_arteries" | "peripheral_nerves" | "other"; keyFinding: string; lesionStatus: "present" | "absent" | "indeterminate" | "not_applicable"; reportReference?: string | null };
 export type ResearchFile = { fileName: string; storageKey: string; url: string; mimeType: string; sizeBytes: number; category: "radiology_image" | "radiology_report" | "laboratory_report" | "other"; uploadedAt: string; uploadedByUserId: number };
 export type LaboratoryInvestigation = { testName: "thyroid_function" | "hba1c" | "uric_acid" | "lipid_profile" | "ck" | "b12_folate" | "electrolytes" | "inflammatory_markers" | "autoimmune_panel" | "esr_crp" | "hepatitis_screening" | "varicella_immunity" | "renal_profile" | "other"; resultStatus: "normal" | "abnormal" | "borderline" | "not_done" | "unknown"; resultSummary?: string | null };
@@ -131,7 +150,7 @@ export const userProfiles = mysqlTable("user_profiles", {
 export const patientRecords = mysqlTable("patient_records", {
   id: int("id").autoincrement().primaryKey(),
   researchId: varchar("researchId", { length: 30 }).notNull().unique(),
-  cohort: mysqlEnum("cohort", ["stroke", "multiple_sclerosis", "abnormal_movements", "guillain_barre", "myasthenia_gravis", "myelopathy", "neuro_ophthalmology", "cidp"]).notNull(),
+  cohort: mysqlEnum("cohort", ["stroke", "multiple_sclerosis", "abnormal_movements", "guillain_barre", "myasthenia_gravis", "myelopathy", "neuro_ophthalmology", "cidp", "epilepsy"]).notNull(),
   sex: mysqlEnum("sex", ["female", "male", "not_recorded"]).notNull(),
   ageAtEnrollment: int("ageAtEnrollment").notNull(),
   ageAtOnset: int("ageAtOnset"),

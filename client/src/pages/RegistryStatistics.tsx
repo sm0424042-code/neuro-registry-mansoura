@@ -12,7 +12,7 @@ import React from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, XAxis, YAxis } from "recharts";
 
 const cohorts = [
-  { value: "all", label: "All cohorts" }, { value: "stroke", label: "Stroke" }, { value: "multiple_sclerosis", label: "Multiple Sclerosis" }, { value: "abnormal_movements", label: "Abnormal Movements" }, { value: "guillain_barre", label: "Guillain–Barré" }, { value: "myasthenia_gravis", label: "Myasthenia Gravis" }, { value: "myelopathy", label: "Myelopathy" }, { value: "neuro_ophthalmology", label: "Neuro-ophthalmology" }, { value: "cidp", label: "CIDP" },
+  { value: "all", label: "All cohorts" }, { value: "stroke", label: "Stroke" }, { value: "multiple_sclerosis", label: "Multiple Sclerosis" }, { value: "abnormal_movements", label: "Abnormal Movements" }, { value: "guillain_barre", label: "Guillain–Barré" }, { value: "myasthenia_gravis", label: "Myasthenia Gravis" }, { value: "myelopathy", label: "Myelopathy" }, { value: "neuro_ophthalmology", label: "Neuro-ophthalmology" }, { value: "cidp", label: "CIDP" }, { value: "epilepsy", label: "Epilepsy" },
 ] as const;
 type StatisticsCohort = typeof cohorts[number]["value"];
 type CompletionStatus = "all" | "complete" | "incomplete" | "needs_review";
@@ -34,7 +34,7 @@ export type AggregateStatisticsCore = { totalRecords: number; byCohort: Array<{ 
 export type AggregateStatistics = AggregateStatisticsCore & { comparison?: AggregateStatisticsCore };
 
 const statusLabels: Record<string, string> = { complete: "Complete", incomplete: "Incomplete", needs_review: "Needs review", screened: "Screened", enrolled: "Enrolled", completed: "Completed", withdrawn: "Withdrawn", ineligible: "Ineligible", draft: "Draft", query: "Query" };
-const cohortColors = ["#197b8a", "#685f98", "#b96d45", "#69855b", "#805e85", "#48809a", "#9b7048", "#4a8d74"];
+const cohortColors = ["#197b8a", "#685f98", "#b96d45", "#69855b", "#805e85", "#48809a", "#9b7048", "#4a8d74", "#8a6f3d"];
 const completionColors: Record<string, string> = { complete: "#418c63", incomplete: "#ca8a3d", needs_review: "#477ca6" };
 const chartConfig = { total: { label: "Records", color: "#287a73" }, current: { label: "Current period", color: "#287a73" }, comparison: { label: "Comparison period", color: "#8b7bb8" } } satisfies ChartConfig;
 const preferenceStorageKey = "munr-statistics-view-v1";

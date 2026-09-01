@@ -155,6 +155,10 @@
 ## End of current worklist
 
 - [ ] Reconcile historical duplicate QA entries only when real approved OAuth evidence becomes available.
+- [x] Add the Epilepsy cohort with controlled, cohort-specific clinical research assessment fields.
+- [x] Integrate Epilepsy into forms, validation, cohort labels, statistics indicators, and protected exports without exposing direct identifiers.
+- [x] Add focused Epilepsy schema, UI, aggregate-statistics, privacy, and regression tests; document medical-source limitations.
+- [ ] Save a checkpoint and publish the Epilepsy update after final validation.
 
 ---
 
@@ -341,3 +345,7 @@
 - [x] Add a dedicated Research Question Builder that accepts a researcher-supplied non-identifying question title and approved structured conditions.
 - [x] Add protected aggregate execution, small-group suppression, local save/load, and aggregate CSV/PNG/PDF/Word exports for a Research Question.
 - [x] Test question-title safety, controlled-condition validation, aggregate result calculation, export exclusions, and protected access; then publish the update.
+- [ ] Add controlled next immune-therapy dose scheduling fields for relevant cohorts without patient contact details.
+- [ ] Add an idempotent internal reminder workflow for approved users exactly fourteen days before a due immune-therapy dose, containing only MUNR and medication name.
+- [ ] Add a protected in-site reminder inbox with acknowledged state and no patient name, contact, clinical narrative, or unsupported delivery channel.
+- [ ] Test scheduling windows, duplicate prevention, authorization, MUNR/medication-only payloads, and the scheduled callback; then publish the update.

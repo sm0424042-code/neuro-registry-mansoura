@@ -91,8 +91,9 @@ export default function AccessManagement() {
   });
   const exportMutation = trpc.administration.exportDeidentified.useMutation({
     onSuccess: rows => {
-      downloadCsv(rows);
-      toast.success(`De-identified CSV generated for ${rows.length} records`);
+      const safeRows = rows.filter(Boolean) as object[];
+      downloadCsv(safeRows);
+      toast.success(`De-identified CSV generated for ${safeRows.length} records`);
     },
     onError: problem => toast.error(problem.message),
   });

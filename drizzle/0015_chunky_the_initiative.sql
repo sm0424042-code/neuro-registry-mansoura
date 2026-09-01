@@ -1,0 +1,1 @@
+ALTER TABLE `patient_records` MODIFY COLUMN `cohort` enum('stroke','multiple_sclerosis','abnormal_movements','guillain_barre','myasthenia_gravis','myelopathy','neuro_ophthalmology','cidp','epilepsy') NOT NULL;
